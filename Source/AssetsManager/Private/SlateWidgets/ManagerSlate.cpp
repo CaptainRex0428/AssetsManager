@@ -113,7 +113,7 @@ TSharedRef<ITableRow> SAssetsCheckerTab::OnGenerateRowForlist(TSharedPtr<FAssetD
 				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Right)
 				.VAlign(VAlign_Center)
-				.FillWidth(0.15f)
+				.FillWidth(0.25f)
 				[
 					ConstructSingleAssetDeleteButtonBox(AssetDataToDisplay)
 				]
@@ -160,7 +160,8 @@ TSharedRef<STextBlock> SAssetsCheckerTab::ConstructAssetNameBox(const TSharedPtr
 		.Text(FText::FromString(DisplayAssetName))
 		.Justification(ETextJustify::Left)
 		.ColorAndOpacity(FColor::White)
-		.Font(FontInfo);
+		.Font(FontInfo)
+		.ToolTipText(FText::FromString(DisplayAssetName));
 
 	return AssetNameBox;
 }
@@ -174,7 +175,8 @@ TSharedRef<STextBlock> SAssetsCheckerTab::ConstructAssetClassBox(const TSharedPt
 		.Text(FText::FromString(DisplayAssetClass))
 		.Justification(ETextJustify::Left)
 		.ColorAndOpacity(FColor::White)
-		.Font(FontInfo);
+		.Font(FontInfo)
+		.ToolTipText(FText::FromString(DisplayAssetClass));
 
 	return AssetClassBox;
 }
@@ -188,7 +190,8 @@ TSharedRef<STextBlock> SAssetsCheckerTab::ConstructAssetPathBox(const TSharedPtr
 		.Text(FText::FromString(DisplayAssetPath))
 		.Justification(ETextJustify::Left)
 		.ColorAndOpacity(FColor::White)
-		.Font(FontInfo);
+		.Font(FontInfo)
+		.ToolTipText(FText::FromString(DisplayAssetPath));
 
 	return AssetPathBox;
 }
