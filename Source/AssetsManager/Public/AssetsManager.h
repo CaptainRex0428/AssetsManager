@@ -4,8 +4,6 @@
 
 #include "Modules/ModuleManager.h"
 
-#define CONTENTFOLDERMANAGERTABNAME "AssetsManager"
-
 class FAssetsManagerModule : public IModuleInterface
 {
 public:

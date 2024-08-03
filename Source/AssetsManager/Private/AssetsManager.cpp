@@ -5,7 +5,6 @@
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetsChecker/AssetsChecker.h"
-
 #include "SlateWidgets/ManagerSlate.h"
 
 #include "EditorAssetLibrary.h"
@@ -147,7 +146,8 @@ TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnAssetsCheckerTab(const FSpawnT
 	SNew(SDockTab).TabRole(ETabRole::NomadTab)
 		[
 			SNew(SAssetsCheckerTab)
-				.TitleText(CONTENTFOLDERMANAGERTABNAME)
+				//.TitleText(CONTENTFOLDERMANAGERTABNAME)
+				.TitleText("Assets Checker")
 				.StoredAssetsData(UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(SelectedContentFolderPaths))
 		];
 }

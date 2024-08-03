@@ -126,6 +126,34 @@ void UAssetsChecker::AddPrefixes()
 	EAddPrefixes(SelectedObjects);
 }
 
+TArray<FString> UAssetsChecker::EGetAssetReferencesPath(const FString& AssetPath)
+{
+	return UEditorAssetLibrary::FindPackageReferencersForAsset(AssetPath, true);
+}
+
+TArray<FString> UAssetsChecker::EGetAssetReferencesPath(const FAssetData& AssetData)
+{
+	return EGetAssetReferencesPath(AssetData.GetObjectPathString());
+}
+
+TArray<FString> UAssetsChecker::EGetAssetReferencesPath(const TSharedPtr<FAssetData>& AssetData)
+{
+	return EGetAssetReferencesPath(AssetData->GetObjectPathString());
+}
+
+uint32 UAssetsChecker::EDeleteAssets(const TArray<FAssetData>& AssetsData)
+{
+	return ObjectTools::DeleteAssets(AssetsData);
+}
+
+uint32 UAssetsChecker::EDeleteAsset(const FAssetData& AssetData)
+{
+	TArray<FAssetData> AssetsData;
+	AssetsData.Add(AssetData);
+
+	return ObjectTools::DeleteAssets(AssetsData);
+}
+
 void UAssetsChecker::ERemoveUnusedAssets(const TArray<FAssetData>& AssetsDataSelected)
 {
 	EFixUpRedirectors();
@@ -148,7 +176,7 @@ void UAssetsChecker::ERemoveUnusedAssets(const TArray<FAssetData>& AssetsDataSel
 		return;
 	}
 
-	const int32 NumOfAssetsDeleted = ObjectTools::DeleteAssets(UnusedAssetsData);
+	const uint32 NumOfAssetsDeleted = EDeleteAssets(UnusedAssetsData);
 
 	if (NumOfAssetsDeleted == 0) return;
 
@@ -177,9 +205,7 @@ void UAssetsChecker::ERemoveUnusedAssets(const TArray<FString>& FolderPathSelect
 				PATHLOOPIGNORE(assetPath);
 				ASSETPATHNOTEXISTIGNORE(assetPath)
 
-				TArray<FString> AssetReferences = UEditorAssetLibrary::FindPackageReferencersForAsset(assetPath, true);
-
-				if (AssetReferences.Num() == 0)
+				if (EGetAssetReferencesPath(assetPath).Num() == 0)
 				{
 					const FAssetData AssetData = UEditorAssetLibrary::FindAssetData(assetPath);
 					UnusedAssetsData.Add(AssetData);
@@ -188,7 +214,7 @@ void UAssetsChecker::ERemoveUnusedAssets(const TArray<FString>& FolderPathSelect
 
 			if (UnusedAssetsData.Num() > 0)
 			{
-				ObjectTools::DeleteAssets(UnusedAssetsData);
+				EDeleteAssets(UnusedAssetsData);
 			};
 		}
 	}

@@ -54,6 +54,13 @@ public:
 	UFUNCTION(CallInEditor)
 	void AddPrefixes();
 
+	static TArray<FString> EGetAssetReferencesPath(const FString & AssetPath);
+	static TArray<FString> EGetAssetReferencesPath(const FAssetData & AssetData);
+	static TArray<FString> EGetAssetReferencesPath(const TSharedPtr<FAssetData> & AssetData);
+
+	static uint32 EDeleteAssets(const TArray<FAssetData> & AssetsData);
+	static uint32 EDeleteAsset(const FAssetData & AssetData);
+
 	void ERemoveUnusedAssets(const TArray<FAssetData>& AssetsDataSelected);
 	static void ERemoveUnusedAssets(const TArray<FString> & FolderPathSelected);
 	UFUNCTION(CallInEditor)
