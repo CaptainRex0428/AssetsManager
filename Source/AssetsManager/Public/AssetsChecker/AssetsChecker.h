@@ -18,7 +18,7 @@
 
 #include "AssetsChecker.generated.h"
 
-const TMap<UClass*, FString> PrefixMap =
+const TMap<UClass*, FString> PrefixMap_CLASS_STR =
 {
 	{UBlueprint::StaticClass(),TEXT("BP")},
 	{UStaticMesh::StaticClass(),TEXT("SM")},
@@ -34,6 +34,24 @@ const TMap<UClass*, FString> PrefixMap =
 	{USkeletalMeshComponent::StaticClass(), TEXT("SK")},
 	{UNiagaraSystem::StaticClass(),TEXT("NS")},
 	{UNiagaraEmitter::StaticClass(), TEXT("NE")}
+};
+
+const TMap<FString,UClass*> PrefixMap_STR_CLASS =
+{
+	{TEXT("Blueprint"),UBlueprint::StaticClass()},
+	{TEXT("StaticMesh"),UStaticMesh::StaticClass()},
+	{TEXT("Material"),UMaterial::StaticClass()},
+	{TEXT("MaterialInstance"),UMaterialInstanceConstant::StaticClass()},
+	{TEXT("MaterialFunction"),UMaterialFunctionInterface::StaticClass()},
+	{TEXT("ParticleSystem"),UParticleSystem::StaticClass()},
+	{TEXT("SoundCue"),USoundCue::StaticClass()},
+	{TEXT("SoundWave"),USoundWave::StaticClass()},
+	{TEXT("Texture"),UTexture::StaticClass()},
+	{TEXT("TextureArray"),UTexture2D::StaticClass()},
+	{TEXT("UserWidget"),UUserWidget::StaticClass()},
+	{TEXT("SkeletalMesh"),USkeletalMeshComponent::StaticClass()},
+	{TEXT("NiagaraSystem"),UNiagaraSystem::StaticClass()},
+	{TEXT("NiagaraEmitter"),UNiagaraEmitter::StaticClass()}
 };
 
 /**

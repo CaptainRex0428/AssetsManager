@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#pragma warning(disable: 5103)
 
 #include "AssetsChecker/AssetsChecker.h"
 #include "ManagerLogger.h"
@@ -11,11 +12,10 @@
 #include "AssetToolsModule.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 
-#define PATHLOOPIGNORE(Path) if (##Path.Contains("Developers") || \
-							##Path.Contains("Collections")) \
-						{continue;};
-#define DIRPATHNOTEXISTIGNORE(Path) if (!UEditorAssetLibrary::DoesDirectoryExist(##Path)){continue;};
-#define ASSETPATHNOTEXISTIGNORE(Path) if (!UEditorAssetLibrary::DoesAssetExist(##Path)){continue;};
+
+#define PATHLOOPIGNORE(Path) if (##Path.Contains("Developers") || ##Path.Contains("Collections")) continue;
+#define DIRPATHNOTEXISTIGNORE(Path) if (!UEditorAssetLibrary::DoesDirectoryExist(##Path))continue;
+#define ASSETPATHNOTEXISTIGNORE(Path) if (!UEditorAssetLibrary::DoesAssetExist(##Path))continue;
 
 
 int UAssetsChecker::EDuplicateAssets(const TArray<FAssetData>& AssetsDataSelected, int NumOfDupicates, bool forced)
@@ -448,5 +448,5 @@ void UAssetsChecker::ECheckerCheck(const TArray<FString>& Path)
 
 const TMap<UClass*, FString>& UAssetsChecker::EGetPrefixMap()
 {
-	return PrefixMap;
+	return PrefixMap_CLASS_STR;
 }

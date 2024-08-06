@@ -11,13 +11,20 @@ class SAssetsCheckerTab: public SCompoundWidget
 	SLATE_BEGIN_ARGS(SAssetsCheckerTab){}
 	SLATE_ARGUMENT(FString,TitleText)
 	SLATE_ARGUMENT(TArray<TSharedPtr<FAssetData>>, StoredAssetsData)
+	SLATE_ARGUMENT(TArray<FString>, SelectedFolderPaths)
 	SLATE_END_ARGS()
 
 public:
 	void Construct(const FArguments& InArgs);
 
 private:
+	TArray<FString> StoredFolderPaths;
 	TArray<TSharedPtr<FAssetData>> StoredAssetsData;
+	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
+	TArray<TSharedRef<SCheckBox>>  CheckBoxesArray;
+	TArray<TSharedPtr<FAssetData>> AssetsDataSelected;
+
+	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
 
 	FSlateFontInfo GetFontInfo(float FontSize, const FString& FontName = "EmbossedText");
 
@@ -46,17 +53,42 @@ private:
 	FReply OnSingleAssetDeleteButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
 #pragma endregion
 
-	TSharedRef<SButton> ConstructDeleteAllButton();
-	FReply OnDeleteAllButtonClicked();
-
+#pragma region DeleteButtonCustruct
 	TSharedRef<SButton> ConstructDeleteAllSelectedButton();
 	FReply OnDeleteAllSelectedButtonClicked();
+#pragma endregion
 
+#pragma region SelectButtonCustruct
 	TSharedRef<SButton> ConstructSelectAllButton();
 	FReply OnSelectAllButtonClicked();
 
 	TSharedRef<SButton> ConstructDeselectAllButton();
 	FReply OnDeselectAllButtonClicked();
+#pragma endregion
 
+#pragma region FixRedirectorsButton
+	TSharedRef<SButton> ConstructFixUpRedirectorButton();
+	FReply OnFixUpRedirectorButtonClicked();
+#pragma endregion
+
+#pragma region ButtonCustruct
 	TSharedRef<STextBlock> ConstructTextForButtons(const FString& TextContent);
+#pragma endregion
+
+#pragma region SComboListFilter
+	TArray<TSharedPtr<FString>> ClassFilterComboSourceItems;
+	TSharedPtr<STextBlock> ClassFilterComboDisplayText;
+	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructClassFilterButton();
+	TSharedRef<SWidget> OnGenerateClassFilterButton(TSharedPtr<FString> SourceItem);
+	void OnClassFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
+
+	TArray<TSharedPtr<FString>> UsageFilterComboSourceItems;
+	TSharedPtr<STextBlock> UsageFilterComboDisplayText;
+	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructUsageFilterButton();
+	TSharedRef<SWidget> OnGenerateUsageFilterButton(TSharedPtr<FString> SourceItem);
+	void OnUsageFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
+
+	TSharedPtr<FString> UsageSelectedDefault;
+	TSharedPtr<FString> UsageSelectedCurrent;
+#pragma endregion
 };
