@@ -39,6 +39,10 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 
 	StoredFolderPaths = InArgs._SelectedFolderPaths;
 	StoredAssetsData = InArgs._StoredAssetsData;
+	
+	UAssetsChecker::ECopyAssetsPtrList(StoredAssetsData, SListViewAssetData);
+	UAssetsChecker::ECopyAssetsPtrList(SListViewAssetData, SListViewClassFilterAssetData);
+
 	CheckBoxesArray.Empty();
 	AssetsDataSelected.Empty();
 
@@ -59,10 +63,11 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_NIAGARAEMITTER));
 
 	UsageSelectedDefault = MakeShared<FString>(USAGE_NONE);
+	UsageSelectionSizeError = MakeShared<FString>(USAGE_SIZEERROR);
+
 	UsageFilterComboSourceItems.Add(UsageSelectedDefault);
 	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_UNUSED));
 	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_PREFIXERROR));
-	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_SIZEERROR));
 
 	ChildSlot
 		[
@@ -208,6 +213,24 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 		];
 }
 
+void SAssetsCheckerTab::SListViewRemoveAssetData(TSharedPtr<FAssetData> AssetData)
+{
+	if (StoredAssetsData.Contains(AssetData))
+	{
+		StoredAssetsData.Remove(AssetData);
+	}
+
+	if (SListViewAssetData.Contains(AssetData))
+	{
+		SListViewAssetData.Remove(AssetData);
+	}
+
+	if (SListViewClassFilterAssetData.Contains(AssetData))
+	{
+		SListViewClassFilterAssetData.Remove(AssetData);
+	}
+}
+
 FSlateFontInfo SAssetsCheckerTab::GetFontInfo(float FontSize, const FString& FontName)
 {
 	FSlateFontInfo font = FCoreStyle::Get().GetFontStyle(FName(FontName));
@@ -277,6 +300,14 @@ TSharedRef<ITableRow> SAssetsCheckerTab::OnGenerateRowForlist(TSharedPtr<FAssetD
 				[
 					ConstructSingleAssetDeleteButtonBox(AssetDataToDisplay)
 				]
+
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Right)
+				.VAlign(VAlign_Center)
+				.FillWidth(0.25f)
+				[
+					ConstructSingleAssetDebugButtonBox(AssetDataToDisplay)
+				]
 		];
 
 	return ListViewRowWidget;
@@ -287,9 +318,9 @@ TSharedRef<SListView<TSharedPtr<FAssetData>>> SAssetsCheckerTab::ConstructAssets
 	ConstructedAssetsListView = 
 	SNew(SListView<TSharedPtr<FAssetData>>)
 	.ItemHeight(36.f)
-	.ListItemsSource(&StoredAssetsData)
+	.ListItemsSource(&SListViewAssetData)
 	.OnGenerateRow(this, &SAssetsCheckerTab::OnGenerateRowForlist);
-	
+
 	return ConstructedAssetsListView.ToSharedRef();
 }
 
@@ -399,13 +430,30 @@ FReply SAssetsCheckerTab::OnSingleAssetDeleteButtonClicked(TSharedPtr<FAssetData
 		NtfMsgLog("Successfully deleted " + ClickedAssetData->AssetName.ToString());
 
 		// update slistview
-		if (StoredAssetsData.Contains(ClickedAssetData))
-		{
-			StoredAssetsData.Remove(ClickedAssetData);
-		}
-
+		SListViewRemoveAssetData(ClickedAssetData);
 		RefreshAssetsListView();
 	};
+
+	return FReply::Handled();
+}
+
+TSharedRef<SButton> SAssetsCheckerTab::ConstructSingleAssetDebugButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay)
+{
+	TSharedRef<SButton> SingleAssetDebugButtonBox =
+		SNew(SButton)
+		.Text(FText::FromString(TEXT("Debug")))
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
+		.OnClicked(this, &SAssetsCheckerTab::OnSingleAssetDebugButtonClicked, AssetDataToDisplay);
+
+	return SingleAssetDebugButtonBox;
+}
+
+FReply SAssetsCheckerTab::OnSingleAssetDebugButtonClicked(TSharedPtr<FAssetData> ClickedAssetData)
+{
+	FVector2D s = UAssetsChecker::EGetTextureAssetSize(*ClickedAssetData);
+
+	NtfyMsg(FString::FromInt(s.X) + "x" + FString::FromInt(s.Y));
 
 	return FReply::Handled();
 }
@@ -443,17 +491,15 @@ FReply SAssetsCheckerTab::OnDeleteAllSelectedButtonClicked()
 	{
 		for (TSharedPtr<FAssetData> AssetDataPtr : AssetsDataSelected)
 		{
-			if (StoredAssetsData.Contains(AssetDataPtr))
-			{
-				StoredAssetsData.Remove(AssetDataPtr);
-			}
+			SListViewRemoveAssetData(AssetDataPtr);
 		}
 	}
-	
+
 	RefreshAssetsListView();
 
 	return FReply::Handled();
 }
+
 #pragma endregion
 
 #pragma region SelectButtonCustruct
@@ -567,7 +613,9 @@ TSharedRef<SComboBox<TSharedPtr<FString>>> SAssetsCheckerTab::ConstructClassFilt
 			SAssignNew(ClassFilterComboDisplayText, STextBlock)
 				.Text(FText::FromString(CLASS_LISTALL))
 		];
-	
+		
+	ClassFilterComboBox = ClassFilterButton.ToSharedPtr();
+
 	return ClassFilterButton;
 }
 
@@ -583,10 +631,60 @@ TSharedRef<SWidget> SAssetsCheckerTab::OnGenerateClassFilterButton(TSharedPtr<FS
 void SAssetsCheckerTab::OnClassFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo)
 {
 	ClassFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
-	UsageFilterComboDisplayText->SetText(FText::FromString(USAGE_NONE));
-	UsageSelectedCurrent = UsageSelectedDefault;
-}
+	
+	// handle list
+	if(*SelectedOption.Get()==CLASS_LISTALL)
+	{
+		UAssetsChecker::ECopyAssetsPtrList(StoredAssetsData, SListViewClassFilterAssetData);
+		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewAssetData);
 
+	}
+	else
+	{
+		TArray<TSharedPtr<FAssetData>> NewAssetViewList;
+
+		for(TSharedPtr<FAssetData> AssetD : StoredAssetsData)
+		{
+			FString assetName = AssetD->GetClass()->GetName();
+			
+			UClass * selectClass = *AssetFullNameMap.Find(*SelectedOption.Get());
+			FString selectName = selectClass->GetName();
+
+			if(assetName == selectName)
+			{
+				NewAssetViewList.Add(AssetD);
+			}
+			
+		}
+
+		UAssetsChecker::ECopyAssetsPtrList(NewAssetViewList, SListViewClassFilterAssetData);
+		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewAssetData);
+		
+	}
+
+	RefreshAssetsListView();
+
+	// for texture to add option
+	if(*SelectedOption.Get() == CLASS_TEXTURE ||
+		*SelectedOption.Get() == CLASS_TEXTUREARRAY)
+	{
+		if (!UsageFilterComboSourceItems.Contains(UsageSelectionSizeError))
+		{
+			UsageFilterComboSourceItems.Add(UsageSelectionSizeError);
+		}
+	}
+	else
+	{
+		if (UsageFilterComboSourceItems.Contains(UsageSelectionSizeError))
+		{
+			UsageFilterComboSourceItems.Remove(UsageSelectionSizeError);
+		}
+	}
+
+	//set Usage Filter to default 
+	UsageFilterComboBox->SetSelectedItem(UsageSelectedDefault);
+	UsageFilterComboBox->SetItemsSource(&UsageFilterComboSourceItems);
+}
 
 TSharedRef<SComboBox<TSharedPtr<FString>>> SAssetsCheckerTab::ConstructUsageFilterButton()
 {
@@ -600,6 +698,8 @@ TSharedRef<SComboBox<TSharedPtr<FString>>> SAssetsCheckerTab::ConstructUsageFilt
 			SAssignNew(UsageFilterComboDisplayText,STextBlock)
 				.Text(FText::FromString(USAGE_NONE))
 		];
+
+	UsageFilterComboBox = UsageFilterButton.ToSharedPtr();
 
 	return UsageFilterButton;
 }
@@ -616,8 +716,28 @@ TSharedRef<SWidget> SAssetsCheckerTab::OnGenerateUsageFilterButton(TSharedPtr<FS
 void SAssetsCheckerTab::OnUsageFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo)
 {
 	UsageFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
-	UsageSelectedCurrent = SelectedOption;
-}
+	
+	if (*SelectedOption.Get() == USAGE_NONE)
+	{
+		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewAssetData);
+	}
 
+	if (*SelectedOption.Get() == USAGE_UNUSED)
+	{
+		UAssetsChecker::EListUnusedAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+	}
+
+	if (*SelectedOption.Get() == USAGE_PREFIXERROR)
+	{
+		UAssetsChecker::EListPrefixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+	}
+
+	if (*SelectedOption.Get() == USAGE_SIZEERROR)
+	{
+		UAssetsChecker::EListSizeErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+	}
+
+	RefreshAssetsListView();
+}
 
 #pragma endregion

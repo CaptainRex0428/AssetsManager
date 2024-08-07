@@ -18,6 +18,33 @@
 #define ASSETPATHNOTEXISTIGNORE(Path) if (!UEditorAssetLibrary::DoesAssetExist(##Path))continue;
 
 
+bool UAssetsChecker::bIsPowerOfTwo(const int num)
+{
+	return (num & (num - 1)) == 0;
+}
+
+bool UAssetsChecker::bIsPowerOfTwo(const uint32 num)
+{
+	return (num & (num - 1)) == 0;
+}
+
+bool UAssetsChecker::bIsPowerOfTwo(const double num)
+{
+	if((num - (int)num) == 0)
+	{
+		return ((int)num & ((int)num - 1)) == 0;
+	}
+
+	return false;
+}
+
+bool UAssetsChecker::bIsPowerOfTwo(const float num)
+{
+	return bIsPowerOfTwo((double)num);
+}
+
+
+
 int UAssetsChecker::EDuplicateAssets(const TArray<FAssetData>& AssetsDataSelected, int NumOfDupicates, bool forced)
 {
 	if (NumOfDupicates <= 0)
@@ -139,6 +166,81 @@ TArray<FString> UAssetsChecker::EGetAssetReferencesPath(const FAssetData& AssetD
 TArray<FString> UAssetsChecker::EGetAssetReferencesPath(const TSharedPtr<FAssetData>& AssetData)
 {
 	return EGetAssetReferencesPath(AssetData->GetObjectPathString());
+}
+
+FVector2D UAssetsChecker::EGetTextureAssetSize(const FAssetData& AssetData)
+{
+	FVector2D size(0,0);
+
+	if (!AssetData.GetAsset()->IsA<UTexture>())
+	{
+		return size;
+	}
+
+	UObject * AssetOBJ = UEditorAssetLibrary::LoadAsset(AssetData.GetObjectPathString());
+
+	UTexture2D* AssetAsT = static_cast<UTexture2D*>(AssetOBJ);
+	
+	if (AssetAsT)
+	{
+		size.X = AssetAsT->GetSizeX();
+		size.Y = AssetAsT->GetSizeY();
+	}
+
+	return size;
+}
+
+void UAssetsChecker::EListUnusedAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList)
+{
+	OutList.Empty();
+
+	for (const TSharedPtr<FAssetData> & DataSPTR: FindInList)
+	{
+		TArray<FString> AssetReference = EGetAssetReferencesPath(DataSPTR);
+
+		if(AssetReference.Num() == 0)
+		{
+			OutList.Add(DataSPTR);
+		}
+	}
+}
+
+void UAssetsChecker::EListPrefixErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList)
+{
+	OutList.Empty();
+
+	for(TSharedPtr<FAssetData> AssetD : FindInList)
+	{
+		const FString* prefix = EGetPrefixMap().Find(AssetD->GetClass());
+
+		if (!prefix || prefix->IsEmpty())
+		{
+			continue;
+		}
+
+		if (!AssetD->AssetName.ToString().StartsWith(*prefix))
+		{
+			OutList.Add(AssetD);
+		};
+	}
+}
+
+void UAssetsChecker::EListSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList)
+{
+	OutList.Empty();
+
+	for (TSharedPtr<FAssetData> AssetD : FindInList)
+	{
+		FVector2D size = EGetTextureAssetSize(*AssetD);
+
+		if (size.X >2048 || 
+			size.Y > 2048 || 
+			!bIsPowerOfTwo(size.X) || 
+			!bIsPowerOfTwo(size.Y))
+		{
+			OutList.Add(AssetD);
+		}
+	}
 }
 
 uint32 UAssetsChecker::EDeleteAssets(const TArray<FAssetData>& AssetsData)
@@ -440,6 +542,16 @@ void UAssetsChecker::EFixUpRedirectors(const TArray<FString>& Path)
 	AssetToolsModule.Get().FixupReferencers(RedirectorsToFixArray);
 }
 
+void UAssetsChecker::ECopyAssetsPtrList(const TArray<TSharedPtr<FAssetData>>& ListToCopy, TArray<TSharedPtr<FAssetData>>& ListToOutput)
+{
+	ListToOutput.Empty();
+
+	for(TSharedPtr<FAssetData> AssetD : ListToCopy)
+	{
+		ListToOutput.Add(AssetD);
+	}
+}
+
 void UAssetsChecker::ECheckerCheck(const TArray<FString>& Path)
 {
 
@@ -448,5 +560,5 @@ void UAssetsChecker::ECheckerCheck(const TArray<FString>& Path)
 
 const TMap<UClass*, FString>& UAssetsChecker::EGetPrefixMap()
 {
-	return PrefixMap_CLASS_STR;
+	return PrefixMap;
 }

@@ -20,12 +20,14 @@ public:
 private:
 	TArray<FString> StoredFolderPaths;
 	TArray<TSharedPtr<FAssetData>> StoredAssetsData;
+	TArray<TSharedPtr<FAssetData>> SListViewClassFilterAssetData;
 	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
+
 	TArray<TSharedRef<SCheckBox>>  CheckBoxesArray;
 	TArray<TSharedPtr<FAssetData>> AssetsDataSelected;
 
-	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
 
+	void SListViewRemoveAssetData(TSharedPtr<FAssetData> AssetData);
 	FSlateFontInfo GetFontInfo(float FontSize, const FString& FontName = "EmbossedText");
 
 #pragma region OnGenerateRowForlist
@@ -51,6 +53,9 @@ private:
 	// Button Config
 	TSharedRef<SButton> ConstructSingleAssetDeleteButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
 	FReply OnSingleAssetDeleteButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+
+	TSharedRef<SButton> ConstructSingleAssetDebugButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleAssetDebugButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
 #pragma endregion
 
 #pragma region DeleteButtonCustruct
@@ -82,13 +87,17 @@ private:
 	TSharedRef<SWidget> OnGenerateClassFilterButton(TSharedPtr<FString> SourceItem);
 	void OnClassFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
 
+	TSharedPtr<SComboBox<TSharedPtr<FString>>> ClassFilterComboBox;
+
 	TArray<TSharedPtr<FString>> UsageFilterComboSourceItems;
 	TSharedPtr<STextBlock> UsageFilterComboDisplayText;
 	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructUsageFilterButton();
 	TSharedRef<SWidget> OnGenerateUsageFilterButton(TSharedPtr<FString> SourceItem);
 	void OnUsageFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
 
+	TSharedPtr<SComboBox<TSharedPtr<FString>>> UsageFilterComboBox;
 	TSharedPtr<FString> UsageSelectedDefault;
-	TSharedPtr<FString> UsageSelectedCurrent;
+	TSharedPtr<FString> UsageSelectionSizeError;
+	
 #pragma endregion
 };
