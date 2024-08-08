@@ -153,6 +153,55 @@ void UAssetsChecker::AddPrefixes()
 	EAddPrefixes(SelectedObjects);
 }
 
+bool UAssetsChecker::EFixTextureMaxSizeInGame(
+	FAssetData& ClickedAssetData, 
+	double maxSize, 
+	bool forced)
+{
+	if (!ClickedAssetData.GetAsset()->IsA<UTexture2D>())
+	{
+		return false;
+	}
+
+	FVector2D MaxInGameSize = EGetTextureAssetMaxInGameSize(ClickedAssetData);
+	double GameSize = MaxInGameSize.X > MaxInGameSize.Y ? MaxInGameSize.X : MaxInGameSize.Y;
+
+	// NtfyMsg("MaxSize:" + FString::FromInt(MaxSize));
+
+	if(forced && GameSize != maxSize)
+	{
+		return ESetTextureSize(ClickedAssetData, maxSize);
+	}
+		
+	if( GameSize > maxSize &&
+		bIsPowerOfTwo(MaxInGameSize.X) && 
+		bIsPowerOfTwo(MaxInGameSize.Y))
+	{
+		return ESetTextureSize(ClickedAssetData, maxSize);
+	}
+
+	return false;
+}
+
+bool UAssetsChecker::ESetTextureSize(
+	FAssetData& ClickedAssetData,
+	double maxSize)
+{
+	UObject* AssetObj = ClickedAssetData.GetAsset();
+
+	if (AssetObj->IsA<UTexture2D>())
+	{
+		UTexture2D * texture = Cast<UTexture2D>(AssetObj);
+		if (texture)
+		{
+			texture->MaxTextureSize = maxSize;
+			return UEditorAssetLibrary::SaveAsset(ClickedAssetData.GetObjectPathString(), false);
+		}
+	}
+
+	return false;
+}
+
 TArray<FString> UAssetsChecker::EGetAssetReferencesPath(const FString& AssetPath)
 {
 	return UEditorAssetLibrary::FindPackageReferencersForAsset(AssetPath, true);
@@ -168,24 +217,66 @@ TArray<FString> UAssetsChecker::EGetAssetReferencesPath(const TSharedPtr<FAssetD
 	return EGetAssetReferencesPath(AssetData->GetObjectPathString());
 }
 
-FVector2D UAssetsChecker::EGetTextureAssetSize(const FAssetData& AssetData)
+FVector2D UAssetsChecker::EGetTextureAssetSourceSize(const FAssetData& AssetData)
 {
 	FVector2D size(0,0);
 
-	if (!AssetData.GetAsset()->IsA<UTexture>())
+
+	UObject* AssetOBJ = AssetData.GetAsset();
+
+	if (!AssetOBJ->IsA<UTexture>())
 	{
 		return size;
 	}
 
-	UObject * AssetOBJ = UEditorAssetLibrary::LoadAsset(AssetData.GetObjectPathString());
-
-	UTexture2D* AssetAsT = static_cast<UTexture2D*>(AssetOBJ);
+	UTexture2D* AssetAsT = Cast<UTexture2D>(AssetOBJ);
 	
 	if (AssetAsT)
 	{
-		size.X = AssetAsT->GetSizeX();
-		size.Y = AssetAsT->GetSizeY();
+		size.X = AssetAsT->GetImportedSize().X;
+		size.Y = AssetAsT->GetImportedSize().Y;
 	}
+
+	return size;
+}
+
+FVector2D UAssetsChecker::EGetTextureAssetMaxInGameSize(const FAssetData& AssetData)
+{
+	FVector2D size(0, 0);
+
+	UObject* AssetOBJ = AssetData.GetAsset();                       
+
+	if (!AssetOBJ)
+	{
+		return size;
+	}
+
+	if (!AssetOBJ->IsA<UTexture>())
+	{
+		return size;
+	}
+
+	TObjectPtr<UTexture2D> AssetAsT = Cast<UTexture2D>(AssetOBJ);
+
+	if (!AssetAsT)
+	{
+		return size;
+	}
+
+	size.X = AssetAsT->GetImportedSize().X;
+	size.Y = AssetAsT->GetImportedSize().Y;
+
+	int32 MaximumTextureSize = AssetAsT->MaxTextureSize;
+	
+	if (MaximumTextureSize == 0)
+	{
+		return size;
+	}
+
+	float rate = (MaximumTextureSize / (size.X > size.Y ? size.X : size.Y));
+
+	size.X *= (rate>1? 1:rate);
+	size.Y *= (rate>1? 1:rate);
 
 	return size;
 }
@@ -225,17 +316,35 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(const TArray<TSharedPtr<
 	}
 }
 
-void UAssetsChecker::EListSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList)
+void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList)
 {
 	OutList.Empty();
 
 	for (TSharedPtr<FAssetData> AssetD : FindInList)
 	{
-		FVector2D size = EGetTextureAssetSize(*AssetD);
+		FVector2D size = EGetTextureAssetMaxInGameSize(*AssetD);
 
 		if (size.X >2048 || 
 			size.Y > 2048 || 
 			!bIsPowerOfTwo(size.X) || 
+			!bIsPowerOfTwo(size.Y))
+		{
+			OutList.Add(AssetD);
+		}
+	}
+}
+
+void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList)
+{
+	OutList.Empty();
+
+	for (TSharedPtr<FAssetData> AssetD : FindInList)
+	{
+		FVector2D size = EGetTextureAssetSourceSize(*AssetD);
+
+		if (size.X > 2048 ||
+			size.Y > 2048 ||
+			!bIsPowerOfTwo(size.X) ||
 			!bIsPowerOfTwo(size.Y))
 		{
 			OutList.Add(AssetD);

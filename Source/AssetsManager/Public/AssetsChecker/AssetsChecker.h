@@ -82,11 +82,16 @@ public:
 	static TArray<FString> EGetAssetReferencesPath(const FAssetData & AssetData);
 	static TArray<FString> EGetAssetReferencesPath(const TSharedPtr<FAssetData> & AssetData);
 
-	static FVector2D EGetTextureAssetSize(const FAssetData& AssetData);
+	static FVector2D EGetTextureAssetSourceSize(const FAssetData& AssetData);
+	static FVector2D EGetTextureAssetMaxInGameSize(const FAssetData& AssetData);
+
+	static bool EFixTextureMaxSizeInGame(FAssetData& ClickedAssetData, double maxSize, bool forced = false);
+	static bool ESetTextureSize(FAssetData& ClickedAssetData, double maxSize);
 
 	static void EListUnusedAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>> & OutList);
 	static void EListPrefixErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
-	static void EListSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
+	static void EListMaxInGameSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
+	static void EListSourceSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
 
 	static uint32 EDeleteAssets(const TArray<FAssetData> & AssetsData);
 	static uint32 EDeleteAsset(const FAssetData & AssetData);
