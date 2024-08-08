@@ -1,10 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "SlateWidgets/ManagerSlate.h"
+
 #include "AssetsManager.h"
 #include "AssetsChecker/AssetsChecker.h"
-#include "SlateWidgets/ManagerSlate.h"
 #include "ManagerLogger.h"
 #include "SlateBasics.h"
+
+#include "AssetRegistry/AssetRegistryModule.h"
+
+#include "EditorReimportHandler.h"
 
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
@@ -726,8 +731,15 @@ FReply SAssetsCheckerTab::OnSingleAssetFixButtonClicked(
 {
 	if (m_ClassCheckState == Texture && m_UsageCheckState == SourceSizeError)
 	{
-		NtfyMsg("Reimport.");
+		FReimportManager::Instance()->Reimport(
+			ClickedAssetData->GetAsset(), 
+			true,true,L"",(FReimportHandler*)nullptr,-1,
+			true,false);
+
+		UEditorAssetLibrary::SaveAsset(ClickedAssetData->GetObjectPathString());
 	}
+	
+	RefreshAssetsListView();
 
 	return FReply::Handled();
 }
@@ -1064,7 +1076,6 @@ void SAssetsCheckerTab::OnClassFilterButtonChanged(TSharedPtr<FString> SelectedO
 
 	//set Usage Filter to default 
 	UsageFilterComboBox->SetSelectedItem(UsageSelectedDefault);
-	UsageFilterComboBox->SetItemsSource(&UsageFilterComboSourceItems);
 }
 
 TSharedRef<SComboBox<TSharedPtr<FString>>> SAssetsCheckerTab::ConstructUsageFilterButton()
