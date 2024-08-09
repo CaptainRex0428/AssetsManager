@@ -88,7 +88,11 @@ public:
 		TArray< TSharedPtr<FAssetData>>& AssetsSelected,
 		TArray< TSharedPtr<FAssetData>>& ReadyToFixAssets);
 
-	static void EAddPrefixes(const TArray<UObject*>& AssetsSelected);
+	static void EAddPrefixes(
+		const TArray<UObject*>& AssetsSelected);
+	
+	static void EAddPrefixes(
+		const TArray<FAssetData>& AssetsSelected);
 #pragma endregion
 
 #pragma region GetReferences

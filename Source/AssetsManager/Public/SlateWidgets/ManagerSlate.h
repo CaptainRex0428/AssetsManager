@@ -193,7 +193,11 @@ private:
 	TSharedPtr<STextBlock> ClassFilterComboDisplayText;
 	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructClassFilterButton();
 	TSharedRef<SWidget> OnGenerateClassFilterButton(TSharedPtr<FString> SourceItem);
+	void ConstuctClassFilterList(TSharedPtr<FString> SelectedOption);
 	void OnClassFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
+	
+	TSharedPtr<FString> ClassFilterCurrent;
+	TSharedPtr<FString> ClassFilterDefault;
 
 	TSharedPtr<SComboBox<TSharedPtr<FString>>> ClassFilterComboBox;
 

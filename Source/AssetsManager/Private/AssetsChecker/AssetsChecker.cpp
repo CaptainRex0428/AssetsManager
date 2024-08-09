@@ -157,6 +157,51 @@ bool UAssetsChecker::EConfirmPrefixes(
 };
 
 void UAssetsChecker::EAddPrefixes(
+	const TArray<FAssetData>& AssetsSelected)
+{
+	uint32 SuccessCounter = 0;
+	uint32 AlreadyCounter = 0;
+
+	for (FAssetData selectedAsset : AssetsSelected)
+	{
+		if (!selectedAsset.GetAsset()) continue;
+
+		const FString* prefix = EGetPrefixMap().Find(selectedAsset.GetClass());
+
+		if (!prefix || prefix->IsEmpty())
+		{
+			ScreenMsgLog("Can not find prefix for class " + selectedAsset.GetClass()->GetName(), FColor::Red);
+			continue;
+		}
+
+		FString OldName = selectedAsset.AssetName.ToString();
+		if (OldName.StartsWith(*prefix))
+		{
+			ScreenMsgLog(OldName + " alreay has prefix added", FColor::Red);
+			++AlreadyCounter;
+			continue;
+		}
+
+		// clear the predix & subfix for material instance created by default editor.
+		if (selectedAsset.GetAsset()->IsA<UMaterialInstanceConstant>())
+		{
+			OldName.RemoveFromStart("M_");
+			OldName.RemoveFromEnd("_Inst");
+		}
+
+		const FString NewName = *prefix + "_" + OldName;
+
+		UEditorUtilityLibrary::RenameAsset(selectedAsset.GetAsset(), NewName);
+
+		++SuccessCounter;
+	}
+
+
+	if (SuccessCounter > 0)	NtfMsgLog("Successfully renamed " + FString::FromInt(SuccessCounter) + " asset" + (SuccessCounter > 1 ? "s" : ""));
+	if (AlreadyCounter > 0) NtfMsgLog(FString::FromInt(AlreadyCounter) + " asset" + (AlreadyCounter > 1 ? "s" : "") + " already ha" + (AlreadyCounter > 1 ? "ve" : "s") + " prefix");
+}
+
+void UAssetsChecker::EAddPrefixes(
 	const TArray<UObject*>& AssetsSelected)
 {
 	uint32 SuccessCounter = 0;

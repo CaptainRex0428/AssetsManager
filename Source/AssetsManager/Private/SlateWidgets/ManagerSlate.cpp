@@ -58,7 +58,10 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 	CheckBoxesArray.Empty();
 	AssetsDataSelected.Empty();
 
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_LISTALL));
+	ClassFilterDefault = MakeShared<FString>(CLASS_LISTALL);
+	ClassFilterCurrent = ClassFilterDefault;
+	
+	ClassFilterComboSourceItems.Add(ClassFilterDefault);
 	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_BLUEPRINT));
 	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_STATICMESH));
 	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_MATERIAL));
@@ -1091,11 +1094,11 @@ FReply SAssetsCheckerTab::OnSelectFixSelectedClicked()
 
 		if (result)
 		{
-			TArray<UObject *> AssetToRename;
+			TArray<FAssetData> AssetToRename;
 
 			for (TSharedPtr<FAssetData> & Asset : AssetShouldRename)
 			{
-				AssetToRename.Add(Asset->GetAsset());
+				AssetToRename.Add(*Asset);
 
 				if (SListViewAssetData.Contains(Asset))
 				{
@@ -1104,6 +1107,9 @@ FReply SAssetsCheckerTab::OnSelectFixSelectedClicked()
 			}
 
 			UAssetsChecker::EAddPrefixes(AssetToRename);
+			StoredAssetsData = UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(StoredFolderPaths);
+			// ConstuctClassFilterList(ClassFilterCurrent);
+			ConstuctClassFilterList(ClassFilterCurrent);
 		}
 
 		RefreshAssetsListView();
@@ -1166,45 +1172,51 @@ TSharedRef<SWidget> SAssetsCheckerTab::OnGenerateClassFilterButton(
 	return SourceItemWidget;
 }
 
-void SAssetsCheckerTab::OnClassFilterButtonChanged(
-	TSharedPtr<FString> SelectedOption, 
-	ESelectInfo::Type InSelectInfo)
+void SAssetsCheckerTab::ConstuctClassFilterList(
+	TSharedPtr<FString> SelectedOption)
 {
-	ClassFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
-	
-	// handle list
-	if(*SelectedOption.Get()==CLASS_LISTALL)
+	if (*SelectedOption.Get() == CLASS_LISTALL)
 	{
 		UAssetsChecker::ECopyAssetsPtrList(StoredAssetsData, SListViewClassFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewAssetData);
 
 	}
 	else
 	{
 		TArray<TSharedPtr<FAssetData>> NewAssetViewList;
 
-		for(TSharedPtr<FAssetData> AssetD : StoredAssetsData)
+		for (TSharedPtr<FAssetData> AssetD : StoredAssetsData)
 		{
 			FString assetName = AssetD->GetClass()->GetName();
-			
-			UClass * selectClass = *AssetFullNameMap.Find(*SelectedOption.Get());
+
+			UClass* selectClass = *AssetFullNameMap.Find(*SelectedOption.Get());
 			FString selectName = selectClass->GetName();
 
-			if(assetName == selectName)
+			if (assetName == selectName)
 			{
 				NewAssetViewList.Add(AssetD);
 			}
-			
+
 		}
 
 		UAssetsChecker::ECopyAssetsPtrList(NewAssetViewList, SListViewClassFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewAssetData);
 		
 	}
+}
+
+void SAssetsCheckerTab::OnClassFilterButtonChanged(
+	TSharedPtr<FString> SelectedOption, 
+	ESelectInfo::Type InSelectInfo)
+{
+	ClassFilterCurrent = SelectedOption;
+
+	ClassFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
+
+	ConstuctClassFilterList(ClassFilterCurrent);
+	UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewAssetData);
+	// for texture to add option
 
 	m_ClassCheckState = DefaultClassCheckState;
-
-	// for texture to add option
+	
 	if(*SelectedOption.Get() == CLASS_TEXTURE ||
 		*SelectedOption.Get() == CLASS_TEXTUREARRAY)
 	{
@@ -1282,6 +1294,19 @@ void SAssetsCheckerTab::OnUsageFilterButtonChanged(
 	if (*SelectedOption.Get() == USAGE_UNUSED)
 	{
 		m_UsageCheckState = DefaultUsageCheckState;
+
+		if (SListViewClassFilterAssetData.Num() > 64)
+		{
+			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
+				"The list selected to check is too large.["+FString::FromInt(SListViewClassFilterAssetData.Num()) + " assets]\nFilter unused assets will cost a lot of time.\n\nReady to proceed?");
+
+			if (result != EAppReturnType::Yes)
+			{
+				UsageFilterComboBox->SetSelectedItem(UsageSelectedDefault);
+				return;
+			}
+		}
+
 		UAssetsChecker::EListUnusedAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
