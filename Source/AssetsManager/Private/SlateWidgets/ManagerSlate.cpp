@@ -424,6 +424,14 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 					ConstructSingleTextureAsset512ButtonBox(AssetDataToDisplay)
 				]
 
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Center)
+				.VAlign(VAlign_Center)
+				.FillWidth(0.1f)
+				[
+					ConstructSingleTextureAssetResetButtonBox(AssetDataToDisplay)
+				]
+				
 				/*+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
@@ -829,6 +837,41 @@ FReply SAssetsCheckerTab::OnSingleTextureAsset512ButtonClicked(
 		else
 		{
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully resize to " + FString::FromInt(maxSize));
+		};
+	}
+
+	RefreshAssetsListView();
+
+	return FReply::Handled();
+}
+
+TSharedRef<SButton> SAssetsCheckerTab::ConstructSingleTextureAssetResetButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay)
+{
+	TSharedRef<SButton> SingleTextureFixButtonBox =
+		SNew(SButton)
+		.Text(FText::FromString(TEXT("R")))
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
+		.OnClicked(this,
+			&SAssetsCheckerTab::OnSingleTextureAssetResetButtonClicked,
+			AssetDataToDisplay);
+
+	return SingleTextureFixButtonBox;
+}
+
+FReply SAssetsCheckerTab::OnSingleTextureAssetResetButtonClicked(TSharedPtr<FAssetData> ClickedAssetData)
+{
+	double maxSize = 0;
+
+	if (m_ClassCheckState == Texture)
+	{
+		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		{
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nFaild or no need to fix this texture.");
+		}
+		else
+		{
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully rest MaxInGameSize to 0.");
 		};
 	}
 

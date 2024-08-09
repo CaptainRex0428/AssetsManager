@@ -150,6 +150,9 @@ private:
 	//Construct Texture 512 restrict Button
 	TSharedRef<SButton> ConstructSingleTextureAsset512ButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
 	FReply OnSingleTextureAsset512ButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+
+	TSharedRef<SButton> ConstructSingleTextureAssetResetButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureAssetResetButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
 #pragma endregion
 
 #pragma endregion
