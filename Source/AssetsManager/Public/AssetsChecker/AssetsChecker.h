@@ -64,59 +64,98 @@ class ASSETSMANAGER_API UAssetsChecker : public UAssetActionUtility
 	GENERATED_BODY()
 	
 public:
+#pragma region PublicFuntions
 
+#pragma region Common Tools
 	static bool bIsPowerOfTwo(const int num);
 	static bool bIsPowerOfTwo(const uint32 num);
 	static bool bIsPowerOfTwo(const double num);
 	static bool bIsPowerOfTwo(const float num);
 
-	int EDuplicateAssets(const TArray<FAssetData>& AssetsDataSelected, int NumOfDupicates, bool forced);
-	UFUNCTION(CallInEditor)
-	void DuplicateAssets(int NumOfDupicates, bool forced = true);
+	static void ECopyAssetsPtrList(const TArray<TSharedPtr<FAssetData>>& ListToCopy, TArray<TSharedPtr<FAssetData>>& ListToOutput);
 
-	void EAddPrefixes(const TArray<UObject*> & AssetsSelected);
-	UFUNCTION(CallInEditor)
-	void AddPrefixes();
+#pragma endregion
 
-	static TArray<FString> EGetAssetReferencesPath(const FString & AssetPath);
-	static TArray<FString> EGetAssetReferencesPath(const FAssetData & AssetData);
-	static TArray<FString> EGetAssetReferencesPath(const TSharedPtr<FAssetData> & AssetData);
+#pragma region Standard Check Tools
+	
+	int EDuplicateAssets(
+		const TArray<FAssetData>& AssetsDataSelected, 
+		int NumOfDupicates, 
+		bool forced);
+	
+#pragma region FixPrefix
+	static bool EConfirmPrefixes(
+		TArray< TSharedPtr<FAssetData>>& AssetsSelected,
+		TArray< TSharedPtr<FAssetData>>& ReadyToFixAssets);
 
+	static void EAddPrefixes(const TArray<UObject*>& AssetsSelected);
+#pragma endregion
+
+#pragma region GetReferences
+	static TArray<FString> EGetAssetReferencesPath(const FString& AssetPath);
+	static TArray<FString> EGetAssetReferencesPath(const FAssetData& AssetData);
+	static TArray<FString> EGetAssetReferencesPath(const TSharedPtr<FAssetData>& AssetData);
+#pragma endregion
+
+#pragma region HandleRedirectors
+	static void EFixUpRedirectors(const FString& Path = "/Game");
+	static void EFixUpRedirectors(const TArray<FString>& Path);
+#pragma endregion
+
+#pragma region HandleTexture
 	static FVector2D EGetTextureAssetSourceSize(const FAssetData& AssetData);
 	static FVector2D EGetTextureAssetMaxInGameSize(const FAssetData& AssetData);
 
 	static bool EFixTextureMaxSizeInGame(FAssetData& ClickedAssetData, double maxSize, bool forced = false);
 	static bool ESetTextureSize(FAssetData& ClickedAssetData, double maxSize);
+#pragma endregion
 
-	static void EListUnusedAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>> & OutList);
-	static void EListPrefixErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
-	static void EListMaxInGameSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
-	static void EListSourceSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
+#pragma region DeleteAssets
+	static uint32 EDeleteAssets(const TArray<FAssetData>& AssetsData);
+	static uint32 EDeleteAsset(const FAssetData& AssetData);
+#pragma endregion
 
-	static uint32 EDeleteAssets(const TArray<FAssetData> & AssetsData);
-	static uint32 EDeleteAsset(const FAssetData & AssetData);
-
+#pragma region HandleUnusedAssets
 	void ERemoveUnusedAssets(const TArray<FAssetData>& AssetsDataSelected);
-	static void ERemoveUnusedAssets(const TArray<FString> & FolderPathSelected);
-	UFUNCTION(CallInEditor)
-	void RemoveUnusedAssets();
+	static void ERemoveUnusedAssets(const TArray<FString>& FolderPathSelected);
 
 	static void ERemoveEmptyFolder(const FString FolderPathSelected = "/Game");
 	static void ERemoveEmptyFolder(const TArray<FString>& FolderPathSelected);
+#pragma endregion
 
+#pragma region HandleAssetsName
+	int EReplaceName(const TArray<UObject*>& AssetsSelected, const FString& OriginStr, const FString& ReplaceStr);
+#pragma endregion
+
+#pragma region ListAssets
 	static TArray<TSharedPtr<FAssetData>> EListAssetsDataPtrUnderSelectedFolder(const FString& FolderPathSelected);
 	static TArray<TSharedPtr<FAssetData>> EListAssetsDataPtrUnderSelectedFolder(const TArray<FString>& FolderPathSelected);
 
-	int EReplaceName(const TArray<UObject*>& AssetsSelected, const FString& OriginStr, const FString& ReplaceStr);
+	static void EListUnusedAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
+	static void EListPrefixErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
+	static void EListMaxInGameSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
+	static void EListSourceSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
+#pragma endregion
+
+	// 留着为了测试 真没别的
+	static void ECheckerCheck(const TArray<FString>& Path);
+#pragma endregion
+
+#pragma region Call In Editor
+	UFUNCTION(CallInEditor)
+	void DuplicateAssets(int NumOfDupicates, bool forced = true);
+
+	UFUNCTION(CallInEditor)
+	void AddPrefixes();
+	
+	UFUNCTION(CallInEditor)
+	void RemoveUnusedAssets();
+
 	UFUNCTION(CallInEditor)
 	void ReplaceName(const FString& OriginStr, const FString & ReplaceStr);
+#pragma endregion
 
-	static void EFixUpRedirectors(const FString& Path = "/Game");
-	static void EFixUpRedirectors(const TArray<FString> & Path);
-
-	static void ECopyAssetsPtrList(const TArray<TSharedPtr<FAssetData>>& ListToCopy, TArray<TSharedPtr<FAssetData>>& ListToOutput);
-	
-	static void ECheckerCheck(const TArray<FString>& Path);
+#pragma endregion
 
 protected:
 	static const TMap<UClass*, FString>& EGetPrefixMap();

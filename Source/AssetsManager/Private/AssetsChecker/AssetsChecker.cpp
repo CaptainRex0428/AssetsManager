@@ -103,7 +103,61 @@ void UAssetsChecker::DuplicateAssets(int NumOfDupicates,bool forced)
 	NtfyMsg(Msg);
 }
 
-void UAssetsChecker::EAddPrefixes(const TArray<UObject*>& AssetsSelected)
+bool UAssetsChecker::EConfirmPrefixes(
+	TArray< TSharedPtr<FAssetData>>& AssetsSelected,
+	TArray< TSharedPtr<FAssetData>>& ReadyToFixAssets)
+{
+	ReadyToFixAssets.Empty();
+	uint32 ShouldRenameCounter = 0;
+	FString NewAssetsName;
+	
+	for (TSharedPtr<FAssetData>& selectedObj : AssetsSelected)
+	{
+		if (!selectedObj->GetAsset()) continue;
+
+		const FString* prefix = EGetPrefixMap().Find(selectedObj->GetAsset()->GetClass());
+
+		if (!prefix || prefix->IsEmpty())
+		{
+			continue;
+		}
+
+		FString OldName = selectedObj->GetAsset()->GetName();
+		if (OldName.StartsWith(*prefix))
+		{
+			continue;
+		}
+
+		ReadyToFixAssets.Add(selectedObj);
+
+		// clear the predix & subfix for material instance created by default editor.
+		if (selectedObj->GetAsset()->IsA<UMaterialInstanceConstant>())
+		{
+			OldName.RemoveFromStart("M_");
+			OldName.RemoveFromEnd("_Inst");
+		}
+
+		const FString NewName = *prefix + "_" + OldName;
+
+		NewAssetsName.Append(NewName + "\n");
+
+		++ShouldRenameCounter;
+	}
+
+	EAppReturnType::Type result =  DlgMsgLog(EAppMsgType::YesNo, "Assets to rename count: " + FString::FromInt(ShouldRenameCounter)
+		+ "\nRename result preview:\n" + NewAssetsName
+		+ "\nConfirm to Rename these assets?");
+
+	if (result == EAppReturnType::Yes)
+	{
+		return true;
+	}
+
+	return false;
+};
+
+void UAssetsChecker::EAddPrefixes(
+	const TArray<UObject*>& AssetsSelected)
 {
 	uint32 SuccessCounter = 0;
 	uint32 AlreadyCounter = 0;

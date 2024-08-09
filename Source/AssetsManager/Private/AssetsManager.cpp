@@ -147,7 +147,7 @@ TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnAssetsCheckerTab(const FSpawnT
 		[
 			SNew(SAssetsCheckerTab)
 				//.TitleText(CONTENTFOLDERMANAGERTABNAME)
-				.TitleText("Assets Checker")
+				.TitleText("Assets Manager")
 				.SelectedFolderPaths(SelectedContentFolderPaths)
 				.StoredAssetsData(UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(SelectedContentFolderPaths))
 		];

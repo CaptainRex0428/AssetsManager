@@ -38,8 +38,10 @@ private:
 	{
 		DefaultUsageCheckState = 0,
 
-		// for texture
-		MaxInGameSizeError, SourceSizeError
+		// for texture,
+		MaxInGameSizeError, SourceSizeError,
+		// for prefix
+		PrefixError
 	};
 
 	UsageCheckState m_UsageCheckState;
@@ -134,8 +136,8 @@ private:
 	FReply OnSingleAssetDebugButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
 	
 	//Construct Fix Button
-	TSharedRef<SButton> ConstructSingleAssetFixButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleAssetFixButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	TSharedRef<SButton> ConstructSingleAssetReimportButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleAssetReimportButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
 
 	//Construct Texture 2K restrict Button
 	TSharedRef<SButton> ConstructSingleTextureAsset2KButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
@@ -152,6 +154,12 @@ private:
 
 #pragma endregion
 
+#pragma region GenerateHandleAllButton
+
+	TSharedRef<SVerticalBox> ConstructHandleAllButtons();
+
+#pragma endregion
+
 #pragma region DeleteAllSelectedButton
 	TSharedRef<SButton> ConstructDeleteAllSelectedButton();
 	FReply OnDeleteAllSelectedButtonClicked();
@@ -163,6 +171,11 @@ private:
 
 	TSharedRef<SButton> ConstructDeselectAllButton();
 	FReply OnDeselectAllButtonClicked();
+#pragma endregion
+	
+#pragma region FixAllSelectedButton
+	TSharedRef<SButton> ConstructFixSelectedButton();
+	FReply OnSelectFixSelectedClicked();
 #pragma endregion
 
 #pragma region FixRedirectorsButton
