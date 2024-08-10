@@ -104,22 +104,22 @@ private:
 
 #pragma region ConstructAssetInfo
 	
-	// Construc Standard Name Box
+	// Construct Standard Name Box
 	TSharedRef<STextBlock> ConstructAssetNameRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo & FontInfo);
 
-	// Construc Standard Class Box
+	// Construct Standard Class Box
 	TSharedRef<STextBlock> ConstructAssetClassRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 		const FSlateFontInfo& FontInfo);
 
-	// Construc Standard Path Box
+	// Construct Standard Path Box
 	TSharedRef<STextBlock> ConstructAssetPathRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 		const FSlateFontInfo& FontInfo);
 	
-	// Construc Standard Texture Size
+	// Construct Standard Texture Size
 	TSharedRef<STextBlock> ConstructAssetTextureSizeRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
@@ -150,9 +150,15 @@ private:
 	//Construct Texture 512 restrict Button
 	TSharedRef<SButton> ConstructSingleTextureAsset512ButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
 	FReply OnSingleTextureAsset512ButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
-
+	
+	//Construct Texture Reset Button
 	TSharedRef<SButton> ConstructSingleTextureAssetResetButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
 	FReply OnSingleTextureAssetResetButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+
+	//Construct Browser Asset Button
+	TSharedRef<SButton> ConstructBrowserAssetButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnBrowserAssetButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+
 #pragma endregion
 
 #pragma endregion

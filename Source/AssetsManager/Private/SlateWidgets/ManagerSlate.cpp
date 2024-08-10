@@ -235,6 +235,7 @@ TSharedRef<STextBlock> SAssetsCheckerTab::ConstructTextForButtons(
 #pragma endregion
 
 #pragma region CustructTextBlock
+
 TSharedRef<STextBlock> SAssetsCheckerTab::ConstructNormalTextBlock(
 	const FString& StringToDisplay, 
 	const FSlateFontInfo& FontInfo, 
@@ -249,6 +250,7 @@ TSharedRef<STextBlock> SAssetsCheckerTab::ConstructNormalTextBlock(
 
 	return TextBlock;
 }
+
 #pragma endregion
 
 #pragma region OnGenerateRowForlist
@@ -288,7 +290,8 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateDefault
 	FSlateFontInfo ContentTextFont = GetFontInfo(9);
 
 	TSharedRef<STableRow<TSharedPtr<FAssetData>>> ListViewRowWidget
-		= SNew(STableRow<TSharedPtr<FAssetData>>, OwnerTable).Padding(FMargin(6.f))
+		= SNew(STableRow<TSharedPtr<FAssetData>>, OwnerTable)
+		.Padding(FMargin(6.f))
 		[
 			SNew(SHorizontalBox)
 				// CheckBox
@@ -332,13 +335,13 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateDefault
 					ConstructSingleAssetDeleteButtonBox(AssetDataToDisplay)
 				]
 
-				/*+ SHorizontalBox::Slot()
+				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Right)
 				.VAlign(VAlign_Center)
 				.FillWidth(0.15f)
 				[
-					ConstructSingleAssetDebugButtonBox(AssetDataToDisplay)
-				]*/
+					ConstructBrowserAssetButtonBox(AssetDataToDisplay)
+				]
 		];
 
 	return ListViewRowWidget;
@@ -435,13 +438,13 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 					ConstructSingleTextureAssetResetButtonBox(AssetDataToDisplay)
 				]
 				
-				/*+ SHorizontalBox::Slot()
+				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
 				.FillWidth(0.12f)
 				[
-					ConstructSingleAssetDebugButtonBox(AssetDataToDisplay)
-				]*/
+					ConstructBrowserAssetButtonBox(AssetDataToDisplay)
+				]
 		];
 
 	return ListViewRowWidget;
@@ -514,13 +517,13 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 					ConstructSingleAssetReimportButtonBox(AssetDataToDisplay)
 				]
 
-				/*+ SHorizontalBox::Slot()
+				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
 				.FillWidth(0.12f)
 				[
-					ConstructSingleAssetDebugButtonBox(AssetDataToDisplay)
-				]*/
+					ConstructBrowserAssetButtonBox(AssetDataToDisplay)
+				]
 		];
 
 	return ListViewRowWidget;
@@ -607,7 +610,6 @@ TSharedRef<STextBlock> SAssetsCheckerTab::ConstructAssetPathRowBox(
 	const FString DisplayAssetPath = AssetDataToDisplay->GetSoftObjectPath().ToString();
 
 	TSharedRef<STextBlock> AssetPathBox = ConstructNormalTextBlock(DisplayAssetPath, FontInfo);
-
 	return AssetPathBox;
 }
 
@@ -848,7 +850,8 @@ FReply SAssetsCheckerTab::OnSingleTextureAsset512ButtonClicked(
 	return FReply::Handled();
 }
 
-TSharedRef<SButton> SAssetsCheckerTab::ConstructSingleTextureAssetResetButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay)
+TSharedRef<SButton> SAssetsCheckerTab::ConstructSingleTextureAssetResetButtonBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
 	TSharedRef<SButton> SingleTextureFixButtonBox =
 		SNew(SButton)
@@ -862,7 +865,8 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructSingleTextureAssetResetButtonBox
 	return SingleTextureFixButtonBox;
 }
 
-FReply SAssetsCheckerTab::OnSingleTextureAssetResetButtonClicked(TSharedPtr<FAssetData> ClickedAssetData)
+FReply SAssetsCheckerTab::OnSingleTextureAssetResetButtonClicked(
+	TSharedPtr<FAssetData> ClickedAssetData)
 {
 	double maxSize = 0;
 
@@ -879,6 +883,31 @@ FReply SAssetsCheckerTab::OnSingleTextureAssetResetButtonClicked(TSharedPtr<FAss
 	}
 
 	RefreshAssetsListView();
+
+	return FReply::Handled();
+}
+
+TSharedRef<SButton> SAssetsCheckerTab::ConstructBrowserAssetButtonBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay)
+{
+	TSharedRef<SButton> SingleTextureFixButtonBox =
+		SNew(SButton)
+		.Text(FText::FromString(TEXT("Target")))
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
+		.OnClicked(this,
+			&SAssetsCheckerTab::OnBrowserAssetButtonClicked,
+			AssetDataToDisplay);
+
+	return SingleTextureFixButtonBox;
+}
+
+FReply SAssetsCheckerTab::OnBrowserAssetButtonClicked(TSharedPtr<FAssetData> ClickedAssetData)
+{
+	TArray<FAssetData> AssetDataArray;
+	AssetDataArray.Add(*ClickedAssetData);
+
+	GEditor->SyncBrowserToObjects(AssetDataArray);
 
 	return FReply::Handled();
 }
@@ -1003,6 +1032,7 @@ FReply SAssetsCheckerTab::OnDeleteAllSelectedButtonClicked()
 #pragma endregion
 
 #pragma region De/SelectAllButton
+
 TSharedRef<SButton> SAssetsCheckerTab::ConstructSelectAllButton()
 {
 	TSharedRef<SButton> SelectAllButton =
@@ -1062,6 +1092,7 @@ FReply SAssetsCheckerTab::OnDeselectAllButtonClicked()
 
 	return FReply::Handled();
 }
+
 #pragma endregion
 
 #pragma region FixAllSelectedButton
@@ -1123,6 +1154,7 @@ FReply SAssetsCheckerTab::OnSelectFixSelectedClicked()
 #pragma endregion
 
 #pragma region FixRedirectorsButton
+
 TSharedRef<SButton> SAssetsCheckerTab::ConstructFixUpRedirectorButton()
 {
 	TSharedRef<SButton> FixUpRedirectorButton = 
