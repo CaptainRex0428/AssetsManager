@@ -38,6 +38,7 @@
 #define USAGE_MAXINGAMESIZEERROR TEXT("MaxInGameSizeError")
 #define USAGE_SOURCESIZEERROR TEXT("SourceSizeError")
 #define USAGE_PREFIXERROR TEXT("PrefixError")
+#define USAGE_SAMENAMEASSETERROR TEXT("SameNameError")
 #pragma endregion
 
 void SAssetsCheckerTab::Construct(const FArguments& InArgs)
@@ -84,6 +85,7 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 	UsageFilterComboSourceItems.Add(UsageSelectedDefault);
 	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_UNUSED));
 	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_PREFIXERROR));
+	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_SAMENAMEASSETERROR));
 
 	ChildSlot
 		[
@@ -239,14 +241,15 @@ TSharedRef<STextBlock> SAssetsCheckerTab::ConstructTextForButtons(
 TSharedRef<STextBlock> SAssetsCheckerTab::ConstructNormalTextBlock(
 	const FString& StringToDisplay, 
 	const FSlateFontInfo& FontInfo, 
-	const FColor& FontColor)
+	const FColor& FontColor,
+	const FString& ToolTip)
 {
 	TSharedRef<STextBlock> TextBlock
 		= SNew(STextBlock).Text(FText::FromString(StringToDisplay))
 		.Justification(ETextJustify::Left)
 		.ColorAndOpacity(FontColor)
 		.Font(FontInfo)
-		.ToolTipText(FText::FromString(StringToDisplay));
+		.ToolTipText(FText::FromString(ToolTip));
 
 	return TextBlock;
 }
@@ -318,13 +321,6 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateDefault
 				[
 					ConstructAssetNameRowBox(AssetDataToDisplay, ContentTextFont)
 				]
-				// DisplayPath
-				+ SHorizontalBox::Slot()
-				.HAlign(HAlign_Fill)
-				.VAlign(VAlign_Center)
-				[
-					ConstructAssetPathRowBox(AssetDataToDisplay, ContentTextFont)
-				]
 
 				// DisplayButton
 				+ SHorizontalBox::Slot()
@@ -388,13 +384,6 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				.FillWidth(0.25f)
 				[
 					ConstructAssetNameRowBox(AssetDataToDisplay, ContentTextFont)
-				]
-				// DisplayPath
-				+ SHorizontalBox::Slot()
-				.HAlign(HAlign_Fill)
-				.VAlign(VAlign_Center)
-				[
-					ConstructAssetPathRowBox(AssetDataToDisplay, ContentTextFont)
 				]
 
 				// DisplayButton
@@ -492,13 +481,6 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				[
 					ConstructAssetNameRowBox(AssetDataToDisplay, ContentTextFont)
 				]
-				// DisplayPath
-				+ SHorizontalBox::Slot()
-				.HAlign(HAlign_Fill)
-				.VAlign(VAlign_Center)
-				[
-					ConstructAssetPathRowBox(AssetDataToDisplay, ContentTextFont)
-				]
 
 				// DisplayButton
 				+ SHorizontalBox::Slot()
@@ -586,8 +568,9 @@ TSharedRef<STextBlock> SAssetsCheckerTab::ConstructAssetNameRowBox(
 	const FSlateFontInfo& FontInfo)
 {
 	const FString DisplayAssetName = AssetDataToDisplay->AssetName.ToString();
+	const FString DisplayAssetPath = AssetDataToDisplay->GetSoftObjectPath().ToString();
 
-	TSharedRef<STextBlock> AssetNameBox = ConstructNormalTextBlock(DisplayAssetName, FontInfo);
+	TSharedRef<STextBlock> AssetNameBox = ConstructNormalTextBlock(DisplayAssetName, FontInfo,FColor::White,DisplayAssetPath);
 
 	return AssetNameBox;
 }
@@ -601,16 +584,6 @@ TSharedRef<STextBlock> SAssetsCheckerTab::ConstructAssetClassRowBox(
 	TSharedRef<STextBlock> AssetClassBox = ConstructNormalTextBlock(DisplayAssetClass,FontInfo);
 
 	return AssetClassBox;
-}
-
-TSharedRef<STextBlock> SAssetsCheckerTab::ConstructAssetPathRowBox(
-	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
-	const FSlateFontInfo& FontInfo)
-{
-	const FString DisplayAssetPath = AssetDataToDisplay->GetSoftObjectPath().ToString();
-
-	TSharedRef<STextBlock> AssetPathBox = ConstructNormalTextBlock(DisplayAssetPath, FontInfo);
-	return AssetPathBox;
 }
 
 TSharedRef<STextBlock> SAssetsCheckerTab::ConstructAssetTextureSizeRowBox(
@@ -1346,6 +1319,12 @@ void SAssetsCheckerTab::OnUsageFilterButtonChanged(
 	{
 		m_UsageCheckState = PrefixError;
 		UAssetsChecker::EListPrefixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+	}
+
+	if (*SelectedOption.Get() == USAGE_SAMENAMEASSETERROR)
+	{
+		m_UsageCheckState = SameNameAssetError;
+		UAssetsChecker::EListSameNameErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	if (*SelectedOption.Get() == USAGE_MAXINGAMESIZEERROR)

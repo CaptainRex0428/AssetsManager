@@ -41,7 +41,9 @@ private:
 		// for texture,
 		MaxInGameSizeError, SourceSizeError,
 		// for prefix
-		PrefixError
+		PrefixError,
+		//for same name asset,
+		SameNameAssetError
 	};
 
 	UsageCheckState m_UsageCheckState;
@@ -58,7 +60,8 @@ private:
 	TSharedRef<STextBlock> ConstructNormalTextBlock(
 		const FString& StringToDisplay,
 		const FSlateFontInfo& FontInfo,
-		const FColor& FontColor = FColor::White);
+		const FColor& FontColor = FColor::White,
+		const FString& ToolTip = L"");
 #pragma endregion
 
 #pragma region ButtonTextCustruct
@@ -111,11 +114,6 @@ private:
 
 	// Construct Standard Class Box
 	TSharedRef<STextBlock> ConstructAssetClassRowBox(
-		const TSharedPtr<FAssetData>& AssetDataToDisplay, 
-		const FSlateFontInfo& FontInfo);
-
-	// Construct Standard Path Box
-	TSharedRef<STextBlock> ConstructAssetPathRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 		const FSlateFontInfo& FontInfo);
 	

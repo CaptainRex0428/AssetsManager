@@ -45,7 +45,10 @@ bool UAssetsChecker::bIsPowerOfTwo(const float num)
 
 
 
-int UAssetsChecker::EDuplicateAssets(const TArray<FAssetData>& AssetsDataSelected, int NumOfDupicates, bool forced)
+int UAssetsChecker::EDuplicateAssets(
+	const TArray<FAssetData>& AssetsDataSelected, 
+	int NumOfDupicates, 
+	bool forced)
 {
 	if (NumOfDupicates <= 0)
 	{
@@ -85,7 +88,8 @@ int UAssetsChecker::EDuplicateAssets(const TArray<FAssetData>& AssetsDataSelecte
 	return Counter;
 }
 
-void UAssetsChecker::DuplicateAssets(int NumOfDupicates,bool forced)
+void UAssetsChecker::DuplicateAssets(
+	int NumOfDupicates,bool forced)
 {
 	
 	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
@@ -245,13 +249,6 @@ void UAssetsChecker::EAddPrefixes(
 	if (AlreadyCounter > 0) NtfMsgLog(FString::FromInt(AlreadyCounter) + " asset" + (AlreadyCounter > 1 ? "s" : "") + " already ha" + (AlreadyCounter > 1 ? "ve" : "s") + " prefix");
 }
 
-void UAssetsChecker::AddPrefixes()
-{
-	TArray<UObject *> SelectedObjects = UEditorUtilityLibrary::GetSelectedAssets();
-
-	EAddPrefixes(SelectedObjects);
-}
-
 bool UAssetsChecker::EFixTextureMaxSizeInGame(
 	FAssetData& ClickedAssetData, 
 	double maxSize, 
@@ -301,22 +298,26 @@ bool UAssetsChecker::ESetTextureSize(
 	return false;
 }
 
-TArray<FString> UAssetsChecker::EGetAssetReferencesPath(const FString& AssetPath)
+TArray<FString> UAssetsChecker::EGetAssetReferencesPath(
+	const FString& AssetPath)
 {
 	return UEditorAssetLibrary::FindPackageReferencersForAsset(AssetPath, true);
 }
 
-TArray<FString> UAssetsChecker::EGetAssetReferencesPath(const FAssetData& AssetData)
+TArray<FString> UAssetsChecker::EGetAssetReferencesPath(
+	const FAssetData& AssetData)
 {
 	return EGetAssetReferencesPath(AssetData.GetObjectPathString());
 }
 
-TArray<FString> UAssetsChecker::EGetAssetReferencesPath(const TSharedPtr<FAssetData>& AssetData)
+TArray<FString> UAssetsChecker::EGetAssetReferencesPath(
+	const TSharedPtr<FAssetData>& AssetData)
 {
 	return EGetAssetReferencesPath(AssetData->GetObjectPathString());
 }
 
-FVector2D UAssetsChecker::EGetTextureAssetSourceSize(const FAssetData& AssetData)
+FVector2D UAssetsChecker::EGetTextureAssetSourceSize(
+	const FAssetData& AssetData)
 {
 	FVector2D size(0,0);
 
@@ -339,7 +340,8 @@ FVector2D UAssetsChecker::EGetTextureAssetSourceSize(const FAssetData& AssetData
 	return size;
 }
 
-FVector2D UAssetsChecker::EGetTextureAssetMaxInGameSize(const FAssetData& AssetData)
+FVector2D UAssetsChecker::EGetTextureAssetMaxInGameSize(
+	const FAssetData& AssetData)
 {
 	FVector2D size(0, 0);
 
@@ -380,7 +382,9 @@ FVector2D UAssetsChecker::EGetTextureAssetMaxInGameSize(const FAssetData& AssetD
 	return size;
 }
 
-void UAssetsChecker::EListUnusedAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList)
+void UAssetsChecker::EListUnusedAssetsForAssetList(
+	const TArray<TSharedPtr<FAssetData>>& FindInList, 
+	TArray<TSharedPtr<FAssetData>>& OutList)
 {
 	OutList.Empty();
 
@@ -395,7 +399,9 @@ void UAssetsChecker::EListUnusedAssetsForAssetList(const TArray<TSharedPtr<FAsse
 	}
 }
 
-void UAssetsChecker::EListPrefixErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList)
+void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
+	const TArray<TSharedPtr<FAssetData>>& FindInList, 
+	TArray<TSharedPtr<FAssetData>>& OutList)
 {
 	OutList.Empty();
 
@@ -415,7 +421,40 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(const TArray<TSharedPtr<
 	}
 }
 
-void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList)
+void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
+	const TArray<TSharedPtr<FAssetData>>& FindInList, 
+	TArray<TSharedPtr<FAssetData>>& OutList)
+{
+	OutList.Empty();
+
+	TMultiMap<FString, TSharedPtr<FAssetData>> AssetsMultiInfoMap;
+
+	for (const TSharedPtr<FAssetData> DataSharedPtr : FindInList)
+	{
+		AssetsMultiInfoMap.Emplace(DataSharedPtr->AssetName.ToString(), DataSharedPtr);
+	}
+
+	for (const TSharedPtr<FAssetData>& DataSharedPtr : FindInList)
+	{
+		TArray<TSharedPtr<FAssetData>> OutAssetData;
+		AssetsMultiInfoMap.MultiFind(DataSharedPtr->AssetName.ToString(), OutAssetData);
+
+		if (OutAssetData.Num() <= 1) continue;
+
+		for (const TSharedPtr<FAssetData> & SamaNameData : OutAssetData)
+		{
+			if (SamaNameData.IsValid())
+			{
+				OutList.AddUnique(SamaNameData);
+			}
+		}
+	}
+
+}
+
+void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
+	const TArray<TSharedPtr<FAssetData>>& FindInList, 
+	TArray<TSharedPtr<FAssetData>>& OutList)
 {
 	OutList.Empty();
 
@@ -433,7 +472,9 @@ void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(const TArray<TSha
 	}
 }
 
-void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList)
+void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
+	const TArray<TSharedPtr<FAssetData>>& FindInList, 
+	TArray<TSharedPtr<FAssetData>>& OutList)
 {
 	OutList.Empty();
 
@@ -451,12 +492,14 @@ void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(const TArray<TShared
 	}
 }
 
-uint32 UAssetsChecker::EDeleteAssets(const TArray<FAssetData>& AssetsData)
+uint32 UAssetsChecker::EDeleteAssets(
+	const TArray<FAssetData>& AssetsData)
 {
 	return ObjectTools::DeleteAssets(AssetsData);
 }
 
-uint32 UAssetsChecker::EDeleteAsset(const FAssetData& AssetData)
+uint32 UAssetsChecker::EDeleteAsset(
+	const FAssetData& AssetData)
 {
 	TArray<FAssetData> AssetsData;
 	AssetsData.Add(AssetData);
@@ -464,7 +507,8 @@ uint32 UAssetsChecker::EDeleteAsset(const FAssetData& AssetData)
 	return ObjectTools::DeleteAssets(AssetsData);
 }
 
-void UAssetsChecker::ERemoveUnusedAssets(const TArray<FAssetData>& AssetsDataSelected)
+void UAssetsChecker::ERemoveUnusedAssets(
+	const TArray<FAssetData>& AssetsDataSelected)
 {
 	EFixUpRedirectors();
 
@@ -493,7 +537,8 @@ void UAssetsChecker::ERemoveUnusedAssets(const TArray<FAssetData>& AssetsDataSel
 	NtfMsgLog(FString::FromInt(NumOfAssetsDeleted) + " assets have been deleted");
 }
 
-void UAssetsChecker::ERemoveUnusedAssets(const TArray<FString>& FolderPathSelected)
+void UAssetsChecker::ERemoveUnusedAssets(
+	const TArray<FString>& FolderPathSelected)
 {
 	if (FolderPathSelected.Num() < 1)
 	{
@@ -536,7 +581,8 @@ void UAssetsChecker::RemoveUnusedAssets()
 	ERemoveUnusedAssets(SelectedAssetsData);
 }
 
-void UAssetsChecker::ERemoveEmptyFolder(const FString FolderPathSelected)
+void UAssetsChecker::ERemoveEmptyFolder(
+	const FString FolderPathSelected)
 {
 	TArray<FString> path;
 	path.Add(FolderPathSelected);
@@ -544,7 +590,8 @@ void UAssetsChecker::ERemoveEmptyFolder(const FString FolderPathSelected)
 	ERemoveEmptyFolder(path);
 }
 
-void UAssetsChecker::ERemoveEmptyFolder(const TArray<FString>& FolderPathSelected)
+void UAssetsChecker::ERemoveEmptyFolder(
+	const TArray<FString>& FolderPathSelected)
 {
 	if (FolderPathSelected.Num() < 1)
 	{
@@ -623,7 +670,9 @@ void UAssetsChecker::ERemoveEmptyFolder(const TArray<FString>& FolderPathSelecte
 	NtfMsgLog("Successfully deleted " + FString::FromInt(Counter) + " folders.");
 }
 
-TArray<TSharedPtr<FAssetData>> UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(const FString& FolderPathSelected)
+TArray<TSharedPtr<FAssetData>> 
+UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(
+	const FString& FolderPathSelected)
 {
 	TArray<FString> path;
 	path.Add(FolderPathSelected);
@@ -631,7 +680,9 @@ TArray<TSharedPtr<FAssetData>> UAssetsChecker::EListAssetsDataPtrUnderSelectedFo
 	return EListAssetsDataPtrUnderSelectedFolder(path);
 }
 
-TArray<TSharedPtr<FAssetData>> UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(const TArray<FString>& FolderPathSelected)
+TArray<TSharedPtr<FAssetData>> 
+UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(
+	const TArray<FString>& FolderPathSelected)
 {
 	if (FolderPathSelected.Num() <= 0)
 	{
@@ -660,7 +711,10 @@ TArray<TSharedPtr<FAssetData>> UAssetsChecker::EListAssetsDataPtrUnderSelectedFo
 	return AssetsDataArray;
 }
 
-int UAssetsChecker::EReplaceName(const TArray<UObject*>& AssetsSelected, const FString& OriginStr, const FString& ReplaceStr)
+int UAssetsChecker::EReplaceName(
+	const TArray<UObject*>& AssetsSelected, 
+	const FString& OriginStr, 
+	const FString& ReplaceStr)
 {
 	if (OriginStr.IsEmpty())
 	{
@@ -690,7 +744,9 @@ int UAssetsChecker::EReplaceName(const TArray<UObject*>& AssetsSelected, const F
 	return Counter;
 }
 
-void UAssetsChecker::ReplaceName(const FString& OriginStr, const FString& ReplaceStr)
+void UAssetsChecker::ReplaceName(
+	const FString& OriginStr, 
+	const FString& ReplaceStr)
 {
 	TArray<UObject*> AssetsSelected = UEditorUtilityLibrary::GetSelectedAssets();
 	int Counter = EReplaceName(AssetsSelected, OriginStr, ReplaceStr);
@@ -708,14 +764,16 @@ void UAssetsChecker::ReplaceName(const FString& OriginStr, const FString& Replac
 	}
 }
 
-void UAssetsChecker::EFixUpRedirectors(const FString & Path)
+void UAssetsChecker::EFixUpRedirectors(
+	const FString & Path)
 {
 	TArray<FString> PathArray;
 	PathArray.Add(Path);
 	EFixUpRedirectors(PathArray);
 }
 
-void UAssetsChecker::EFixUpRedirectors(const TArray<FString>& Path)
+void UAssetsChecker::EFixUpRedirectors(
+	const TArray<FString>& Path)
 {
 	TArray<UObjectRedirector*> RedirectorsToFixArray;
 
@@ -750,7 +808,9 @@ void UAssetsChecker::EFixUpRedirectors(const TArray<FString>& Path)
 	AssetToolsModule.Get().FixupReferencers(RedirectorsToFixArray);
 }
 
-void UAssetsChecker::ECopyAssetsPtrList(const TArray<TSharedPtr<FAssetData>>& ListToCopy, TArray<TSharedPtr<FAssetData>>& ListToOutput)
+void UAssetsChecker::ECopyAssetsPtrList(
+	const TArray<TSharedPtr<FAssetData>>& ListToCopy, 
+	TArray<TSharedPtr<FAssetData>>& ListToOutput)
 {
 	ListToOutput.Empty();
 
@@ -760,7 +820,8 @@ void UAssetsChecker::ECopyAssetsPtrList(const TArray<TSharedPtr<FAssetData>>& Li
 	}
 }
 
-void UAssetsChecker::ECheckerCheck(const TArray<FString>& Path)
+void UAssetsChecker::ECheckerCheck(
+	const TArray<FString>& Path)
 {
 
 	DlgMsg(EAppMsgType::Ok, "ReayToTest");

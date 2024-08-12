@@ -54,13 +54,13 @@ void FAssetsManagerModule::OnTestButtonClicked()
 void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 {
 	// Third bind. 
-	MenuBuilder.AddMenuEntry
+	/*MenuBuilder.AddMenuEntry
 	(
 		FText::FromString(TEXT("Delete Unused Assets")),
 		FText::FromString(TEXT("Safely delete assets never used or referenced.")),
 		FSlateIcon(),
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnDeleteUnusedAssetButtonClicked)
-	);
+	);*/
 
 	MenuBuilder.AddMenuEntry
 	(
@@ -78,13 +78,13 @@ void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsCheckerButtonClicked)
 	);
 
-	MenuBuilder.AddMenuEntry
+	/*MenuBuilder.AddMenuEntry
 	(
 		FText::FromString(TEXT("CheckerCheck")),
 		FText::FromString(TEXT("Check Checker.")),
 		FSlateIcon(),
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnTestButtonClicked)
-	);
+	);*/
 
 }
 

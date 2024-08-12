@@ -137,6 +137,7 @@ public:
 
 	static void EListUnusedAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
 	static void EListPrefixErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
+	static void EListSameNameErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
 	static void EListMaxInGameSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
 	static void EListSourceSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
 #pragma endregion
@@ -148,9 +149,6 @@ public:
 #pragma region Call In Editor
 	UFUNCTION(CallInEditor)
 	void DuplicateAssets(int NumOfDupicates, bool forced = true);
-
-	UFUNCTION(CallInEditor)
-	void AddPrefixes();
 	
 	UFUNCTION(CallInEditor)
 	void RemoveUnusedAssets();
