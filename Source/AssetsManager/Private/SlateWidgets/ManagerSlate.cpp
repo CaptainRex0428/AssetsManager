@@ -14,6 +14,8 @@
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
 
+#include "HAL/FileManager.h"
+
 #pragma region ClassFilterComboSourceItems
 #define CLASS_LISTALL TEXT("All")
 #define CLASS_BLUEPRINT TEXT("Blueprint")
@@ -30,6 +32,9 @@
 #define CLASS_SKELETALMESH TEXT("SkeletalMesh")
 #define CLASS_NIAGARASYSTEM TEXT("NiagaraSystem")
 #define CLASS_NIAGARAEMITTER TEXT("NiagaraEmitter")
+#define CLASS_ANIMATION TEXT("Animation")
+#define CLASS_ANIMATIONMONTAGE TEXT("AnimationMontage")
+#define CLASS_PHYSICSASSET TEXT("PhysicsAsset")
 #pragma endregion
 
 #pragma region UsageFilterComboSourceItems
@@ -77,6 +82,9 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_SKELETALMESH));
 	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_NIAGARASYSTEM));
 	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_NIAGARAEMITTER));
+	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_ANIMATION));
+	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_ANIMATIONMONTAGE));
+	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_PHYSICSASSET));
 
 	UsageSelectedDefault = MakeShared<FString>(USAGE_NONE);
 	UsageSelectionMaxInGameSizeError = MakeShared<FString>(USAGE_MAXINGAMESIZEERROR);
@@ -264,7 +272,8 @@ TSharedRef<SListView<TSharedPtr<FAssetData>>> SAssetsCheckerTab::ConstructAssets
 		SNew(SListView<TSharedPtr<FAssetData>>)
 		.ItemHeight(36.f)
 		.ListItemsSource(&SListViewAssetData)
-		.OnGenerateRow(this, &SAssetsCheckerTab::OnGenerateRowForlist);
+		.OnGenerateRow(this, &SAssetsCheckerTab::OnGenerateRowForlist)
+		.OnMouseButtonDoubleClick(this,&SAssetsCheckerTab::OnRowMouseButtonDoubleClicked);
 
 	return ConstructedAssetsListView.ToSharedRef();
 }
@@ -284,6 +293,14 @@ TSharedRef<ITableRow> SAssetsCheckerTab::OnGenerateRowForlist(
 	}
 
 	return GenerateDefaultRowForList(AssetDataToDisplay, OwnerTable);
+}
+
+void SAssetsCheckerTab::OnRowMouseButtonDoubleClicked(TSharedPtr<FAssetData> AssetDataToDisplay)
+{
+	TArray<FAssetData> AssetDataArray;
+	AssetDataArray.Add(*AssetDataToDisplay);
+
+	GEditor->SyncBrowserToObjects(AssetDataArray);
 }
 
 TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateDefaultRowForList(
@@ -329,14 +346,6 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateDefault
 				.FillWidth(0.15f)
 				[
 					ConstructSingleAssetDeleteButtonBox(AssetDataToDisplay)
-				]
-
-				+ SHorizontalBox::Slot()
-				.HAlign(HAlign_Right)
-				.VAlign(VAlign_Center)
-				.FillWidth(0.15f)
-				[
-					ConstructBrowserAssetButtonBox(AssetDataToDisplay)
 				]
 		];
 
@@ -426,14 +435,6 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				[
 					ConstructSingleTextureAssetResetButtonBox(AssetDataToDisplay)
 				]
-				
-				+ SHorizontalBox::Slot()
-				.HAlign(HAlign_Center)
-				.VAlign(VAlign_Center)
-				.FillWidth(0.12f)
-				[
-					ConstructBrowserAssetButtonBox(AssetDataToDisplay)
-				]
 		];
 
 	return ListViewRowWidget;
@@ -497,14 +498,6 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				.FillWidth(0.12f)
 				[
 					ConstructSingleAssetReimportButtonBox(AssetDataToDisplay)
-				]
-
-				+ SHorizontalBox::Slot()
-				.HAlign(HAlign_Center)
-				.VAlign(VAlign_Center)
-				.FillWidth(0.12f)
-				[
-					ConstructBrowserAssetButtonBox(AssetDataToDisplay)
 				]
 		];
 
@@ -860,31 +853,6 @@ FReply SAssetsCheckerTab::OnSingleTextureAssetResetButtonClicked(
 	return FReply::Handled();
 }
 
-TSharedRef<SButton> SAssetsCheckerTab::ConstructBrowserAssetButtonBox(
-	const TSharedPtr<FAssetData>& AssetDataToDisplay)
-{
-	TSharedRef<SButton> SingleTextureFixButtonBox =
-		SNew(SButton)
-		.Text(FText::FromString(TEXT("Target")))
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
-		.OnClicked(this,
-			&SAssetsCheckerTab::OnBrowserAssetButtonClicked,
-			AssetDataToDisplay);
-
-	return SingleTextureFixButtonBox;
-}
-
-FReply SAssetsCheckerTab::OnBrowserAssetButtonClicked(TSharedPtr<FAssetData> ClickedAssetData)
-{
-	TArray<FAssetData> AssetDataArray;
-	AssetDataArray.Add(*ClickedAssetData);
-
-	GEditor->SyncBrowserToObjects(AssetDataArray);
-
-	return FReply::Handled();
-}
-
 #pragma endregion
 
 #pragma endregion
@@ -943,6 +911,7 @@ TSharedRef<SVerticalBox> SAssetsCheckerTab::ConstructHandleAllButtons()
 				]
 		]
 
+		// Fix Up Redirectors
 		+ SVerticalBox::Slot()
 		.AutoHeight()
 		[
@@ -954,7 +923,23 @@ TSharedRef<SVerticalBox> SAssetsCheckerTab::ConstructHandleAllButtons()
 				[
 					ConstructFixUpRedirectorButton()
 				]
-		];
+		]
+
+		// Output
+		+SVerticalBox::Slot()
+			.AutoHeight()
+			[
+				SNew(SHorizontalBox)
+
+					+ SHorizontalBox::Slot()
+					.FillWidth(.5f)
+					.Padding(5.f)
+					[
+						ConstructOutputViewListInfoButton()
+					]
+			];
+
+	
 
 	return HandleBox;
 };
@@ -1145,6 +1130,110 @@ FReply SAssetsCheckerTab::OnFixUpRedirectorButtonClicked()
 	UAssetsChecker::EFixUpRedirectors(StoredFolderPaths);
 	return FReply::Handled();
 }
+#pragma endregion
+
+#pragma region OutputViewListInfo
+
+TSharedRef<SButton> SAssetsCheckerTab::ConstructOutputViewListInfoButton()
+{
+	TSharedRef<SButton> FixUpRedirectorButton =
+		SNew(SButton)
+		.OnClicked(this,&SAssetsCheckerTab::OnOutputViewListInfoButtonClicked)
+		.ContentPadding(FMargin(5.f));
+
+	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- Output view list to log file --"));
+
+	return FixUpRedirectorButton;
+}
+
+FReply SAssetsCheckerTab::OnOutputViewListInfoButtonClicked()
+{
+	// Construct Output
+
+	FString Output;
+
+	Output += L"Path Include:\n";
+
+	for (FString path : StoredFolderPaths)
+	{
+		Output += path;
+		Output += "\n";
+	}
+
+	Output += "\n";
+	Output += "Class Filter:\n";
+	Output += ClassFilterComboDisplayText->GetText().ToString();
+	Output += "\n\n";
+
+	Output += "Problem Filter:\n";
+	Output += UsageFilterComboDisplayText->GetText().ToString();
+	Output += "\n\n";
+
+	Output += "Files:\n";
+	
+	for (TSharedPtr<FAssetData> asset: SListViewAssetData)
+	{
+		FString AssetName = asset->AssetName.ToString();
+		FString AssetPath = asset->GetObjectPathString();
+		FString AssetClass = asset->GetClass()->GetName();
+
+		FVector2D MaxInGameTextureSize = UAssetsChecker::EGetTextureAssetMaxInGameSize(*asset);
+		FVector2D SourceTextureSize = UAssetsChecker::EGetTextureAssetMaxInGameSize(*asset);
+
+		FString MaxInGameTextureSizeString = FString::FromInt(MaxInGameTextureSize.X) + "x" + FString::FromInt(MaxInGameTextureSize.Y);
+		FString SourceTextureSizeString = FString::FromInt(SourceTextureSize.X) + "x" + FString::FromInt(SourceTextureSize.Y);
+
+		TArray<FStringFormatArg> args;
+		args.Add(FStringFormatArg(AssetClass));
+		args.Add(FStringFormatArg(AssetName));
+		args.Add(FStringFormatArg(AssetPath));
+		args.Add(FStringFormatArg(MaxInGameTextureSizeString));
+		args.Add(FStringFormatArg(SourceTextureSizeString));
+
+		if (m_ClassCheckState == Texture)
+		{
+			Output += FString::Format(TEXT("[{0}][MaxInGameSize:{3}][SourceGameSize:{4}]{1}({2})\n"),args);
+		}
+		else
+		{
+			Output += FString::Format(TEXT("[{0}]{1}({2})\n"), args);
+		}
+	}
+
+	// Output
+
+	// DlgMsg(EAppMsgType::Ok, Output);
+
+	FDateTime Time = FDateTime::Now();
+	FString FileName = FString::FromInt(Time.GetYear())
+		+ FString::FromInt(Time.GetMonth())
+		+ FString::FromInt(Time.GetDay())
+		+ FString::FromInt(Time.GetHour())
+		+ FString::FromInt(Time.GetMinute())
+		+ FString::FromInt(Time.GetSecond())
+		+ "_"
+		+ FString::FromInt(Time.GetMillisecond())
+		+ "_"
+		+ ClassFilterComboDisplayText->GetText().ToString()
+		+ "_"
+		+ UsageFilterComboDisplayText->GetText().ToString();
+
+	FString FilePath = ASSETSMANAGER_LOGFOLDER + FileName + ".log";
+
+	if (FFileHelper::SaveStringToFile(Output, *FilePath,
+		FFileHelper::EEncodingOptions::ForceUTF8,
+		&IFileManager::Get(),
+		EFileWrite::FILEWRITE_Append))
+	{
+		NtfMsgLog("Successfully saved assets manager log to " + FilePath);
+		return FReply::Handled();
+	};
+
+	
+	NtfMsgLog("Failed saving assets manager log to " + FilePath);
+	return FReply::Handled();
+	
+}
 
 #pragma endregion
 
@@ -1298,7 +1387,7 @@ void SAssetsCheckerTab::OnUsageFilterButtonChanged(
 
 	if (*SelectedOption.Get() == USAGE_UNUSED)
 	{
-		m_UsageCheckState = DefaultUsageCheckState;
+		m_UsageCheckState = Unused;
 
 		if (SListViewClassFilterAssetData.Num() > 64)
 		{

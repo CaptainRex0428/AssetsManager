@@ -37,7 +37,7 @@ private:
 	enum UsageCheckState
 	{
 		DefaultUsageCheckState = 0,
-
+		Unused,
 		// for texture,
 		MaxInGameSizeError, SourceSizeError,
 		// for prefix
@@ -71,15 +71,17 @@ private:
 #pragma region OnGenerateRowForlist
 	// construct / refresh list view
 	TSharedRef<SListView<TSharedPtr<FAssetData>>> ConstructAssetsListView();
-	
-	void RefreshAssetsListView();
-
 	TSharedPtr<SListView<TSharedPtr<FAssetData>>> ConstructedAssetsListView;
+	void RefreshAssetsListView();
 
 	// For Assets List
 	TSharedRef<ITableRow> OnGenerateRowForlist(
 		TSharedPtr<FAssetData> AssetDataToDisplay,
 		const TSharedRef<STableViewBase>& OwnerTable);
+
+	// For List item button clicked
+	void OnRowMouseButtonDoubleClicked(
+		TSharedPtr<FAssetData> AssetDataToDisplay);
 
 	// CheckState = Default
 	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateDefaultRowForList(
@@ -153,10 +155,6 @@ private:
 	TSharedRef<SButton> ConstructSingleTextureAssetResetButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
 	FReply OnSingleTextureAssetResetButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
 
-	//Construct Browser Asset Button
-	TSharedRef<SButton> ConstructBrowserAssetButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnBrowserAssetButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
-
 #pragma endregion
 
 #pragma endregion
@@ -188,6 +186,11 @@ private:
 #pragma region FixRedirectorsButton
 	TSharedRef<SButton> ConstructFixUpRedirectorButton();
 	FReply OnFixUpRedirectorButtonClicked();
+#pragma endregion
+
+#pragma region OutputViewListInfo
+	TSharedRef<SButton> ConstructOutputViewListInfoButton();
+	FReply OnOutputViewListInfoButtonClicked();
 #pragma endregion
 
 #pragma region SComboListFilter

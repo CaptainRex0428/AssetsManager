@@ -16,6 +16,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraEmitter.h"
+#include "PhysicsEngine/PhysicsAsset.h"
 
 #include "AssetsChecker.generated.h"
 
@@ -32,9 +33,13 @@ const TMap<UClass*, FString> PrefixMap =
 	{UTexture2D::StaticClass(),TEXT("T")},
 	{UTexture2DArray::StaticClass(),TEXT("TArray")},
 	{UUserWidget::StaticClass(), TEXT("WBP")},
-	{USkeletalMeshComponent::StaticClass(), TEXT("SK")},
+	{USkeletalMesh::StaticClass(), TEXT("SK")},
 	{UNiagaraSystem::StaticClass(),TEXT("NS")},
-	{UNiagaraEmitter::StaticClass(), TEXT("NE")}
+	{UNiagaraEmitter::StaticClass(), TEXT("NE")},
+	{UAnimSequence::StaticClass(), TEXT("A")},
+	{UAnimMontage::StaticClass(), TEXT("AM")},
+	{UPhysicsAsset::StaticClass(), TEXT("PHYS")}
+
 };
 
 const TMap<FString,UClass*> AssetFullNameMap =
@@ -50,9 +55,13 @@ const TMap<FString,UClass*> AssetFullNameMap =
 	{TEXT("Texture"),UTexture2D::StaticClass()},
 	{TEXT("TextureArray"),UTexture2DArray::StaticClass()},
 	{TEXT("UserWidget"),UUserWidget::StaticClass()},
-	{TEXT("SkeletalMesh"),USkeletalMeshComponent::StaticClass()},
+	{TEXT("SkeletalMesh"),USkeletalMesh::StaticClass()},
 	{TEXT("NiagaraSystem"),UNiagaraSystem::StaticClass()},
-	{TEXT("NiagaraEmitter"),UNiagaraEmitter::StaticClass()}
+	{TEXT("NiagaraEmitter"),UNiagaraEmitter::StaticClass()},
+	{TEXT("Animation"),UAnimSequence::StaticClass()},
+	{TEXT("AnimationMontage"),UAnimMontage::StaticClass()},
+	{TEXT("PhysicsAsset"),UPhysicsAsset::StaticClass()}
+
 };
 
 /**
@@ -63,7 +72,7 @@ class ASSETSMANAGER_API UAssetsChecker : public UAssetActionUtility
 {
 	GENERATED_BODY()
 	
-public:
+public:    
 #pragma region PublicFuntions
 
 #pragma region Common Tools
