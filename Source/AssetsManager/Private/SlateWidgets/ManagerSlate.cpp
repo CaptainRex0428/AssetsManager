@@ -7,6 +7,8 @@
 #include "ManagerLogger.h"
 #include "SlateBasics.h"
 
+#include "AssetsManagerConfig.h"
+
 #include "AssetRegistry/AssetRegistryModule.h"
 
 #include "EditorReimportHandler.h"
@@ -38,12 +40,27 @@
 #pragma endregion
 
 #pragma region UsageFilterComboSourceItems
+
+#ifdef ZH_CN
+
+#define USAGE_NONE TEXT("无")
+#define USAGE_UNUSED TEXT("未使用的资产")
+#define USAGE_MAXINGAMESIZEERROR TEXT("游戏内贴图大小错误")
+#define USAGE_SOURCESIZEERROR TEXT("原始贴图大小错误")
+#define USAGE_PREFIXERROR TEXT("资产前缀错误")
+#define USAGE_SAMENAMEASSETERROR TEXT("多资产重复命名错误")
+
+#else
+
 #define USAGE_NONE TEXT("None")
 #define USAGE_UNUSED TEXT("Unused")
 #define USAGE_MAXINGAMESIZEERROR TEXT("MaxInGameSizeError")
 #define USAGE_SOURCESIZEERROR TEXT("SourceSizeError")
 #define USAGE_PREFIXERROR TEXT("PrefixError")
 #define USAGE_SAMENAMEASSETERROR TEXT("SameNameError")
+
+#endif
+
 #pragma endregion
 
 void SAssetsCheckerTab::Construct(const FArguments& InArgs)
@@ -609,7 +626,11 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructSingleAssetDeleteButtonBox(
 {
 	TSharedRef<SButton> SingleAssetDeleteButtonBox =
 		SNew(SButton)
+#ifdef ZH_CN
+		.Text(FText::FromString(TEXT("删除")))
+#else
 		.Text(FText::FromString(TEXT("Delete")))
+#endif
 		.HAlign(HAlign_Center)
 		.VAlign(VAlign_Center)
 		.OnClicked(this,
@@ -624,20 +645,32 @@ FReply SAssetsCheckerTab::OnSingleAssetDeleteButtonClicked(
 {
 	if (UAssetsChecker::EGetAssetReferencesPath(ClickedAssetData).Num() > 0)
 	{
-		EAppReturnType::Type result = DlgMsg(EAppMsgType::OkCancel, ClickedAssetData->AssetName.ToString() + " was referenced.\n\nConfirm to delete this asset?");
-		
+#ifdef ZH_CN
+		EAppReturnType::Type result = DlgMsg(EAppMsgType::OkCancel,
+			ClickedAssetData->AssetName.ToString() 
+			+ "已被其他资产引用\n\n确定删除资产？");
+#else
+		EAppReturnType::Type result = DlgMsg(EAppMsgType::OkCancel,
+			ClickedAssetData->AssetName.ToString()
+			+ " was referenced.\n\nConfirm to delete this asset?");
+#endif
+
 		if (result != EAppReturnType::Ok)
 		{
 			return FReply::Handled();
 		}
 
-		NtfMsgLog("Clicked OK");
+		// NtfMsgLog("Clicked OK");
 	}
 
 	if (UAssetsChecker::EDeleteAsset(*ClickedAssetData))
 	{
 		// log
+#ifdef ZH_CN
+		NtfMsgLog("成功删除" + ClickedAssetData->AssetName.ToString());
+#else
 		NtfMsgLog("Successfully deleted " + ClickedAssetData->AssetName.ToString());
+#endif
 
 		// update slistview
 		SListViewRemoveAssetData(ClickedAssetData);
@@ -652,7 +685,11 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructSingleAssetDebugButtonBox(
 {
 	TSharedRef<SButton> SingleAssetDebugButtonBox =
 		SNew(SButton)
+#ifdef ZH_CN
+		.Text(FText::FromString(TEXT("测试")))
+#else
 		.Text(FText::FromString(TEXT("Debug")))
+#endif
 		.HAlign(HAlign_Center)
 		.VAlign(VAlign_Center)
 		.OnClicked(this, 
@@ -677,7 +714,11 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructSingleAssetReimportButtonBox(
 {
 	TSharedRef<SButton> SingleAssetFixButtonBox =
 		SNew(SButton)
+#ifdef ZH_CN
+		.Text(FText::FromString(TEXT("导入")))
+#else
 		.Text(FText::FromString(TEXT("Reimport")))
+#endif
 		.HAlign(HAlign_Center)
 		.VAlign(VAlign_Center)
 		.OnClicked(this, 
@@ -729,11 +770,19 @@ FReply SAssetsCheckerTab::OnSingleTextureAsset2KButtonClicked(
 	{
 		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
+#ifdef ZH_CN
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n此贴图无需修复 或 修复失败");
+#else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nFaild or no need to fix this texture.");
+#endif
 		}
 		else
 		{
+#ifdef ZH_CN
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n成功限制贴图大小为" + FString::FromInt(maxSize));
+#else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully resize to " + FString::FromInt(maxSize));
+#endif
 		};
 	}
 
@@ -766,11 +815,19 @@ FReply SAssetsCheckerTab::OnSingleTextureAsset1KButtonClicked(
 	{
 		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
+#ifdef ZH_CN
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n此贴图无需修复 或 修复失败");
+#else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nFaild or no need to fix this texture.");
+#endif
 		}
 		else
 		{
+#ifdef ZH_CN
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n成功限制贴图大小为" + FString::FromInt(maxSize));
+#else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully resize to " + FString::FromInt(maxSize));
+#endif
 		};
 	}
 
@@ -801,13 +858,21 @@ FReply SAssetsCheckerTab::OnSingleTextureAsset512ButtonClicked(
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize,true))
+		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
+#ifdef ZH_CN
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n此贴图无需修复 或 修复失败");
+#else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nFaild or no need to fix this texture.");
+#endif
 		}
 		else
 		{
+#ifdef ZH_CN
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n成功限制贴图大小为" + FString::FromInt(maxSize));
+#else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully resize to " + FString::FromInt(maxSize));
+#endif
 		};
 	}
 
@@ -840,11 +905,19 @@ FReply SAssetsCheckerTab::OnSingleTextureAssetResetButtonClicked(
 	{
 		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
+#ifdef ZH_CN
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n此贴图无需修复 或 修复失败");
+#else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nFaild or no need to fix this texture.");
+#endif
 		}
 		else
 		{
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully rest MaxInGameSize to 0.");
+#ifdef ZH_CN
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n成功解除贴图大小限制");
+#else
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully resize to 0");
+#endif
 		};
 	}
 
@@ -954,9 +1027,11 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructDeleteAllSelectedButton()
 		SNew(SButton)
 		.OnClicked(this, &SAssetsCheckerTab::OnDeleteAllSelectedButtonClicked)
 		.ContentPadding(FMargin(5.f));
-	
+#ifdef ZH_CN
+	DeleteAllSelectedButton->SetContent(ConstructTextForButtons("删除选择的资产"));
+#else
 	DeleteAllSelectedButton->SetContent(ConstructTextForButtons("Delete All Selected"));
-
+#endif
 	return DeleteAllSelectedButton;
 }
 
@@ -998,7 +1073,11 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructSelectAllButton()
 		.OnClicked(this, &SAssetsCheckerTab::OnSelectAllButtonClicked)
 		.ContentPadding(FMargin(5.f));
 
+#ifdef ZH_CN
+	SelectAllButton->SetContent(ConstructTextForButtons("全选"));
+#else
 	SelectAllButton->SetContent(ConstructTextForButtons("Select All"));
+#endif
 
 	return SelectAllButton;
 }
@@ -1027,8 +1106,11 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructDeselectAllButton()
 		SNew(SButton)
 		.OnClicked(this, &SAssetsCheckerTab::OnDeselectAllButtonClicked)
 		.ContentPadding(FMargin(5.f));
-
+#ifdef ZH_CN
+	DeselectAllButton->SetContent(ConstructTextForButtons("取消全选"));
+#else
 	DeselectAllButton->SetContent(ConstructTextForButtons("Deselect All"));
+#endif
 
 	return DeselectAllButton;
 }
@@ -1061,8 +1143,11 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructFixSelectedButton()
 		SNew(SButton)
 		.OnClicked(this, &SAssetsCheckerTab::OnSelectFixSelectedClicked)
 		.ContentPadding(FMargin(5.f));
-
+#ifdef ZH_CN
+	DeselectAllButton->SetContent(ConstructTextForButtons("修复选择的资产"));
+#else
 	DeselectAllButton->SetContent(ConstructTextForButtons("Fix All Selected"));
+#endif
 
 	return DeselectAllButton;
 }
@@ -1104,8 +1189,11 @@ FReply SAssetsCheckerTab::OnSelectFixSelectedClicked()
 		RefreshAssetsListView();
 		return FReply::Handled();
 	}
-
-	DlgMsgLog(EAppMsgType::Ok,"Choose a valid check filter type!\nShouldn't be [None].");
+#ifdef ZH_CN
+	DlgMsgLog(EAppMsgType::Ok, "[检查过滤器]选择错误\n应该选择[资产前缀错误].");
+#else
+	DlgMsgLog(EAppMsgType::Ok,"Choose a valid check filter type!\nShould be [PrefixError].");
+#endif
 	return FReply::Handled();
 }
 
@@ -1119,8 +1207,11 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructFixUpRedirectorButton()
 		SNew(SButton)
 		.OnClicked(this, &SAssetsCheckerTab::OnFixUpRedirectorButtonClicked)
 		.ContentPadding(FMargin(5.f));
-	
+#ifdef ZH_CN
+	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- 修复所选文件夹中的重定向器(Redirector) --"));
+#else
 	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- Fix Up Redirectors In Selected Folders --"));
+#endif
 
 	return FixUpRedirectorButton;
 }
@@ -1141,7 +1232,11 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructOutputViewListInfoButton()
 		.OnClicked(this,&SAssetsCheckerTab::OnOutputViewListInfoButtonClicked)
 		.ContentPadding(FMargin(5.f));
 
+#ifdef ZH_CN
+	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- 输出列表到文件 --"));
+#else
 	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- Output view list to log file --"));
+#endif
 
 	return FixUpRedirectorButton;
 }
@@ -1205,7 +1300,8 @@ FReply SAssetsCheckerTab::OnOutputViewListInfoButtonClicked()
 	// DlgMsg(EAppMsgType::Ok, Output);
 
 	FDateTime Time = FDateTime::Now();
-	FString FileName = FString::FromInt(Time.GetYear())
+	FString FileName = "AssetsManagerLog_"
+		+FString::FromInt(Time.GetYear())
 		+ FString::FromInt(Time.GetMonth())
 		+ FString::FromInt(Time.GetDay())
 		+ FString::FromInt(Time.GetHour())
@@ -1225,12 +1321,19 @@ FReply SAssetsCheckerTab::OnOutputViewListInfoButtonClicked()
 		&IFileManager::Get(),
 		EFileWrite::FILEWRITE_Append))
 	{
+#ifdef ZH_CN
+		NtfMsgLog("成功输出文件到" + FilePath);
+#else
 		NtfMsgLog("Successfully saved assets manager log to " + FilePath);
+#endif
 		return FReply::Handled();
 	};
 
-	
+#ifdef ZH_CN
+	NtfMsgLog("输出文件到" + FilePath + "失败");
+#else
 	NtfMsgLog("Failed saving assets manager log to " + FilePath);
+#endif
 	return FReply::Handled();
 	
 }
@@ -1391,8 +1494,17 @@ void SAssetsCheckerTab::OnUsageFilterButtonChanged(
 
 		if (SListViewClassFilterAssetData.Num() > 64)
 		{
+#ifdef ZH_CN
 			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
-				"The list selected to check is too large.["+FString::FromInt(SListViewClassFilterAssetData.Num()) + " assets]\nFilter unused assets will cost a lot of time.\n\nReady to proceed?");
+				"选择的文件太多["
+				+FString::FromInt(SListViewClassFilterAssetData.Num()) 
+				+ "个文件]\n由于需要查找所有引用项，这将会消耗大量时间.\n\n是否继续?");
+#else
+			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
+				"The list selected to check is too large.["
+				+ FString::FromInt(SListViewClassFilterAssetData.Num())
+				+ " assets]\nFilter unused assets will cost a lot of time.\n\nReady to proceed?");
+#endif
 
 			if (result != EAppReturnType::Yes)
 			{
