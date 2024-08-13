@@ -37,7 +37,8 @@ public class AssetsManager : ModuleRules
                 "AssetRegistry",
                 "AssetTools",
                 "ContentBrowser",
-				"InputCore"
+				"InputCore",
+				"Projects"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

@@ -6,6 +6,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetsChecker/AssetsChecker.h"
 #include "SlateWidgets/ManagerSlate.h"
+#include "AssetsManagerStyle.h"
 
 #include "EditorAssetLibrary.h"
 #include "ObjectTools.h"
@@ -17,7 +18,7 @@
 void FAssetsManagerModule::StartupModule()
 {
 	InitCBMenuExtension();
-	
+	FAssetsMangerStyle::InitializeIcons();
 	RegisterCustomEditorTab();
 }
 
@@ -26,6 +27,7 @@ void FAssetsManagerModule::ShutdownModule()
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDERMANAGERTABNAME));
+	FAssetsMangerStyle::ShutDown();
 }
 
 #pragma region ContentBrowserMenuExtend
@@ -66,7 +68,7 @@ void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 	(
 		FText::FromString(TEXT("Delete Unused Folders")),
 		FText::FromString(TEXT("Safely delete folders never used or referenced.")),
-		FSlateIcon(),
+		FSlateIcon(FAssetsMangerStyle::GetStyleName(),"ContentBrowser.DeleteUnusedFolders"),
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnDeleteEmptyFolderButtonClicked)
 	);
 
@@ -74,7 +76,7 @@ void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 	(
 		FText::FromString(TEXT(CONTENTFOLDERMANAGERTABNAME)),
 		FText::FromString(TEXT("A tab window to check the assets inside the seleted folder.")),
-		FSlateIcon(),
+		FSlateIcon(FAssetsMangerStyle::GetStyleName(),"ContentBrowser.AssetsManager"),
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerButtonClicked)
 	);
 
@@ -137,7 +139,8 @@ void FAssetsManagerModule::RegisterCustomEditorTab()
 		// tag
 		FName(CONTENTFOLDERMANAGERTABNAME),
 		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnAssetsCheckerTab))
-		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDERMANAGERTABNAME)));
+		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDERMANAGERTABNAME)))
+		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleName(),"ContentBrowser.AssetsManager"));
 }
 
 TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnAssetsCheckerTab(const FSpawnTabArgs& SpawnTabArgs)
