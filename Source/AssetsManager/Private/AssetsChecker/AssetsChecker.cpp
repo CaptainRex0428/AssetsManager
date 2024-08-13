@@ -101,17 +101,17 @@ void UAssetsChecker::DuplicateAssets(
 	if (Counter <= 0)
 	{
 #ifdef ZH_CN
-		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, "输入的复制数量不可以小于0");
+		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, TEXT("输入的复制数量不可以小于0"));
 #else
-		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, "Number input is invalid.");
+		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, TEXT("Number input is invalid."));
 #endif
 		return;
 		
 	}
 #ifdef ZH_CN
-	FString Msg = "成功复制" + FString::FromInt(Counter) + "文件";
+	FString Msg = TEXT("成功复制") + FString::FromInt(Counter) + TEXT("个文件");
 #else
-	FString Msg = FString::FromInt(Counter) + " files copied.";
+	FString Msg = FString::FromInt(Counter) + TEXT(" files copied.");
 #endif
 	NtfyMsg(Msg);
 }
@@ -159,13 +159,14 @@ bool UAssetsChecker::EConfirmPrefixes(
 
 #ifdef ZH_CN
 	EAppReturnType::Type result =  DlgMsgLog(EAppMsgType::YesNo, 
-		"待重命名资产数: " + FString::FromInt(ShouldRenameCounter)
-		+ "\n重命名资产预览:\n" + NewAssetsName
-		+ "\n是否确定继续？");
+		TEXT("待重命名资产数: ") + FString::FromInt(ShouldRenameCounter)
+		+ TEXT("\n重命名资产预览:\n") + NewAssetsName
+		+ TEXT("\n是否确定继续？"));
 #else
-	EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo, "Assets to rename count: " + FString::FromInt(ShouldRenameCounter)
-		+ "\nRename result preview:\n" + NewAssetsName
-		+ "\nConfirm to Rename these assets?");
+	EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo, 
+		TEXT("Assets to rename count: ") + FString::FromInt(ShouldRenameCounter)
+		+ TEXT("\nRename result preview:\n") + NewAssetsName
+		+ TEXT("\nConfirm to Rename these assets?"));
 #endif
 
 	if (result == EAppReturnType::Yes)
@@ -191,9 +192,9 @@ void UAssetsChecker::EAddPrefixes(
 		if (!prefix || prefix->IsEmpty())
 		{
 #ifdef ZH_CN
-			NtfMsgLog("找不到资产[" + selectedAsset.GetClass()->GetName()+"]对应的前缀");
+			NtfMsgLog(TEXT("找不到资产[") + selectedAsset.GetClass()->GetName()+ TEXT("]对应的前缀"));
 #else
-			NtfMsgLog("Can not find prefix for class " + selectedAsset.GetClass()->GetName());
+			NtfMsgLog(TEXT("Can not find prefix for class ") + selectedAsset.GetClass()->GetName());
 #endif
 			continue;
 		}
@@ -202,9 +203,9 @@ void UAssetsChecker::EAddPrefixes(
 		if (OldName.StartsWith(*prefix))
 		{
 #ifdef ZH_CN
-			NtfMsgLog(OldName + "已有正确的命名前缀");
+			NtfMsgLog(OldName + TEXT("已有正确的命名前缀"));
 #else
-			NtfMsgLog(OldName + " alreay has prefix added");
+			NtfMsgLog(OldName + TEXT(" alreay has prefix added"));
 #endif
 			++AlreadyCounter;
 			continue;
@@ -225,11 +226,11 @@ void UAssetsChecker::EAddPrefixes(
 	}
 
 #ifdef ZH_CN
-	if (SuccessCounter > 0)	NtfMsgLog("成功重命名" + FString::FromInt(SuccessCounter) + "个资产");
-	if (AlreadyCounter > 0) NtfMsgLog(FString::FromInt(AlreadyCounter) + "个资产已有正确命名前缀");
+	if (SuccessCounter > 0)	NtfMsgLog(TEXT("成功重命名") + FString::FromInt(SuccessCounter) + TEXT("个资产"));
+	if (AlreadyCounter > 0) NtfMsgLog(FString::FromInt(AlreadyCounter) + TEXT("个资产已有正确命名前缀"));
 #else
-	if (SuccessCounter > 0)	NtfMsgLog("Successfully renamed " + FString::FromInt(SuccessCounter) + " asset" + (SuccessCounter > 1 ? "s" : ""));
-	if (AlreadyCounter > 0) NtfMsgLog(FString::FromInt(AlreadyCounter) + " asset" + (AlreadyCounter > 1 ? "s" : "") + " already ha" + (AlreadyCounter > 1 ? "ve" : "s") + " prefix");
+	if (SuccessCounter > 0)	NtfMsgLog(TEXT("Successfully renamed ") + FString::FromInt(SuccessCounter) + TEXT(" asset") + (SuccessCounter > 1 ? TEXT("s") : ""));
+	if (AlreadyCounter > 0) NtfMsgLog(FString::FromInt(AlreadyCounter) + TEXT(" asset") + (AlreadyCounter > 1 ? TEXT("s") : "") + TEXT(" already ha") + (AlreadyCounter > 1 ? TEXT("ve") : TEXT("s")) + TEXT(" prefix"));
 #endif
 }
 
@@ -555,9 +556,9 @@ void UAssetsChecker::ERemoveUnusedAssets(
 	if (UnusedAssetsData.Num() == 0)
 	{
 #ifdef ZH_CN
-		DlgMsg(EAppMsgType::Ok, "[恭喜]\n没有找到任何未被引用的资产", false);
+		DlgMsg(EAppMsgType::Ok, TEXT("[恭喜]\n没有找到任何未被引用的资产"), false);
 #else
-		DlgMsg(EAppMsgType::Ok, "[Congratulations]\nNo unused asset found among selected assets.", false);
+		DlgMsg(EAppMsgType::Ok, TEXT("[Congratulations]\nNo unused asset found among selected assets."), false);
 #endif
 		return;
 	}
@@ -567,9 +568,9 @@ void UAssetsChecker::ERemoveUnusedAssets(
 	if (NumOfAssetsDeleted == 0) return;
 
 #ifdef ZH_CN
-	NtfMsgLog(FString::FromInt(NumOfAssetsDeleted) + "个未使用资产被成功删除");
+	NtfMsgLog(TEXT("成功删除") + FString::FromInt(NumOfAssetsDeleted) + TEXT("个未使用资产"));
 #else
-	NtfMsgLog(FString::FromInt(NumOfAssetsDeleted) + " assets have been deleted");
+	NtfMsgLog(FString::FromInt(NumOfAssetsDeleted) + TEXT(" assets have been deleted"));
 #endif
 }
 
@@ -679,9 +680,9 @@ void UAssetsChecker::ERemoveEmptyFolder(
 
 		DlgMsgLog(EAppMsgType::Ok, 
 #ifdef ZH_CN
-		"[恭喜]\n此路径下未找到空文件夹"
+			TEXT("[恭喜]\n此路径下未找到空文件夹")
 #else
-		"[Congratulations]\nNo empty folder was found under selected folders."
+			TEXT("[Congratulations]\nNo empty folder was found under selected folders.")
 #endif
 			);		
 		return;
@@ -690,13 +691,14 @@ void UAssetsChecker::ERemoveEmptyFolder(
 	// empty folder found.
 #ifdef ZH_CN
 	EAppReturnType::Type ConfirmResult = DlgMsgLog(EAppMsgType::OkCancel, 
-		"找到如下空文件夹:\n"\
-		+ EmptyFolderPathNames\
-		+ "\n确定删除这些文件夹？");
-#else
-	EAppReturnType::Type ConfirmResult = DlgMsgLog(EAppMsgType::OkCancel, "Empty folder was found:\n"
+		TEXT("找到如下空文件夹:\n")
 		+ EmptyFolderPathNames
-		+ "\n proceed to dele them?");
+		+ TEXT("\n确定删除这些文件夹？"));
+#else
+	EAppReturnType::Type ConfirmResult = DlgMsgLog(EAppMsgType::OkCancel, 
+		TEXT("Empty folder was found:\n")
+		+ EmptyFolderPathNames
+		+ TEXT("\n proceed to dele them?"));
 #endif
 
 	if (ConfirmResult != EAppReturnType::Ok)
@@ -722,17 +724,17 @@ void UAssetsChecker::ERemoveEmptyFolder(
 		else
 		{
 #ifdef ZH_CN
-			NtfMsgLog("删除空文件夹[" + FolderPath + "]失败");
+			NtfMsgLog(TEXT("删除空文件夹[") + FolderPath + TEXT("]失败"));
 #else
-			NtfMsgLog("Failed to delete empty folder:" + FolderPath);
+			NtfMsgLog(TEXT("Failed to delete empty folder:") + FolderPath);
 #endif
 			;
 		}
 	}
 #ifdef ZH_CN
-	NtfMsgLog("成功删除空文件夹[" + FString::FromInt(Counter) + "]");
+	NtfMsgLog(TEXT("成功删除空文件夹[") + FString::FromInt(Counter) + TEXT("]"));
 #else
-	NtfMsgLog("Successfully deleted " + FString::FromInt(Counter) + " folders.");
+	NtfMsgLog(TEXT("Successfully deleted ") + FString::FromInt(Counter) + TEXT(" folders."));
 #endif
 }
 
@@ -820,9 +822,11 @@ void UAssetsChecker::ReplaceName(
 	if (Counter == -1)
 	{
 #ifdef ZH_CN
-		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, "被替换的文本(Origin string)不能为空!!!");
+		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, 
+			TEXT("被替换的文本(Origin string)不能为空!!!"));
 #else
-		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, "Origin string pattern should not be empty.");
+		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, 
+			TEXT("Origin string pattern should not be empty."));
 #endif
 		return;
 	}
@@ -830,9 +834,12 @@ void UAssetsChecker::ReplaceName(
 	if (Counter >= 0)
 	{
 #ifdef ZH_CN
-		NtfMsgLog(FString::FromInt(Counter) + "个资产重命名替换成功");
+		NtfMsgLog(FString::FromInt(Counter) + TEXT("个资产重命名替换成功"));
 #else
-		NtfMsgLog(FString::FromInt(Counter) + " asset" + (Counter > 1 ? "s'" : "'s") + " name has been replaced.");
+		NtfMsgLog(FString::FromInt(Counter) 
+			+ TEXT(" asset") 
+			+ (Counter > 1 ? TEXT("s'") : TEXT("'s")) 
+			+ TEXT(" name has been replaced."));
 #endif
 		return;
 	}
@@ -867,9 +874,9 @@ void UAssetsChecker::EFixUpRedirectors(
 	if (OutRedirectors.Num() == 0)
 	{
 #ifdef ZH_CN
-		NtfMsgLog("[恭喜]\n未找到重定向资产(Redirector)");
+		NtfMsgLog(TEXT("[恭喜]\n未找到重定向资产(Redirector)"));
 #else
-		NtfMsgLog("[Congratulations]\nNo redirector was found");
+		NtfMsgLog(TEXT("[Congratulations]\nNo redirector was found"));
 #endif
 		return;
 	}

@@ -18,6 +18,19 @@
 
 #include "HAL/FileManager.h"
 
+
+#pragma region Filter
+
+#ifdef ZH_CN
+#define CLASSFILTER TEXT("资产类型过滤: ")
+#define USAGEFILTER TEXT("条件过滤")
+#else
+#define CLASSFILTER TEXT("Class Filter: ")
+#define USAGEFILTER TEXT("Condition Filter: ")
+#endif
+
+#pragma endregion
+
 #pragma region ClassFilterComboSourceItems
 #define CLASS_LISTALL TEXT("All")
 #define CLASS_BLUEPRINT TEXT("Blueprint")
@@ -134,11 +147,17 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 					SNew(SBorder)
 				]
 
-				// ToolBar
+				// InfoBar
 				+ SVerticalBox::Slot()
 				.AutoHeight()
 				[
-					SNew(SHorizontalBox)
+					ConstructInfoBox(StoredFolderPaths,GetFontInfo(12))
+				]
+
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				[
+					SNew(SBorder)
 				]
 
 				// drop down menu
@@ -157,7 +176,7 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 						[
 							SNew(STextBlock)
 							.Font(GetFontInfo(12))
-							.Text(FText::FromString("Class Filter:"))
+							.Text(FText::FromString(CLASSFILTER))
 							.Justification(ETextJustify::Right)
 							.ColorAndOpacity(FColor::White)
 						]
@@ -179,7 +198,7 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 						[
 							SNew(STextBlock)
 							.Font(GetFontInfo(12))
-							.Text(FText::FromString("Check Filter:"))
+							.Text(FText::FromString(USAGEFILTER))
 							.Justification(ETextJustify::Right)
 							.ColorAndOpacity(FColor::White)
 						]
@@ -525,11 +544,15 @@ void SAssetsCheckerTab::RefreshAssetsListView()
 {
 	CheckBoxesArray.Empty();
 	AssetsDataSelected.Empty();
+	
+	SelectedCountBlock->SetText(FText::FromString(FString::FromInt(0)));
 
 	if(ConstructedAssetsListView.IsValid())
 	{
 		ConstructedAssetsListView->RebuildList();
 	}
+
+	ListViewCountBlock->SetText(FText::FromString(FString::FromInt(SListViewAssetData.Num())));
 }
 
 TSharedRef<SCheckBox> SAssetsCheckerTab::ConstructCheckBox(
@@ -557,10 +580,15 @@ void SAssetsCheckerTab::OnCheckBoxStateChanged(
 		{
 			AssetsDataSelected.Remove(AssetData);
 		}
+
+		SelectedCountBlock->SetText(FText::FromString(FString::FromInt(AssetsDataSelected.Num())));
+
 		break;
 
 	case ECheckBoxState::Checked:
 		AssetsDataSelected.AddUnique(AssetData);
+		SelectedCountBlock->SetText(FText::FromString(FString::FromInt(AssetsDataSelected.Num())));
+
 		break;
 
 	case ECheckBoxState::Undetermined:
@@ -572,6 +600,185 @@ void SAssetsCheckerTab::OnCheckBoxStateChanged(
 }
 
 #pragma region ConstructAssetInfo
+
+TSharedRef<SVerticalBox> SAssetsCheckerTab::ConstructInfoBox(
+	const TArray<FString>& FolderPaths, 
+	const FSlateFontInfo& FontInfo)
+{
+	TSharedRef<SVerticalBox> AssetsListViewInfoBox =
+		SNew(SVerticalBox)
+
+		// path slot
+		+SVerticalBox::Slot()
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
+		.AutoHeight()
+		.Padding(FMargin(3.f))
+		[
+			ConstructListPathsInfo(FolderPaths, GetFontInfo(9))
+		]
+
+		// count slot
+		+SVerticalBox::Slot()
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
+		.Padding(FMargin(1.5f))
+		[
+			ConstructListAssetsCountInfo(FontInfo)
+		];
+
+	return AssetsListViewInfoBox;
+}
+
+TSharedRef<STextBlock> SAssetsCheckerTab::ConstructListPathsInfo(
+	const TArray<FString>& FolderPaths, 
+	const FSlateFontInfo& FontInfo)
+{
+	FString PathsInfo;
+
+#ifdef ZH_CN
+	PathsInfo += TEXT("检查路径:\n");
+#else
+	PathsInfo += TEXT("Selected Folder Paths:\n");
+#endif
+
+	for (const FString & p : FolderPaths)
+	{
+		PathsInfo += p;
+		PathsInfo += "\n";
+	}
+
+	return ConstructNormalTextBlock(PathsInfo, FontInfo, FColor::Cyan);
+}
+
+TSharedRef<SHorizontalBox> SAssetsCheckerTab::ConstructListAssetsCountInfo(
+	const FSlateFontInfo& FontInfo)
+{
+	ListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewAssetData.Num()), FontInfo, FColor::Green);
+	SelectedCountBlock = ConstructNormalTextBlock(FString::FromInt(AssetsDataSelected.Num()), FontInfo, FColor::Emerald);
+	ClassListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewClassFilterAssetData.Num()), FontInfo, FColor::Yellow);
+
+	TSharedRef<SHorizontalBox> ListAssetsCountInfo =
+
+		SNew(SHorizontalBox)
+
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.HAlign(HAlign_Left)
+		.VAlign(VAlign_Center)
+		.Padding(FMargin(4.f))
+		[
+			SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Left)
+				.VAlign(VAlign_Center)
+				[
+#ifdef ZH_CN
+					ConstructNormalTextBlock(TEXT("总资产数 -> "), FontInfo, FColor::White, TEXT("选择文件夹下的所有资产数量"))
+#else
+					ConstructNormalTextBlock(TEXT("All Assets -> "), FontInfo, FColor::White, TEXT("All assets in selected folder(s)."))
+#endif
+				]
+
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Left)
+				.VAlign(VAlign_Center)
+				[
+					ConstructNormalTextBlock(FString::FromInt(StoredAssetsData.Num()), FontInfo, FColor::Orange)
+				]
+		]
+
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.HAlign(HAlign_Left)
+		.VAlign(VAlign_Center)
+		.Padding(FMargin(4.f))
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.HAlign(HAlign_Left)
+			.VAlign(VAlign_Center)
+			[
+#ifdef ZH_CN
+				ConstructNormalTextBlock(TEXT("所选类(Class)资产数量 -> "), FontInfo, FColor::White, TEXT("所选类型的资产数量"))
+#else
+				ConstructNormalTextBlock(TEXT("After Class Filter -> "), FontInfo, FColor::White, TEXT("Assets collected after class filter."))
+#endif
+			]
+
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.HAlign(HAlign_Left)
+			.VAlign(VAlign_Center)
+			[
+				ClassListViewCountBlock.ToSharedRef()
+			]
+		]
+
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.HAlign(HAlign_Left)
+		.VAlign(VAlign_Center)
+		.Padding(FMargin(4.f))
+		[
+			SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Left)
+				.VAlign(VAlign_Center)
+				[
+#ifdef ZH_CN
+					ConstructNormalTextBlock(TEXT("筛选后资产数量 -> "), FontInfo, FColor::White, TEXT("视口中筛选出的素材数量"))
+#else
+					ConstructNormalTextBlock(TEXT("List Out Assets -> "), FontInfo, FColor::White, TEXT("Assets listed in view port."))
+#endif
+				]
+
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Left)
+				.VAlign(VAlign_Center)
+				[
+					ListViewCountBlock.ToSharedRef()
+				]
+		]
+
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.HAlign(HAlign_Left)
+		.VAlign(VAlign_Center)
+		.Padding(FMargin(4.f))
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.HAlign(HAlign_Left)
+			.VAlign(VAlign_Center)
+			[
+
+
+#ifdef ZH_CN
+				ConstructNormalTextBlock(TEXT("选择资产数量 -> "), FontInfo, FColor::White, TEXT("选择的资产数量"))
+#else
+				ConstructNormalTextBlock(TEXT("Selected Assets -> "), FontInfo, FColor::White, TEXT("Assets selected count."))
+#endif
+			]
+
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.HAlign(HAlign_Left)
+			.VAlign(VAlign_Center)
+			[
+				SelectedCountBlock.ToSharedRef()
+			]
+		];
+		
+
+	return ListAssetsCountInfo;
+}
 
 TSharedRef<STextBlock> SAssetsCheckerTab::ConstructAssetNameRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
@@ -648,11 +855,11 @@ FReply SAssetsCheckerTab::OnSingleAssetDeleteButtonClicked(
 #ifdef ZH_CN
 		EAppReturnType::Type result = DlgMsg(EAppMsgType::OkCancel,
 			ClickedAssetData->AssetName.ToString() 
-			+ "已被其他资产引用\n\n确定删除资产？");
+			+ TEXT("已被其他资产引用\n\n确定删除资产？"));
 #else
 		EAppReturnType::Type result = DlgMsg(EAppMsgType::OkCancel,
 			ClickedAssetData->AssetName.ToString()
-			+ " was referenced.\n\nConfirm to delete this asset?");
+			+ TEXT(" was referenced.\n\nConfirm to delete this asset?"));
 #endif
 
 		if (result != EAppReturnType::Ok)
@@ -667,9 +874,9 @@ FReply SAssetsCheckerTab::OnSingleAssetDeleteButtonClicked(
 	{
 		// log
 #ifdef ZH_CN
-		NtfMsgLog("成功删除" + ClickedAssetData->AssetName.ToString());
+		NtfMsgLog(TEXT("成功删除") + ClickedAssetData->AssetName.ToString());
 #else
-		NtfMsgLog("Successfully deleted " + ClickedAssetData->AssetName.ToString());
+		NtfMsgLog(TEXT("Successfully deleted ") + ClickedAssetData->AssetName.ToString());
 #endif
 
 		// update slistview
@@ -773,18 +980,22 @@ FReply SAssetsCheckerTab::OnSingleTextureAsset2KButtonClicked(
 
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
 #ifdef ZH_CN
-			"\n此贴图无需修复 或 修复失败"
+				TEXT("\n此贴图无需修复 或 修复失败")
 #else
-			"\nFaild or no need to fix this texture."
+				TEXT("\nFaild or no need to fix this texture.")
 #endif
 			);
 		}
 		else
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n成功限制贴图大小为" + FString::FromInt(maxSize));
+			NtfyMsg(ClickedAssetData->AssetName.ToString() 
+				+ TEXT("\n成功限制贴图大小为") 
+				+ FString::FromInt(maxSize));
 #else
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully resize to " + FString::FromInt(maxSize));
+			NtfyMsg(ClickedAssetData->AssetName.ToString() 
+				+ TEXT("\nSuccessfully resize to ")
+				+ FString::FromInt(maxSize));
 #endif
 		};
 	}
@@ -819,18 +1030,24 @@ FReply SAssetsCheckerTab::OnSingleTextureAsset1KButtonClicked(
 		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n此贴图无需修复 或 修复失败");
+			NtfyMsg(ClickedAssetData->AssetName.ToString() 
+				+ TEXT("\n此贴图无需修复 或 修复失败"));
 #else
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nFaild or no need to fix this texture.");
+			NtfyMsg(ClickedAssetData->AssetName.ToString() 
+				+ TEXT("\nFaild or no need to fix this texture."));
 #endif
 			;
 		}
 		else
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n成功限制贴图大小为" + FString::FromInt(maxSize));
+			NtfyMsg(ClickedAssetData->AssetName.ToString() 
+				+ TEXT("\n成功限制贴图大小为")
+				+ FString::FromInt(maxSize));
 #else
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully resize to " + FString::FromInt(maxSize));
+			NtfyMsg(ClickedAssetData->AssetName.ToString() 
+				+ TEXT("\nSuccessfully resize to ")
+				+ FString::FromInt(maxSize));
 #endif
 		};
 	}
@@ -865,18 +1082,24 @@ FReply SAssetsCheckerTab::OnSingleTextureAsset512ButtonClicked(
 		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n此贴图无需修复 或 修复失败");
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
+				TEXT("\n此贴图无需修复 或 修复失败"));
 #else
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nFaild or no need to fix this texture.");
+			NtfyMsg(ClickedAssetData->AssetName.ToString() 
+				+ TEXT("\nFaild or no need to fix this texture."));
 #endif
 			;
 		}
 		else
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n成功限制贴图大小为" + FString::FromInt(maxSize));
+			NtfyMsg(ClickedAssetData->AssetName.ToString() 
+				+ TEXT("\n成功限制贴图大小为") 
+				+ FString::FromInt(maxSize));
 #else
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully resize to " + FString::FromInt(maxSize));
+			NtfyMsg(ClickedAssetData->AssetName.ToString() 
+				+ TEXT("\nSuccessfully resize to ") 
+				+ FString::FromInt(maxSize));
 #endif
 		};
 	}
@@ -911,18 +1134,22 @@ FReply SAssetsCheckerTab::OnSingleTextureAssetResetButtonClicked(
 		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n此贴图无需修复 或 修复失败");
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
+				TEXT("\n此贴图无需修复 或 修复失败"));
 #else
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nFaild or no need to fix this texture.");
+			NtfyMsg(ClickedAssetData->AssetName.ToString() 
+				TEXT(+ "\nFaild or no need to fix this texture."));
 #endif;
 			;
 	}
 		else
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n成功解除贴图大小限制");
+			NtfyMsg(ClickedAssetData->AssetName.ToString() 
+				+ TEXT("\n成功解除贴图大小限制"));
 #else
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully resize to 0");
+			NtfyMsg(ClickedAssetData->AssetName.ToString() 
+				+ TEXT("\nSuccessfully resize to origion"));
 #endif
 			;
 };
@@ -1035,9 +1262,9 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructDeleteAllSelectedButton()
 		.OnClicked(this, &SAssetsCheckerTab::OnDeleteAllSelectedButtonClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	DeleteAllSelectedButton->SetContent(ConstructTextForButtons("删除选择的资产"));
+	DeleteAllSelectedButton->SetContent(ConstructTextForButtons(TEXT("删除选择的资产")));
 #else
-	DeleteAllSelectedButton->SetContent(ConstructTextForButtons("Delete All Selected"));
+	DeleteAllSelectedButton->SetContent(ConstructTextForButtons(TEXT("Delete All Selected")));
 #endif
 	return DeleteAllSelectedButton;
 }
@@ -1081,9 +1308,9 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructSelectAllButton()
 		.ContentPadding(FMargin(5.f));
 
 #ifdef ZH_CN
-	SelectAllButton->SetContent(ConstructTextForButtons("全选"));
+	SelectAllButton->SetContent(ConstructTextForButtons(TEXT("全选")));
 #else
-	SelectAllButton->SetContent(ConstructTextForButtons("Select All"));
+	SelectAllButton->SetContent(ConstructTextForButtons(TEXT("Select All")));
 #endif
 
 	return SelectAllButton;
@@ -1114,9 +1341,9 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructDeselectAllButton()
 		.OnClicked(this, &SAssetsCheckerTab::OnDeselectAllButtonClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	DeselectAllButton->SetContent(ConstructTextForButtons("取消全选"));
+	DeselectAllButton->SetContent(ConstructTextForButtons(TEXT("取消全选")));
 #else
-	DeselectAllButton->SetContent(ConstructTextForButtons("Deselect All"));
+	DeselectAllButton->SetContent(ConstructTextForButtons(TEXT("Deselect All")));
 #endif
 
 	return DeselectAllButton;
@@ -1151,9 +1378,9 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructFixSelectedButton()
 		.OnClicked(this, &SAssetsCheckerTab::OnSelectFixSelectedClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	DeselectAllButton->SetContent(ConstructTextForButtons("修复选择的资产"));
+	DeselectAllButton->SetContent(ConstructTextForButtons(TEXT("修复选择的资产")));
 #else
-	DeselectAllButton->SetContent(ConstructTextForButtons("Fix All Selected"));
+	DeselectAllButton->SetContent(ConstructTextForButtons(TEXT("Fix All Selected")));
 #endif
 
 	return DeselectAllButton;
@@ -1197,9 +1424,9 @@ FReply SAssetsCheckerTab::OnSelectFixSelectedClicked()
 		return FReply::Handled();
 	}
 #ifdef ZH_CN
-	DlgMsgLog(EAppMsgType::Ok, "[检查过滤器]选择错误\n应该选择[资产前缀错误].");
+	DlgMsgLog(EAppMsgType::Ok, FString(USAGEFILTER) + FString(TEXT("选择错误\n应该选择[资产前缀错误]")));
 #else
-	DlgMsgLog(EAppMsgType::Ok,"Choose a valid check filter type!\nShould be [PrefixError].");
+	DlgMsgLog(EAppMsgType::Ok, FString(TEXT("Choose a valid ")) + FString(USAGEFILTER) + FString(TEXT(" type!\nShould be[PrefixError]."))));
 #endif
 	return FReply::Handled();
 }
@@ -1215,9 +1442,9 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructFixUpRedirectorButton()
 		.OnClicked(this, &SAssetsCheckerTab::OnFixUpRedirectorButtonClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- 修复所选文件夹中的重定向器(Redirector) --"));
+	FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- 修复所选文件夹中的重定向器(Redirector) --")));
 #else
-	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- Fix Up Redirectors In Selected Folders --"));
+	FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- Fix Up Redirectors In Selected Folders --")));
 #endif
 
 	return FixUpRedirectorButton;
@@ -1240,9 +1467,9 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructOutputViewListInfoButton()
 		.ContentPadding(FMargin(5.f));
 
 #ifdef ZH_CN
-	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- 输出列表到文件 --"));
+	FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- 输出列表到文件 --")));
 #else
-	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- Output view list to log file --"));
+	FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- Output view list to log file --")));
 #endif
 
 	return FixUpRedirectorButton;
@@ -1263,15 +1490,15 @@ FReply SAssetsCheckerTab::OnOutputViewListInfoButtonClicked()
 	}
 
 	Output += "\n";
-	Output += "Class Filter:\n";
+	Output += L"Class Filter:\n";
 	Output += ClassFilterComboDisplayText->GetText().ToString();
 	Output += "\n\n";
 
-	Output += "Problem Filter:\n";
+	Output += L"Problem Filter:\n";
 	Output += UsageFilterComboDisplayText->GetText().ToString();
 	Output += "\n\n";
 
-	Output += "Files:\n";
+	Output += L"Files:\n";
 	
 	for (TSharedPtr<FAssetData> asset: SListViewAssetData)
 	{
@@ -1329,17 +1556,17 @@ FReply SAssetsCheckerTab::OnOutputViewListInfoButtonClicked()
 		EFileWrite::FILEWRITE_Append))
 	{
 #ifdef ZH_CN
-		NtfMsgLog("成功输出文件到" + FilePath);
+		NtfMsgLog(TEXT("成功输出文件到") + FilePath);
 #else
-		NtfMsgLog("Successfully saved assets manager log to " + FilePath);
+		NtfMsgLog(TEXT("Successfully saved assets manager log to ") + FilePath);
 #endif
 		return FReply::Handled();
 	};
 
 #ifdef ZH_CN
-	NtfMsgLog("输出文件到" + FilePath + "失败");
+	NtfMsgLog(TEXT("输出文件到") + FilePath + TEXT("失败"));
 #else
-	NtfMsgLog("Failed saving assets manager log to " + FilePath);
+	NtfMsgLog(TEXT("Failed saving assets manager log to ") + FilePath);
 #endif
 	;	return FReply::Handled();
 	
@@ -1417,7 +1644,12 @@ void SAssetsCheckerTab::OnClassFilterButtonChanged(
 
 	ConstuctClassFilterList(ClassFilterCurrent);
 	UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewAssetData);
-	// for texture to add option
+	
+	// Update count
+
+	ClassListViewCountBlock->SetText(FText::FromString(FString::FromInt(SListViewClassFilterAssetData.Num())));
+	
+	// add option
 
 	m_ClassCheckState = DefaultClassCheckState;
 	
@@ -1503,14 +1735,14 @@ void SAssetsCheckerTab::OnUsageFilterButtonChanged(
 		{
 #ifdef ZH_CN
 			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
-				"选择的文件太多["
+				TEXT("选择的文件太多[")
 				+FString::FromInt(SListViewClassFilterAssetData.Num()) 
-				+ "个文件]\n由于需要查找所有引用项，这将会消耗大量时间.\n\n是否继续?");
+				+ TEXT("个文件]\n由于需要查找所有引用项，这将会消耗大量时间!!!\n\n是否继续?"));
 #else
 			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
-				"The list selected to check is too large.["
+				TEXT("The list selected to check is too large.[")
 				+ FString::FromInt(SListViewClassFilterAssetData.Num())
-				+ " assets]\nFilter unused assets will cost a lot of time.\n\nReady to proceed?");
+				+ TEXT(" assets]\nFilter unused assets will cost a lot of time.\n\nReady to proceed?"));
 #endif
 
 			if (result != EAppReturnType::Yes)

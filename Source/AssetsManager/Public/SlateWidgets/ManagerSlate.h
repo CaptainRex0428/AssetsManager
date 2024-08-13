@@ -97,8 +97,6 @@ private:
 		TSharedPtr<FAssetData> AssetDataToDisplay,
 		const TSharedRef<STableViewBase>& OwnerTable);
 
-	
-
 #pragma region ConstructAssetInfo
 
 	// Construct CheckBox
@@ -109,6 +107,21 @@ private:
 
 #pragma region ConstructAssetInfo
 	
+	// Construct Assets List info 
+	TSharedRef<SVerticalBox> ConstructInfoBox(
+		const TArray<FString> & FolderPaths,
+		const FSlateFontInfo& FontInfo);
+
+	TSharedRef<STextBlock> ConstructListPathsInfo(
+		const TArray<FString>& FolderPaths,
+		const FSlateFontInfo& FontInfo);
+
+	TSharedRef<SHorizontalBox> ConstructListAssetsCountInfo(
+		const FSlateFontInfo& FontInfo);
+	TSharedPtr<STextBlock> ListViewCountBlock;
+	TSharedPtr<STextBlock> ClassListViewCountBlock;
+	TSharedPtr<STextBlock> SelectedCountBlock;
+
 	// Construct Standard Name Box
 	TSharedRef<STextBlock> ConstructAssetNameRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
