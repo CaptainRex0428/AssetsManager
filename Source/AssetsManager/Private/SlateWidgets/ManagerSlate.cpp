@@ -1490,11 +1490,13 @@ FReply SAssetsCheckerTab::OnOutputViewListInfoButtonClicked()
 	}
 
 	Output += "\n";
-	Output += L"Class Filter:\n";
+	Output += CLASSFILTER;
+	Output += L":\n";
 	Output += ClassFilterComboDisplayText->GetText().ToString();
 	Output += "\n\n";
 
-	Output += L"Problem Filter:\n";
+	Output += USAGEFILTER;
+	Output += L":\n";
 	Output += UsageFilterComboDisplayText->GetText().ToString();
 	Output += "\n\n";
 
@@ -1507,7 +1509,7 @@ FReply SAssetsCheckerTab::OnOutputViewListInfoButtonClicked()
 		FString AssetClass = asset->GetClass()->GetName();
 
 		FVector2D MaxInGameTextureSize = UAssetsChecker::EGetTextureAssetMaxInGameSize(*asset);
-		FVector2D SourceTextureSize = UAssetsChecker::EGetTextureAssetMaxInGameSize(*asset);
+		FVector2D SourceTextureSize = UAssetsChecker::EGetTextureAssetSourceSize(*asset);
 
 		FString MaxInGameTextureSizeString = FString::FromInt(MaxInGameTextureSize.X) + "x" + FString::FromInt(MaxInGameTextureSize.Y);
 		FString SourceTextureSizeString = FString::FromInt(SourceTextureSize.X) + "x" + FString::FromInt(SourceTextureSize.Y);
@@ -1521,11 +1523,11 @@ FReply SAssetsCheckerTab::OnOutputViewListInfoButtonClicked()
 
 		if (m_ClassCheckState == Texture)
 		{
-			Output += FString::Format(TEXT("[{0}][MaxInGameSize:{3}][SourceGameSize:{4}]{1}({2})\n"),args);
+			Output += FString::Format(TEXT("[{0}] [MaxInGameSize:{3}] [SourceGameSize:{4}] {1} ({2})\n"),args);
 		}
 		else
 		{
-			Output += FString::Format(TEXT("[{0}]{1}({2})\n"), args);
+			Output += FString::Format(TEXT("[{0}] {1} ({2})\n"), args);
 		}
 	}
 
