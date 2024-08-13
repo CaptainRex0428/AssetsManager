@@ -395,18 +395,41 @@ FVector2D UAssetsChecker::EGetTextureAssetMaxInGameSize(
 
 	size.X = AssetAsT->GetImportedSize().X;
 	size.Y = AssetAsT->GetImportedSize().Y;
+	
+	uint32 bias = AssetAsT->GetCachedLODBias();
 
 	int32 MaximumTextureSize = AssetAsT->MaxTextureSize;
 	
-	if (MaximumTextureSize == 0)
+	if (MaximumTextureSize == 0 && bias == 0)
 	{
 		return size;
 	}
 
-	float rate = (MaximumTextureSize / (size.X > size.Y ? size.X : size.Y));
-
+	float rate;
+	
+	if (MaximumTextureSize == 0)
+	{
+		rate = 1;
+	}
+	else
+	{
+		rate = (MaximumTextureSize / (size.X > size.Y ? size.X : size.Y));
+	}
+	
 	size.X *= (rate>1? 1:rate);
 	size.Y *= (rate>1? 1:rate);
+
+	if (bias > 0)
+	{
+		NtfyMsg("Gotcha");
+
+		double scale = pow(2, bias);
+		size.X /= scale;
+		size.Y /= scale;
+
+		size.X = size.X > 1 ? size.X : 1;
+		size.Y = size.Y > 1 ? size.Y : 1;
+	}
 
 	return size;
 }
@@ -906,12 +929,29 @@ void UAssetsChecker::ECopyAssetsPtrList(
 }
 
 void UAssetsChecker::ECheckerCheck(
-	const TArray<FString>& Path)
+	const FAssetData& AssetData)
 {
+	UObject* Ast = AssetData.GetAsset();
 
-	DlgMsg(EAppMsgType::Ok, "ReayToTest");
+	if (Ast->IsA<UTexture2D>())
+	{
+		UTexture2D* AsTexture = Cast<UTexture2D>(Ast);
+		uint32 group = AsTexture->GetMaximumDimension();
+
+		DlgMsgLog(EAppMsgType::Ok, FString::FromInt(group));
+	}
 }
 
+void UAssetsChecker::CheckCheck()
+{
+	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
+
+	for (const FAssetData & asset : SelectedAssetsData)
+	{
+		ECheckerCheck(asset);
+	}
+}
+	
 const TMap<UClass*, FString>& UAssetsChecker::EGetPrefixMap()
 {
 	return PrefixMap;

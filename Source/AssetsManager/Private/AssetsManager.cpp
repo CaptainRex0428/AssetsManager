@@ -40,14 +40,13 @@ void FAssetsManagerModule::OnDeleteEmptyFolderButtonClicked()
 	UAssetsChecker::ERemoveEmptyFolder(SelectedContentFolderPaths);
 }
 
-void FAssetsManagerModule::OnAssetsCheckerButtonClicked()
+void FAssetsManagerModule::OnAssetsManagerButtonClicked()
 {
 	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDERMANAGERTABNAME));
 }
 
 void FAssetsManagerModule::OnTestButtonClicked()
 {
-	UAssetsChecker::ECheckerCheck(SelectedContentFolderPaths);
 }
 
 // Second bind. Define the details for the menu entry.
@@ -75,7 +74,7 @@ void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 		FText::FromString(TEXT(CONTENTFOLDERMANAGERTABNAME)),
 		FText::FromString(TEXT("A tab window to check the assets inside the seleted folder.")),
 		FSlateIcon(),
-		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsCheckerButtonClicked)
+		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerButtonClicked)
 	);
 
 	/*MenuBuilder.AddMenuEntry

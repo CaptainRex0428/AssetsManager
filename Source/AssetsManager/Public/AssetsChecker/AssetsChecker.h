@@ -152,7 +152,10 @@ public:
 #pragma endregion
 
 	// 留着为了测试 真没别的
-	static void ECheckerCheck(const TArray<FString>& Path);
+	static void ECheckerCheck(const FAssetData & AssetData);
+
+	UFUNCTION(CallInEditor)
+	void CheckCheck();
 #pragma endregion
 
 #pragma region Call In Editor

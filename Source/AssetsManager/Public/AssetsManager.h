@@ -21,7 +21,7 @@ private:
 
 	void OnDeleteUnusedAssetButtonClicked();
 	void OnDeleteEmptyFolderButtonClicked();
-	void OnAssetsCheckerButtonClicked();
+	void OnAssetsManagerButtonClicked();
 	void OnTestButtonClicked();
 
 	void AddEntryCBMenuExtension(class FMenuBuilder& MenuBuilder);

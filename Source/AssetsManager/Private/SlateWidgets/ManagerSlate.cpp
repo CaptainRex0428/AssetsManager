@@ -304,9 +304,13 @@ TSharedRef<STextBlock> SAssetsCheckerTab::ConstructNormalTextBlock(
 
 TSharedRef<SListView<TSharedPtr<FAssetData>>> SAssetsCheckerTab::ConstructAssetsListView()
 {
+	FScrollBarStyle scrollbarStyle;
+	scrollbarStyle.SetThickness(30);
+
 	ConstructedAssetsListView =
 		SNew(SListView<TSharedPtr<FAssetData>>)
 		.ItemHeight(36.f)
+		.ScrollBarStyle(&scrollbarStyle)
 		.ListItemsSource(&SListViewAssetData)
 		.OnGenerateRow(this, &SAssetsCheckerTab::OnGenerateRowForlist)
 		.OnMouseButtonDoubleClick(this,&SAssetsCheckerTab::OnRowMouseButtonDoubleClicked);

@@ -65,7 +65,8 @@ private:
 #pragma endregion
 
 #pragma region ButtonTextCustruct
-	TSharedRef<STextBlock> ConstructTextForButtons(const FString& TextContent);
+	TSharedRef<STextBlock> ConstructTextForButtons(
+		const FString& TextContent);
 #pragma endregion
 
 #pragma region OnGenerateRowForlist
