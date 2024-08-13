@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma warning(disable: 5103)
 
@@ -101,7 +101,7 @@ void UAssetsChecker::DuplicateAssets(
 	if (Counter <= 0)
 	{
 #ifdef ZH_CN
-		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, "ÊäÈëµÄ¸´ÖÆÊıÁ¿²»¿ÉÒÔĞ¡ÓÚ0");
+		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, "è¾“å…¥çš„å¤åˆ¶æ•°é‡ä¸å¯ä»¥å°äº0");
 #else
 		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, "Number input is invalid.");
 #endif
@@ -109,7 +109,7 @@ void UAssetsChecker::DuplicateAssets(
 		
 	}
 #ifdef ZH_CN
-	FString Msg = "³É¹¦¸´ÖÆ" + FString::FromInt(Counter) + "ÎÄ¼ş";
+	FString Msg = "æˆåŠŸå¤åˆ¶" + FString::FromInt(Counter) + "æ–‡ä»¶";
 #else
 	FString Msg = FString::FromInt(Counter) + " files copied.";
 #endif
@@ -159,9 +159,9 @@ bool UAssetsChecker::EConfirmPrefixes(
 
 #ifdef ZH_CN
 	EAppReturnType::Type result =  DlgMsgLog(EAppMsgType::YesNo, 
-		"´ıÖØÃüÃû×Ê²úÊı: " + FString::FromInt(ShouldRenameCounter)
-		+ "\nÖØÃüÃû×Ê²úÔ¤ÀÀ:\n" + NewAssetsName
-		+ "\nÊÇ·ñÈ·¶¨¼ÌĞø£¿");
+		"å¾…é‡å‘½åèµ„äº§æ•°: " + FString::FromInt(ShouldRenameCounter)
+		+ "\né‡å‘½åèµ„äº§é¢„è§ˆ:\n" + NewAssetsName
+		+ "\næ˜¯å¦ç¡®å®šç»§ç»­ï¼Ÿ");
 #else
 	EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo, "Assets to rename count: " + FString::FromInt(ShouldRenameCounter)
 		+ "\nRename result preview:\n" + NewAssetsName
@@ -191,7 +191,7 @@ void UAssetsChecker::EAddPrefixes(
 		if (!prefix || prefix->IsEmpty())
 		{
 #ifdef ZH_CN
-			NtfMsgLog("ÕÒ²»µ½×Ê²ú[" + selectedAsset.GetClass()->GetName()+"]¶ÔÓ¦µÄÇ°×º");
+			NtfMsgLog("æ‰¾ä¸åˆ°èµ„äº§[" + selectedAsset.GetClass()->GetName()+"]å¯¹åº”çš„å‰ç¼€");
 #else
 			NtfMsgLog("Can not find prefix for class " + selectedAsset.GetClass()->GetName());
 #endif
@@ -202,7 +202,7 @@ void UAssetsChecker::EAddPrefixes(
 		if (OldName.StartsWith(*prefix))
 		{
 #ifdef ZH_CN
-			NtfMsgLog(OldName + "ÒÑÓĞÕıÈ·µÄÃüÃûÇ°×º");
+			NtfMsgLog(OldName + "å·²æœ‰æ­£ç¡®çš„å‘½åå‰ç¼€");
 #else
 			NtfMsgLog(OldName + " alreay has prefix added");
 #endif
@@ -225,8 +225,8 @@ void UAssetsChecker::EAddPrefixes(
 	}
 
 #ifdef ZH_CN
-	if (SuccessCounter > 0)	NtfMsgLog("³É¹¦ÖØÃüÃû" + FString::FromInt(SuccessCounter) + "¸ö×Ê²ú");
-	if (AlreadyCounter > 0) NtfMsgLog(FString::FromInt(AlreadyCounter) + "¸ö×Ê²úÒÑÓĞÕıÈ·ÃüÃûÇ°×º");
+	if (SuccessCounter > 0)	NtfMsgLog("æˆåŠŸé‡å‘½å" + FString::FromInt(SuccessCounter) + "ä¸ªèµ„äº§");
+	if (AlreadyCounter > 0) NtfMsgLog(FString::FromInt(AlreadyCounter) + "ä¸ªèµ„äº§å·²æœ‰æ­£ç¡®å‘½åå‰ç¼€");
 #else
 	if (SuccessCounter > 0)	NtfMsgLog("Successfully renamed " + FString::FromInt(SuccessCounter) + " asset" + (SuccessCounter > 1 ? "s" : ""));
 	if (AlreadyCounter > 0) NtfMsgLog(FString::FromInt(AlreadyCounter) + " asset" + (AlreadyCounter > 1 ? "s" : "") + " already ha" + (AlreadyCounter > 1 ? "ve" : "s") + " prefix");
@@ -555,7 +555,7 @@ void UAssetsChecker::ERemoveUnusedAssets(
 	if (UnusedAssetsData.Num() == 0)
 	{
 #ifdef ZH_CN
-		DlgMsg(EAppMsgType::Ok, "[¹§Ï²]\nÃ»ÓĞÕÒµ½ÈÎºÎÎ´±»ÒıÓÃµÄ×Ê²ú", false);
+		DlgMsg(EAppMsgType::Ok, "[æ­å–œ]\næ²¡æœ‰æ‰¾åˆ°ä»»ä½•æœªè¢«å¼•ç”¨çš„èµ„äº§", false);
 #else
 		DlgMsg(EAppMsgType::Ok, "[Congratulations]\nNo unused asset found among selected assets.", false);
 #endif
@@ -567,7 +567,7 @@ void UAssetsChecker::ERemoveUnusedAssets(
 	if (NumOfAssetsDeleted == 0) return;
 
 #ifdef ZH_CN
-	NtfMsgLog(FString::FromInt(NumOfAssetsDeleted) + "¸öÎ´Ê¹ÓÃ×Ê²ú±»³É¹¦É¾³ı");
+	NtfMsgLog(FString::FromInt(NumOfAssetsDeleted) + "ä¸ªæœªä½¿ç”¨èµ„äº§è¢«æˆåŠŸåˆ é™¤");
 #else
 	NtfMsgLog(FString::FromInt(NumOfAssetsDeleted) + " assets have been deleted");
 #endif
@@ -676,20 +676,23 @@ void UAssetsChecker::ERemoveEmptyFolder(
 	// no empty folder found.
 	if (EmptyFolderPath.Num() == 0)
 	{
+
+		DlgMsgLog(EAppMsgType::Ok, 
 #ifdef ZH_CN
-		DlgMsgLog(EAppMsgType::Ok, "[¹§Ï²]\n´ËÂ·¾¶ÏÂÎ´ÕÒµ½¿ÕÎÄ¼ş¼Ğ");
+		"[æ­å–œ]\næ­¤è·¯å¾„ä¸‹æœªæ‰¾åˆ°ç©ºæ–‡ä»¶å¤¹"
 #else
-		DlgMsgLog(EAppMsgType::Ok, "[Congratulations]\nNo empty folder was found under selected folders.");
+		"[Congratulations]\nNo empty folder was found under selected folders."
 #endif
+			);		
 		return;
 	}
 
 	// empty folder found.
 #ifdef ZH_CN
 	EAppReturnType::Type ConfirmResult = DlgMsgLog(EAppMsgType::OkCancel, 
-		"ÕÒµ½ÈçÏÂ¿ÕÎÄ¼ş¼Ğ:\n"
-		+ EmptyFolderPathNames
-		+ "\nÈ·¶¨É¾³ıÕâĞ©ÎÄ¼ş¼Ğ£¿");
+		"æ‰¾åˆ°å¦‚ä¸‹ç©ºæ–‡ä»¶å¤¹:\n"\
+		+ EmptyFolderPathNames\
+		+ "\nç¡®å®šåˆ é™¤è¿™äº›æ–‡ä»¶å¤¹ï¼Ÿ");
 #else
 	EAppReturnType::Type ConfirmResult = DlgMsgLog(EAppMsgType::OkCancel, "Empty folder was found:\n"
 		+ EmptyFolderPathNames
@@ -698,11 +701,15 @@ void UAssetsChecker::ERemoveEmptyFolder(
 
 	if (ConfirmResult != EAppReturnType::Ok)
 	{
+
+		NtfyMsg(
 #ifdef ZH_CN
-		NtfyMsg("È¡ÏûÉ¾³ı¿ÕÎÄ¼ş¼Ğ");
+		TEXT("å–æ¶ˆåˆ é™¤ç©ºæ–‡ä»¶å¤¹")
 #else
-		NtfyMsg("Canceled deleting empty folder.");
+		TEXT("Canceled deleting empty folder.")
 #endif
+		);		
+		
 		return;
 	};
 
@@ -715,14 +722,15 @@ void UAssetsChecker::ERemoveEmptyFolder(
 		else
 		{
 #ifdef ZH_CN
-			NtfMsgLog("É¾³ı¿ÕÎÄ¼ş¼Ğ[" + FolderPath + "]Ê§°Ü");
+			NtfMsgLog("åˆ é™¤ç©ºæ–‡ä»¶å¤¹[" + FolderPath + "]å¤±è´¥");
 #else
 			NtfMsgLog("Failed to delete empty folder:" + FolderPath);
 #endif
+			;
 		}
 	}
 #ifdef ZH_CN
-	NtfMsgLog("³É¹¦É¾³ı¿ÕÎÄ¼ş¼Ğ[" + FString::FromInt(Counter) + "]");
+	NtfMsgLog("æˆåŠŸåˆ é™¤ç©ºæ–‡ä»¶å¤¹[" + FString::FromInt(Counter) + "]");
 #else
 	NtfMsgLog("Successfully deleted " + FString::FromInt(Counter) + " folders.");
 #endif
@@ -812,7 +820,7 @@ void UAssetsChecker::ReplaceName(
 	if (Counter == -1)
 	{
 #ifdef ZH_CN
-		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, "±»Ìæ»»µÄÎÄ±¾(Origin string)²»ÄÜÎª¿Õ!!!");
+		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, "è¢«æ›¿æ¢çš„æ–‡æœ¬(Origin string)ä¸èƒ½ä¸ºç©º!!!");
 #else
 		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, "Origin string pattern should not be empty.");
 #endif
@@ -822,7 +830,7 @@ void UAssetsChecker::ReplaceName(
 	if (Counter >= 0)
 	{
 #ifdef ZH_CN
-		NtfMsgLog(FString::FromInt(Counter) + "¸ö×Ê²úÖØÃüÃûÌæ»»³É¹¦");
+		NtfMsgLog(FString::FromInt(Counter) + "ä¸ªèµ„äº§é‡å‘½åæ›¿æ¢æˆåŠŸ");
 #else
 		NtfMsgLog(FString::FromInt(Counter) + " asset" + (Counter > 1 ? "s'" : "'s") + " name has been replaced.");
 #endif
@@ -859,7 +867,7 @@ void UAssetsChecker::EFixUpRedirectors(
 	if (OutRedirectors.Num() == 0)
 	{
 #ifdef ZH_CN
-		NtfMsgLog("[¹§Ï²]\nÎ´ÕÒµ½ÖØ¶¨Ïò×Ê²ú(Redirector)");
+		NtfMsgLog("[æ­å–œ]\næœªæ‰¾åˆ°é‡å®šå‘èµ„äº§(Redirector)");
 #else
 		NtfMsgLog("[Congratulations]\nNo redirector was found");
 #endif

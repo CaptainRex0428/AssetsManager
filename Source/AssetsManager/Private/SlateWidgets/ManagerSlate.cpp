@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SlateWidgets/ManagerSlate.h"
 
@@ -43,12 +43,12 @@
 
 #ifdef ZH_CN
 
-#define USAGE_NONE TEXT("ÎŞ")
-#define USAGE_UNUSED TEXT("Î´Ê¹ÓÃµÄ×Ê²ú")
-#define USAGE_MAXINGAMESIZEERROR TEXT("ÓÎÏ·ÄÚÌùÍ¼´óĞ¡´íÎó")
-#define USAGE_SOURCESIZEERROR TEXT("Ô­Ê¼ÌùÍ¼´óĞ¡´íÎó")
-#define USAGE_PREFIXERROR TEXT("×Ê²úÇ°×º´íÎó")
-#define USAGE_SAMENAMEASSETERROR TEXT("¶à×Ê²úÖØ¸´ÃüÃû´íÎó")
+#define USAGE_NONE TEXT("æ— ")
+#define USAGE_UNUSED TEXT("æœªä½¿ç”¨çš„èµ„äº§")
+#define USAGE_MAXINGAMESIZEERROR TEXT("æ¸¸æˆå†…è´´å›¾å¤§å°é”™è¯¯")
+#define USAGE_SOURCESIZEERROR TEXT("åŸå§‹è´´å›¾å¤§å°é”™è¯¯")
+#define USAGE_PREFIXERROR TEXT("èµ„äº§å‰ç¼€é”™è¯¯")
+#define USAGE_SAMENAMEASSETERROR TEXT("å¤šèµ„äº§é‡å¤å‘½åé”™è¯¯")
 
 #else
 
@@ -627,7 +627,7 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructSingleAssetDeleteButtonBox(
 	TSharedRef<SButton> SingleAssetDeleteButtonBox =
 		SNew(SButton)
 #ifdef ZH_CN
-		.Text(FText::FromString(TEXT("É¾³ı")))
+		.Text(FText::FromString(TEXT("åˆ é™¤")))
 #else
 		.Text(FText::FromString(TEXT("Delete")))
 #endif
@@ -648,7 +648,7 @@ FReply SAssetsCheckerTab::OnSingleAssetDeleteButtonClicked(
 #ifdef ZH_CN
 		EAppReturnType::Type result = DlgMsg(EAppMsgType::OkCancel,
 			ClickedAssetData->AssetName.ToString() 
-			+ "ÒÑ±»ÆäËû×Ê²úÒıÓÃ\n\nÈ·¶¨É¾³ı×Ê²ú£¿");
+			+ "å·²è¢«å…¶ä»–èµ„äº§å¼•ç”¨\n\nç¡®å®šåˆ é™¤èµ„äº§ï¼Ÿ");
 #else
 		EAppReturnType::Type result = DlgMsg(EAppMsgType::OkCancel,
 			ClickedAssetData->AssetName.ToString()
@@ -667,7 +667,7 @@ FReply SAssetsCheckerTab::OnSingleAssetDeleteButtonClicked(
 	{
 		// log
 #ifdef ZH_CN
-		NtfMsgLog("³É¹¦É¾³ı" + ClickedAssetData->AssetName.ToString());
+		NtfMsgLog("æˆåŠŸåˆ é™¤" + ClickedAssetData->AssetName.ToString());
 #else
 		NtfMsgLog("Successfully deleted " + ClickedAssetData->AssetName.ToString());
 #endif
@@ -686,7 +686,7 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructSingleAssetDebugButtonBox(
 	TSharedRef<SButton> SingleAssetDebugButtonBox =
 		SNew(SButton)
 #ifdef ZH_CN
-		.Text(FText::FromString(TEXT("²âÊÔ")))
+		.Text(FText::FromString(TEXT("æµ‹è¯•")))
 #else
 		.Text(FText::FromString(TEXT("Debug")))
 #endif
@@ -715,7 +715,7 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructSingleAssetReimportButtonBox(
 	TSharedRef<SButton> SingleAssetFixButtonBox =
 		SNew(SButton)
 #ifdef ZH_CN
-		.Text(FText::FromString(TEXT("µ¼Èë")))
+		.Text(FText::FromString(TEXT("å¯¼å…¥")))
 #else
 		.Text(FText::FromString(TEXT("Reimport")))
 #endif
@@ -770,16 +770,19 @@ FReply SAssetsCheckerTab::OnSingleTextureAsset2KButtonClicked(
 	{
 		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
+
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n´ËÌùÍ¼ÎŞĞèĞŞ¸´ »ò ĞŞ¸´Ê§°Ü");
+			"\næ­¤è´´å›¾æ— éœ€ä¿®å¤ æˆ– ä¿®å¤å¤±è´¥"
 #else
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nFaild or no need to fix this texture.");
+			"\nFaild or no need to fix this texture."
 #endif
+			);
 		}
 		else
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n³É¹¦ÏŞÖÆÌùÍ¼´óĞ¡Îª" + FString::FromInt(maxSize));
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\næˆåŠŸé™åˆ¶è´´å›¾å¤§å°ä¸º" + FString::FromInt(maxSize));
 #else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully resize to " + FString::FromInt(maxSize));
 #endif
@@ -816,15 +819,16 @@ FReply SAssetsCheckerTab::OnSingleTextureAsset1KButtonClicked(
 		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n´ËÌùÍ¼ÎŞĞèĞŞ¸´ »ò ĞŞ¸´Ê§°Ü");
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\næ­¤è´´å›¾æ— éœ€ä¿®å¤ æˆ– ä¿®å¤å¤±è´¥");
 #else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nFaild or no need to fix this texture.");
 #endif
+			;
 		}
 		else
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n³É¹¦ÏŞÖÆÌùÍ¼´óĞ¡Îª" + FString::FromInt(maxSize));
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\næˆåŠŸé™åˆ¶è´´å›¾å¤§å°ä¸º" + FString::FromInt(maxSize));
 #else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully resize to " + FString::FromInt(maxSize));
 #endif
@@ -861,15 +865,16 @@ FReply SAssetsCheckerTab::OnSingleTextureAsset512ButtonClicked(
 		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n´ËÌùÍ¼ÎŞĞèĞŞ¸´ »ò ĞŞ¸´Ê§°Ü");
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\næ­¤è´´å›¾æ— éœ€ä¿®å¤ æˆ– ä¿®å¤å¤±è´¥");
 #else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nFaild or no need to fix this texture.");
 #endif
+			;
 		}
 		else
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n³É¹¦ÏŞÖÆÌùÍ¼´óĞ¡Îª" + FString::FromInt(maxSize));
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\næˆåŠŸé™åˆ¶è´´å›¾å¤§å°ä¸º" + FString::FromInt(maxSize));
 #else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully resize to " + FString::FromInt(maxSize));
 #endif
@@ -906,19 +911,21 @@ FReply SAssetsCheckerTab::OnSingleTextureAssetResetButtonClicked(
 		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n´ËÌùÍ¼ÎŞĞèĞŞ¸´ »ò ĞŞ¸´Ê§°Ü");
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\næ­¤è´´å›¾æ— éœ€ä¿®å¤ æˆ– ä¿®å¤å¤±è´¥");
 #else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nFaild or no need to fix this texture.");
-#endif
-		}
+#endif;
+			;
+	}
 		else
 		{
 #ifdef ZH_CN
-			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\n³É¹¦½â³ıÌùÍ¼´óĞ¡ÏŞÖÆ");
+			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\næˆåŠŸè§£é™¤è´´å›¾å¤§å°é™åˆ¶");
 #else
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + "\nSuccessfully resize to 0");
 #endif
-		};
+			;
+};
 	}
 
 	RefreshAssetsListView();
@@ -1028,7 +1035,7 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructDeleteAllSelectedButton()
 		.OnClicked(this, &SAssetsCheckerTab::OnDeleteAllSelectedButtonClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	DeleteAllSelectedButton->SetContent(ConstructTextForButtons("É¾³ıÑ¡ÔñµÄ×Ê²ú"));
+	DeleteAllSelectedButton->SetContent(ConstructTextForButtons("åˆ é™¤é€‰æ‹©çš„èµ„äº§"));
 #else
 	DeleteAllSelectedButton->SetContent(ConstructTextForButtons("Delete All Selected"));
 #endif
@@ -1074,7 +1081,7 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructSelectAllButton()
 		.ContentPadding(FMargin(5.f));
 
 #ifdef ZH_CN
-	SelectAllButton->SetContent(ConstructTextForButtons("È«Ñ¡"));
+	SelectAllButton->SetContent(ConstructTextForButtons("å…¨é€‰"));
 #else
 	SelectAllButton->SetContent(ConstructTextForButtons("Select All"));
 #endif
@@ -1107,7 +1114,7 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructDeselectAllButton()
 		.OnClicked(this, &SAssetsCheckerTab::OnDeselectAllButtonClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	DeselectAllButton->SetContent(ConstructTextForButtons("È¡ÏûÈ«Ñ¡"));
+	DeselectAllButton->SetContent(ConstructTextForButtons("å–æ¶ˆå…¨é€‰"));
 #else
 	DeselectAllButton->SetContent(ConstructTextForButtons("Deselect All"));
 #endif
@@ -1144,7 +1151,7 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructFixSelectedButton()
 		.OnClicked(this, &SAssetsCheckerTab::OnSelectFixSelectedClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	DeselectAllButton->SetContent(ConstructTextForButtons("ĞŞ¸´Ñ¡ÔñµÄ×Ê²ú"));
+	DeselectAllButton->SetContent(ConstructTextForButtons("ä¿®å¤é€‰æ‹©çš„èµ„äº§"));
 #else
 	DeselectAllButton->SetContent(ConstructTextForButtons("Fix All Selected"));
 #endif
@@ -1190,7 +1197,7 @@ FReply SAssetsCheckerTab::OnSelectFixSelectedClicked()
 		return FReply::Handled();
 	}
 #ifdef ZH_CN
-	DlgMsgLog(EAppMsgType::Ok, "[¼ì²é¹ıÂËÆ÷]Ñ¡Ôñ´íÎó\nÓ¦¸ÃÑ¡Ôñ[×Ê²úÇ°×º´íÎó].");
+	DlgMsgLog(EAppMsgType::Ok, "[æ£€æŸ¥è¿‡æ»¤å™¨]é€‰æ‹©é”™è¯¯\nåº”è¯¥é€‰æ‹©[èµ„äº§å‰ç¼€é”™è¯¯].");
 #else
 	DlgMsgLog(EAppMsgType::Ok,"Choose a valid check filter type!\nShould be [PrefixError].");
 #endif
@@ -1208,7 +1215,7 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructFixUpRedirectorButton()
 		.OnClicked(this, &SAssetsCheckerTab::OnFixUpRedirectorButtonClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- ĞŞ¸´ËùÑ¡ÎÄ¼ş¼ĞÖĞµÄÖØ¶¨ÏòÆ÷(Redirector) --"));
+	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- ä¿®å¤æ‰€é€‰æ–‡ä»¶å¤¹ä¸­çš„é‡å®šå‘å™¨(Redirector) --"));
 #else
 	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- Fix Up Redirectors In Selected Folders --"));
 #endif
@@ -1233,7 +1240,7 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructOutputViewListInfoButton()
 		.ContentPadding(FMargin(5.f));
 
 #ifdef ZH_CN
-	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- Êä³öÁĞ±íµ½ÎÄ¼ş --"));
+	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- è¾“å‡ºåˆ—è¡¨åˆ°æ–‡ä»¶ --"));
 #else
 	FixUpRedirectorButton->SetContent(ConstructTextForButtons("-- Output view list to log file --"));
 #endif
@@ -1322,7 +1329,7 @@ FReply SAssetsCheckerTab::OnOutputViewListInfoButtonClicked()
 		EFileWrite::FILEWRITE_Append))
 	{
 #ifdef ZH_CN
-		NtfMsgLog("³É¹¦Êä³öÎÄ¼şµ½" + FilePath);
+		NtfMsgLog("æˆåŠŸè¾“å‡ºæ–‡ä»¶åˆ°" + FilePath);
 #else
 		NtfMsgLog("Successfully saved assets manager log to " + FilePath);
 #endif
@@ -1330,11 +1337,11 @@ FReply SAssetsCheckerTab::OnOutputViewListInfoButtonClicked()
 	};
 
 #ifdef ZH_CN
-	NtfMsgLog("Êä³öÎÄ¼şµ½" + FilePath + "Ê§°Ü");
+	NtfMsgLog("è¾“å‡ºæ–‡ä»¶åˆ°" + FilePath + "å¤±è´¥");
 #else
 	NtfMsgLog("Failed saving assets manager log to " + FilePath);
 #endif
-	return FReply::Handled();
+	;	return FReply::Handled();
 	
 }
 
@@ -1496,9 +1503,9 @@ void SAssetsCheckerTab::OnUsageFilterButtonChanged(
 		{
 #ifdef ZH_CN
 			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
-				"Ñ¡ÔñµÄÎÄ¼şÌ«¶à["
+				"é€‰æ‹©çš„æ–‡ä»¶å¤ªå¤š["
 				+FString::FromInt(SListViewClassFilterAssetData.Num()) 
-				+ "¸öÎÄ¼ş]\nÓÉÓÚĞèÒª²éÕÒËùÓĞÒıÓÃÏî£¬Õâ½«»áÏûºÄ´óÁ¿Ê±¼ä.\n\nÊÇ·ñ¼ÌĞø?");
+				+ "ä¸ªæ–‡ä»¶]\nç”±äºéœ€è¦æŸ¥æ‰¾æ‰€æœ‰å¼•ç”¨é¡¹ï¼Œè¿™å°†ä¼šæ¶ˆè€—å¤§é‡æ—¶é—´.\n\næ˜¯å¦ç»§ç»­?");
 #else
 			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
 				"The list selected to check is too large.["
