@@ -63,6 +63,7 @@
 #define USAGE_PREFIXERROR TEXT("资产前缀错误")
 #define USAGE_SAMENAMEASSETERROR TEXT("多资产重复命名错误")
 #define USAGE_TEXTURESUBFIXERROR TEXT("贴图不规范后缀")
+#define USAGE_TEXTURESETTINGSERROR TEXT("贴图资产设定错误")
 
 #else
 
@@ -73,6 +74,7 @@
 #define USAGE_PREFIXERROR TEXT("PrefixError")
 #define USAGE_SAMENAMEASSETERROR TEXT("SameNameError")
 #define USAGE_TEXTURESUBFIXERROR TEXT("SubfixError(Texture)")
+#define USAGE_TEXTURESETTINGSERROR TEXT("SettingsError(Texture)")
 
 #endif
 
@@ -122,6 +124,7 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 	UsageSelectionMaxInGameSizeError = MakeShared<FString>(USAGE_MAXINGAMESIZEERROR);
 	UsageSelectionSourceSizeError = MakeShared<FString>(USAGE_SOURCESIZEERROR);
 	UsageSelectionSubfixError = MakeShared<FString>(USAGE_TEXTURESUBFIXERROR);
+	UsageSelectionTextureSettinsError = MakeShared<FString>(USAGE_TEXTURESETTINGSERROR);
 
 	UsageFilterComboSourceItems.Add(UsageSelectedDefault);
 	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_UNUSED));
@@ -327,9 +330,19 @@ TSharedRef<ITableRow> SAssetsCheckerTab::OnGenerateRowForlist(
 {
 	if (m_ClassCheckState == Texture )
 	{
+		if (m_UsageCheckState == SubfixError)
+		{
+			return GenerateDefaultRowForList(AssetDataToDisplay, OwnerTable);
+		}
+
 		if (m_UsageCheckState == SourceSizeError)
 		{
 			return GenerateTextureRowForList_SourceSizeError(AssetDataToDisplay, OwnerTable);
+		}
+
+		if (m_UsageCheckState == TextureSettingsError)
+		{
+			return GenerateTextureRowForList_SettingsError(AssetDataToDisplay, OwnerTable);
 		}
 
 		return GenerateTextureRowForList_MaxInGameSizeError(AssetDataToDisplay, OwnerTable);
@@ -488,6 +501,69 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTextureRowForList_SourceSizeError(
 	TSharedPtr<FAssetData> AssetDataToDisplay,
 	const TSharedRef<STableViewBase>& OwnerTable)
+{
+	FSlateFontInfo ContentTextFont = GetFontInfo(9);
+
+	TSharedRef<STableRow<TSharedPtr<FAssetData>>> ListViewRowWidget
+		= SNew(STableRow<TSharedPtr<FAssetData>>, OwnerTable).Padding(FMargin(6.f))
+		[
+			SNew(SHorizontalBox)
+				// CheckBox
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Center)
+				.VAlign(VAlign_Center)
+				.Padding(FMargin(2.f))
+				.AutoWidth()
+				[
+					ConstructCheckBox(AssetDataToDisplay)
+				]
+				// DisplayClass
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Left)
+				.VAlign(VAlign_Center)
+				.FillWidth(0.08f)
+				[
+					ConstructAssetClassRowBox(AssetDataToDisplay, ContentTextFont)
+				]
+				// DisplaySize
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Center)
+				.VAlign(VAlign_Center)
+				.FillWidth(0.15f)
+				[
+					ConstructAssetTextureSizeRowBox(AssetDataToDisplay, ContentTextFont)
+				]
+				// DisplayName
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Fill)
+				.VAlign(VAlign_Center)
+				.FillWidth(0.25f)
+				[
+					ConstructAssetNameRowBox(AssetDataToDisplay, ContentTextFont)
+				]
+
+				// DisplayButton
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Center)
+				.VAlign(VAlign_Center)
+				.FillWidth(0.1f)
+				[
+					ConstructSingleAssetDeleteButtonBox(AssetDataToDisplay)
+				]
+
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Center)
+				.VAlign(VAlign_Center)
+				.FillWidth(0.1f)
+				[
+					ConstructSingleAssetReimportButtonBox(AssetDataToDisplay)
+				]
+		];
+
+	return ListViewRowWidget;
+}
+
+TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTextureRowForList_SettingsError(TSharedPtr<FAssetData> AssetDataToDisplay, const TSharedRef<STableViewBase>& OwnerTable)
 {
 	FSlateFontInfo ContentTextFont = GetFontInfo(9);
 
@@ -1684,6 +1760,11 @@ void SAssetsCheckerTab::OnClassFilterButtonChanged(
 		{
 			UsageFilterComboSourceItems.Add(UsageSelectionSubfixError);
 		}
+
+		if (!UsageFilterComboSourceItems.Contains(UsageSelectionTextureSettinsError))
+		{
+			UsageFilterComboSourceItems.Add(UsageSelectionTextureSettinsError);
+		}
 	}
 	else
 	{
@@ -1700,6 +1781,11 @@ void SAssetsCheckerTab::OnClassFilterButtonChanged(
 		if (UsageFilterComboSourceItems.Contains(UsageSelectionSubfixError))
 		{
 			UsageFilterComboSourceItems.Remove(UsageSelectionSubfixError);
+		}
+
+		if (UsageFilterComboSourceItems.Contains(UsageSelectionTextureSettinsError))
+		{
+			UsageFilterComboSourceItems.Remove(UsageSelectionTextureSettinsError);
 		}
 	}
 
@@ -1805,6 +1891,12 @@ void SAssetsCheckerTab::OnUsageFilterButtonChanged(
 	{
 		m_UsageCheckState = SubfixError;
 		UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+	}
+
+	if (*SelectedOption.Get() == USAGE_TEXTURESETTINGSERROR)
+	{
+		m_UsageCheckState = TextureSettingsError;
+		UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	RefreshAssetsListView();

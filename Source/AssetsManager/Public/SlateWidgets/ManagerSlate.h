@@ -39,7 +39,7 @@ private:
 		DefaultUsageCheckState = 0,
 		Unused,
 		// for texture,
-		MaxInGameSizeError, SourceSizeError,SubfixError,
+		MaxInGameSizeError, SourceSizeError,SubfixError,TextureSettingsError,
 		// for prefix
 		PrefixError,
 		//for same name asset,
@@ -95,6 +95,10 @@ private:
 		const TSharedRef<STableViewBase>& OwnerTable);
 
 	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateTextureRowForList_SourceSizeError(
+		TSharedPtr<FAssetData> AssetDataToDisplay,
+		const TSharedRef<STableViewBase>& OwnerTable);
+
+	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateTextureRowForList_SettingsError(
 		TSharedPtr<FAssetData> AssetDataToDisplay,
 		const TSharedRef<STableViewBase>& OwnerTable);
 
@@ -238,6 +242,7 @@ private:
 	TSharedPtr<FString> UsageSelectionMaxInGameSizeError;
 	TSharedPtr<FString> UsageSelectionSourceSizeError;
 	TSharedPtr<FString> UsageSelectionSubfixError;
+	TSharedPtr<FString> UsageSelectionTextureSettinsError;
 	
 #pragma endregion
 

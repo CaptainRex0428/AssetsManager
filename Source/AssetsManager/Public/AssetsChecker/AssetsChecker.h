@@ -86,7 +86,8 @@ const TMap<TextureCompressionSettings, FString> TextureCompressionMap =
 	{TC_MAX,"MAX"}
 };
 
-const TMap<FString, TextureCompressionSettings> TextureSubfixCompressionSettingsMap =
+const TMap<FString, TEnumAsByte<TextureCompressionSettings>> 
+TextureSubfixCompressionSettingsMap =
 {
 	{"D",TC_Default},
 	{"E",TC_Default},
@@ -95,6 +96,17 @@ const TMap<FString, TextureCompressionSettings> TextureSubfixCompressionSettings
 	{"Attr",TC_VectorDisplacementmap},
 	{"Detail",TC_VectorDisplacementmap},
 	{"AO",TC_Grayscale}
+};
+
+const TMap<FString, bool> TextureSubfixSRGBSettingsMap =
+{
+	{"D",true},
+	{"E",true},
+	{"ARMS",false},
+	{"N",false},
+	{"Attr",false},
+	{"Detail",false},
+	{"AO",false}
 };
 
 /**
@@ -200,8 +212,11 @@ public:
 #pragma endregion
 
 #pragma region ListAssets
-	static TArray<TSharedPtr<FAssetData>> EListAssetsDataPtrUnderSelectedFolder(const FString& FolderPathSelected);
-	static TArray<TSharedPtr<FAssetData>> EListAssetsDataPtrUnderSelectedFolder(const TArray<FString>& FolderPathSelected);
+	static TArray<TSharedPtr<FAssetData>> EListAssetsDataPtrUnderSelectedFolder(
+		const FString& FolderPathSelected);
+
+	static TArray<TSharedPtr<FAssetData>> EListAssetsDataPtrUnderSelectedFolder(
+		const TArray<FString>& FolderPathSelected);
 
 	static void EListUnusedAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
@@ -225,6 +240,10 @@ public:
 
 	static void EListTextureSubfixErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
+		TArray<TSharedPtr<FAssetData>>& OutList);
+
+	static void EListTextureSettingsErrorAssetsForAssetList(
+		const TArray<TSharedPtr<FAssetData>>& FindInList,
 		TArray<TSharedPtr<FAssetData>>& OutList);
 
 #pragma endregion

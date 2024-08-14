@@ -669,15 +669,63 @@ void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
 
 		if (!Asset.GetAssetSubfix().IsValid())
 		{
+			OutList.Add(AssetDPtr);
 			continue;
 		}
 
-		const TextureCompressionSettings * result = TextureSubfixCompressionSettingsMap.Find(*Asset.GetAssetSubfix());
+		const TEnumAsByte<TextureCompressionSettings>* result = TextureSubfixCompressionSettingsMap.Find(*Asset.GetAssetSubfix());
 
 		if (!result)
 		{
 			OutList.Add(AssetDPtr);
 		}
+	}
+}
+
+void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
+	const TArray<TSharedPtr<FAssetData>>& FindInList, 
+	TArray<TSharedPtr<FAssetData>>& OutList)
+{
+	OutList.Empty();
+
+	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
+	{
+		if (!AssetDPtr->GetAsset()->IsA<UTexture2D>())
+		{
+			continue;
+		}
+
+		TSharedPtr<TEnumAsByte<TextureCompressionSettings>> CompressionS =
+			EGetTextureAssetCompressionSettings(*AssetDPtr);
+
+		TSharedPtr<bool> SRGBS =
+			EGetTextureAssetSRGBSettings(*AssetDPtr);
+
+		StandardAsset Asset(*AssetDPtr);
+
+		if (!Asset.GetAssetSubfix().IsValid())
+		{
+			continue;
+		}
+
+		TSharedPtr<FString> subfix = Asset.GetAssetSubfix();
+
+		const TEnumAsByte<TextureCompressionSettings> * standardCompressionSettings 
+			= TextureSubfixCompressionSettingsMap.Find(*subfix);
+
+		const bool * standardSRGB = TextureSubfixSRGBSettingsMap.Find(*subfix);
+
+		// error
+		if(CompressionS->GetIntValue() == standardCompressionSettings->GetIntValue() &&  *SRGBS == *standardSRGB)
+		{
+			continue;
+		}
+
+		if (standardCompressionSettings && standardSRGB)
+		{
+			OutList.Add(AssetDPtr);
+		}
+		
 	}
 }
 
