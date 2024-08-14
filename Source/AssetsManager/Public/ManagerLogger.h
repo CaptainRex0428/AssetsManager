@@ -18,4 +18,4 @@ EAppReturnType::Type DlgMsg(EAppMsgType::Type MsgType, const FString& Message, b
 
 void NtfyMsg(const FString& Message);
 
-void NtfMsgLog(const FString& Message, bool isWarning = false);
+void NtfyMsgLog(const FString& Message, bool isWarning = false);

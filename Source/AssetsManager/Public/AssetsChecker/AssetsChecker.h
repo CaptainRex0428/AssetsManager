@@ -86,7 +86,7 @@ const TMap<TextureCompressionSettings, FString> TextureCompressionMap =
 	{TC_MAX,"MAX"}
 };
 
-const TMap<FString, TEnumAsByte<TextureCompressionSettings>> 
+const TMap<FString, TextureCompressionSettings> 
 TextureSubfixCompressionSettingsMap =
 {
 	{"D",TC_Default},
@@ -167,7 +167,7 @@ public:
 	static FVector2D EGetTextureAssetMaxInGameSize(
 		const FAssetData& AssetData);
 	
-	static TSharedPtr<TEnumAsByte<TextureCompressionSettings>> EGetTextureAssetCompressionSettings(
+	static TSharedPtr<TextureCompressionSettings> EGetTextureAssetCompressionSettings(
 		const FAssetData& AssetData);
 
 	static bool ESetTextureAssetCompressionSettings(
@@ -189,6 +189,10 @@ public:
 	static bool ESetTextureSize(
 		FAssetData& ClickedAssetData, 
 		double maxSize);
+
+	static bool ESetTextureStandardSettins(
+		FAssetData& ClickedAssetData);
+
 #pragma endregion
 
 #pragma region DeleteAssets
