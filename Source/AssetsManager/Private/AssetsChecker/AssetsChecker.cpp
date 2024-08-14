@@ -433,6 +433,61 @@ FVector2D UAssetsChecker::EGetTextureAssetMaxInGameSize(
 	return size;
 }
 
+
+TSharedPtr<TEnumAsByte<TextureCompressionSettings>> UAssetsChecker::EGetTextureAssetCompressionSettings(
+	const FAssetData& AssetData)
+{
+	UObject* AssetOBJ = AssetData.GetAsset();
+
+	if (!AssetOBJ)
+	{
+		return nullptr;
+	}
+
+	if (!AssetOBJ->IsA<UTexture>())
+	{
+		return nullptr;
+	}
+
+	UTexture2D * AssetT = Cast<UTexture2D>(AssetOBJ);
+
+	if(AssetT)
+	{
+		return MakeShared<TEnumAsByte<TextureCompressionSettings>>(AssetT->CompressionSettings);
+	}
+
+	return nullptr;
+}
+
+bool UAssetsChecker::ESetTextureAssetCompressionSettings(
+	const FAssetData& AssetData,
+	const TEnumAsByte<TextureCompressionSettings>& CompressionSetting)
+{
+	UObject* AssetOBJ = AssetData.GetAsset();
+
+	if (!AssetOBJ)
+	{
+		return false;
+	}
+
+	if (!AssetOBJ->IsA<UTexture>())
+	{
+		return false;
+	}
+
+	UTexture2D* AssetT = Cast<UTexture2D>(AssetOBJ);
+
+	if (AssetT && (*EGetTextureAssetCompressionSettings(AssetData) != CompressionSetting))
+	{
+		
+		AssetT->CompressionSettings = CompressionSetting;
+		AssetT->UpdateResource();
+		return UEditorAssetLibrary::SaveLoadedAsset(AssetT);
+	}
+
+	return false;
+}
+
 void UAssetsChecker::EListUnusedAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
 	TArray<TSharedPtr<FAssetData>>& OutList)
@@ -941,13 +996,20 @@ void UAssetsChecker::ECheckerCheck(
 	}
 }
 
-void UAssetsChecker::CheckCheck()
+#define ENUMCCC(var) #var
+
+void UAssetsChecker::CheckCheck(TEnumAsByte<TextureCompressionSettings> Compression)
 {
 	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
 
 	for (const FAssetData & asset : SelectedAssetsData)
 	{
-		ECheckerCheck(asset);
+		if(*EGetTextureAssetCompressionSettings(asset) != Compression)
+		{
+			NtfyMsg("NOT EQUAL!!!");
+			
+			ESetTextureAssetCompressionSettings(asset, Compression);
+		}
 	}
 }
 	

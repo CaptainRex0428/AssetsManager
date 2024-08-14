@@ -64,6 +64,28 @@ const TMap<FString,UClass*> AssetFullNameMap =
 
 };
 
+const TMap<TextureCompressionSettings, FString> TextureCompressionMap =
+{
+	{TC_Default ,"Default (BC1 or BC3 with A)"},
+	{TC_Normalmap,"NormalMap (BC5)"},
+	{TC_Masks,"Masks (no sRGB)"},
+	{TC_Grayscale,"Grayscale (G8/16, RGB8 sRGB)"},
+	{TC_Displacementmap,"DisplacementMap (G8/16)"},
+	{TC_VectorDisplacementmap,"VectorDisplacementmap (RGBA8)"},
+	{TC_HDR,"HDR (RGBA16F, no sRGB)"},
+	{TC_EditorIcon,"UserInterface2D (RGBA8)"},
+	{TC_Alpha,"Alpha (no sRGB, BC4)"},
+	{TC_DistanceFieldFont,"DistanceFieldFont (G8)"},
+	{TC_HDR_Compressed,"HDR Compressed (RGB, BC6H)"},
+	{TC_BC7,"BC7 (RGBA)"},
+	{TC_HalfFloat,"Half Float (R16F)"},
+	{TC_LQ,"Low Quality (BGR565/BGR555A1)"},
+	{TC_EncodedReflectionCapture,"EncodedReflectionCapture"},
+	{TC_SingleFloat,"Single Float (R32F)"},
+	{TC_HDR_F32,"HDR High Precision (RGBA32F)"},
+	{TC_MAX,"MAX"}
+};
+
 /**
  * 
  */
@@ -116,8 +138,18 @@ public:
 #pragma endregion
 
 #pragma region HandleTexture
-	static FVector2D EGetTextureAssetSourceSize(const FAssetData& AssetData);
-	static FVector2D EGetTextureAssetMaxInGameSize(const FAssetData& AssetData);
+	static FVector2D EGetTextureAssetSourceSize(
+		const FAssetData& AssetData);
+
+	static FVector2D EGetTextureAssetMaxInGameSize(
+		const FAssetData& AssetData);
+	
+	static TSharedPtr<TEnumAsByte<TextureCompressionSettings>> EGetTextureAssetCompressionSettings(
+		const FAssetData& AssetData);
+
+	static bool ESetTextureAssetCompressionSettings(
+		const FAssetData& AssetData,
+		const TEnumAsByte<TextureCompressionSettings> & CompressionSetting);
 
 	static bool EFixTextureMaxSizeInGame(FAssetData& ClickedAssetData, double maxSize, bool forced = false);
 	static bool ESetTextureSize(FAssetData& ClickedAssetData, double maxSize);
@@ -155,7 +187,7 @@ public:
 	static void ECheckerCheck(const FAssetData & AssetData);
 
 	UFUNCTION(CallInEditor)
-	void CheckCheck();
+	void CheckCheck(TEnumAsByte<TextureCompressionSettings> Compression);
 #pragma endregion
 
 #pragma region Call In Editor
