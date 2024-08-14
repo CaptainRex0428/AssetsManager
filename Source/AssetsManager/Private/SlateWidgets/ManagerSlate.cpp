@@ -358,7 +358,8 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateDefault
 				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
-				.FillWidth(0.05f)
+				.Padding(FMargin(2.f))
+				.AutoWidth()
 				[
 					ConstructCheckBox(AssetDataToDisplay)
 				]
@@ -374,7 +375,7 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateDefault
 				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Fill)
 				.VAlign(VAlign_Center)
-				.FillWidth(0.35f)
+				.FillWidth(0.25f)
 				[
 					ConstructAssetNameRowBox(AssetDataToDisplay, ContentTextFont)
 				]
@@ -383,7 +384,7 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateDefault
 				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Right)
 				.VAlign(VAlign_Center)
-				.FillWidth(0.15f)
+				.FillWidth(0.08f)
 				[
 					ConstructSingleAssetDeleteButtonBox(AssetDataToDisplay)
 				]
@@ -406,7 +407,8 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
-				.FillWidth(0.05f)
+				.Padding(FMargin(2.f))
+				.AutoWidth()
 				[
 					ConstructCheckBox(AssetDataToDisplay)
 				]
@@ -414,7 +416,7 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Left)
 				.VAlign(VAlign_Center)
-				.FillWidth(0.1f)
+				.FillWidth(0.08f)
 				[
 					ConstructAssetClassRowBox(AssetDataToDisplay, ContentTextFont)
 				]
@@ -439,7 +441,7 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
-				.FillWidth(0.12f)
+				.FillWidth(0.1f)
 				[
 					ConstructSingleAssetDeleteButtonBox(AssetDataToDisplay)
 				]
@@ -447,7 +449,7 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
-				.FillWidth(0.12f)
+				.FillWidth(0.1f)
 				[
 					ConstructSingleTextureAsset2KButtonBox(AssetDataToDisplay)
 				]
@@ -471,7 +473,7 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
-				.FillWidth(0.1f)
+				.FillWidth(0.08f)
 				[
 					ConstructSingleTextureAssetResetButtonBox(AssetDataToDisplay)
 				]
@@ -494,7 +496,8 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
-				.FillWidth(0.05f)
+				.Padding(FMargin(2.f))
+				.AutoWidth()
 				[
 					ConstructCheckBox(AssetDataToDisplay)
 				]
@@ -502,7 +505,7 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Left)
 				.VAlign(VAlign_Center)
-				.FillWidth(0.1f)
+				.FillWidth(0.08f)
 				[
 					ConstructAssetClassRowBox(AssetDataToDisplay, ContentTextFont)
 				]
@@ -527,7 +530,7 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
-				.FillWidth(0.12f)
+				.FillWidth(0.1f)
 				[
 					ConstructSingleAssetDeleteButtonBox(AssetDataToDisplay)
 				]
@@ -535,7 +538,7 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				+ SHorizontalBox::Slot()
 				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Center)
-				.FillWidth(0.12f)
+				.FillWidth(0.1f)
 				[
 					ConstructSingleAssetReimportButtonBox(AssetDataToDisplay)
 				]

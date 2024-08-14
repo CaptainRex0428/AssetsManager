@@ -488,6 +488,59 @@ bool UAssetsChecker::ESetTextureAssetCompressionSettings(
 	return false;
 }
 
+TSharedPtr<bool> UAssetsChecker::EGetTextureAssetSRGBSettings(const FAssetData& AssetData)
+{
+	UObject* AssetOBJ = AssetData.GetAsset();
+
+	if (!AssetOBJ)
+	{
+		return nullptr;
+	}
+
+	if (!AssetOBJ->IsA<UTexture>())
+	{
+		return nullptr;
+	}
+
+	UTexture2D* AssetT = Cast<UTexture2D>(AssetOBJ);
+
+	if (AssetT)
+	{
+		return MakeShared<bool>(AssetT->SRGB == 0? false : true);
+	}
+
+	return nullptr;
+}
+
+bool UAssetsChecker::ESetTextureSRGBSettings(
+	const FAssetData& AssetData, 
+	const bool& sRGB)
+{
+	UObject* AssetOBJ = AssetData.GetAsset();
+
+	if (!AssetOBJ)
+	{
+		return false;
+	}
+
+	if (!AssetOBJ->IsA<UTexture>())
+	{
+		return false;
+	}
+
+	UTexture2D* AssetT = Cast<UTexture2D>(AssetOBJ);
+
+	if (AssetT && (*EGetTextureAssetSRGBSettings(AssetData) != sRGB))
+	{
+
+		AssetT->SRGB = sRGB;
+		AssetT->UpdateResource();
+		return UEditorAssetLibrary::SaveLoadedAsset(AssetT);
+	}
+
+	return false;
+}
+
 void UAssetsChecker::EListUnusedAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
 	TArray<TSharedPtr<FAssetData>>& OutList)
@@ -998,7 +1051,7 @@ void UAssetsChecker::ECheckerCheck(
 
 #define ENUMCCC(var) #var
 
-void UAssetsChecker::CheckCheck(TEnumAsByte<TextureCompressionSettings> Compression)
+void UAssetsChecker::CheckCheck(TEnumAsByte<TextureCompressionSettings> Compression,const bool & sRGB)
 {
 	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
 
@@ -1009,6 +1062,13 @@ void UAssetsChecker::CheckCheck(TEnumAsByte<TextureCompressionSettings> Compress
 			NtfyMsg("NOT EQUAL!!!");
 			
 			ESetTextureAssetCompressionSettings(asset, Compression);
+		}
+
+		if (*EGetTextureAssetSRGBSettings(asset) != sRGB)
+		{
+			NtfyMsg("NOT EQUAL!!!");
+
+			ESetTextureSRGBSettings(asset, sRGB);
 		}
 	}
 }

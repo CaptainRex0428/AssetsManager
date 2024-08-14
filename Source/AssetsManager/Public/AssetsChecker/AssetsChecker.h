@@ -151,8 +151,21 @@ public:
 		const FAssetData& AssetData,
 		const TEnumAsByte<TextureCompressionSettings> & CompressionSetting);
 
-	static bool EFixTextureMaxSizeInGame(FAssetData& ClickedAssetData, double maxSize, bool forced = false);
-	static bool ESetTextureSize(FAssetData& ClickedAssetData, double maxSize);
+	static TSharedPtr<bool> EGetTextureAssetSRGBSettings(
+		const FAssetData& AssetData);
+
+	static bool ESetTextureSRGBSettings(
+		const FAssetData& AssetData,
+		const bool & sRGB);
+
+	static bool EFixTextureMaxSizeInGame(
+		FAssetData& ClickedAssetData, 
+		double maxSize, 
+		bool forced = false);
+
+	static bool ESetTextureSize(
+		FAssetData& ClickedAssetData, 
+		double maxSize);
 #pragma endregion
 
 #pragma region DeleteAssets
@@ -187,7 +200,9 @@ public:
 	static void ECheckerCheck(const FAssetData & AssetData);
 
 	UFUNCTION(CallInEditor)
-	void CheckCheck(TEnumAsByte<TextureCompressionSettings> Compression);
+	void CheckCheck(
+		TEnumAsByte<TextureCompressionSettings> Compression,
+		const bool & sRGB);
 #pragma endregion
 
 #pragma region Call In Editor
