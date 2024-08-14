@@ -193,9 +193,9 @@ void UAssetsChecker::EAddPrefixes(
 		if (!prefix || prefix->IsEmpty())
 		{
 #ifdef ZH_CN
-			NtfMsgLog(TEXT("找不到资产[") + selectedAsset.GetClass()->GetName()+ TEXT("]对应的前缀"));
+			NtfyMsgLog(TEXT("找不到资产[") + selectedAsset.GetClass()->GetName()+ TEXT("]对应的前缀"));
 #else
-			NtfMsgLog(TEXT("Can not find prefix for class ") + selectedAsset.GetClass()->GetName());
+			NtfyMsgLog(TEXT("Can not find prefix for class ") + selectedAsset.GetClass()->GetName());
 #endif
 			continue;
 		}
@@ -204,9 +204,9 @@ void UAssetsChecker::EAddPrefixes(
 		if (OldName.StartsWith(*prefix))
 		{
 #ifdef ZH_CN
-			NtfMsgLog(OldName + TEXT("已有正确的命名前缀"));
+			NtfyMsgLog(OldName + TEXT("已有正确的命名前缀"));
 #else
-			NtfMsgLog(OldName + TEXT(" alreay has prefix added"));
+			NtfyMsgLog(OldName + TEXT(" alreay has prefix added"));
 #endif
 			++AlreadyCounter;
 			continue;
@@ -227,11 +227,11 @@ void UAssetsChecker::EAddPrefixes(
 	}
 
 #ifdef ZH_CN
-	if (SuccessCounter > 0)	NtfMsgLog(TEXT("成功重命名") + FString::FromInt(SuccessCounter) + TEXT("个资产"));
-	if (AlreadyCounter > 0) NtfMsgLog(FString::FromInt(AlreadyCounter) + TEXT("个资产已有正确命名前缀"));
+	if (SuccessCounter > 0)	NtfyMsgLog(TEXT("成功重命名") + FString::FromInt(SuccessCounter) + TEXT("个资产"));
+	if (AlreadyCounter > 0) NtfyMsgLog(FString::FromInt(AlreadyCounter) + TEXT("个资产已有正确命名前缀"));
 #else
-	if (SuccessCounter > 0)	NtfMsgLog(TEXT("Successfully renamed ") + FString::FromInt(SuccessCounter) + TEXT(" asset") + (SuccessCounter > 1 ? TEXT("s") : ""));
-	if (AlreadyCounter > 0) NtfMsgLog(FString::FromInt(AlreadyCounter) + TEXT(" asset") + (AlreadyCounter > 1 ? TEXT("s") : "") + TEXT(" already ha") + (AlreadyCounter > 1 ? TEXT("ve") : TEXT("s")) + TEXT(" prefix"));
+	if (SuccessCounter > 0)	NtfyMsgLog(TEXT("Successfully renamed ") + FString::FromInt(SuccessCounter) + TEXT(" asset") + (SuccessCounter > 1 ? TEXT("s") : ""));
+	if (AlreadyCounter > 0) NtfyMsgLog(FString::FromInt(AlreadyCounter) + TEXT(" asset") + (AlreadyCounter > 1 ? TEXT("s") : "") + TEXT(" already ha") + (AlreadyCounter > 1 ? TEXT("ve") : TEXT("s")) + TEXT(" prefix"));
 #endif
 }
 
@@ -275,8 +275,8 @@ void UAssetsChecker::EAddPrefixes(
 	}
 
 
-	if (SuccessCounter > 0)	NtfMsgLog("Successfully renamed " + FString::FromInt(SuccessCounter) + " asset" + (SuccessCounter > 1 ? "s" : ""));
-	if (AlreadyCounter > 0) NtfMsgLog(FString::FromInt(AlreadyCounter) + " asset" + (AlreadyCounter > 1 ? "s" : "") + " already ha" + (AlreadyCounter > 1 ? "ve" : "s") + " prefix");
+	if (SuccessCounter > 0)	NtfyMsgLog("Successfully renamed " + FString::FromInt(SuccessCounter) + " asset" + (SuccessCounter > 1 ? "s" : ""));
+	if (AlreadyCounter > 0) NtfyMsgLog(FString::FromInt(AlreadyCounter) + " asset" + (AlreadyCounter > 1 ? "s" : "") + " already ha" + (AlreadyCounter > 1 ? "ve" : "s") + " prefix");
 }
 
 bool UAssetsChecker::EFixTextureMaxSizeInGame(
@@ -326,6 +326,44 @@ bool UAssetsChecker::ESetTextureSize(
 	}
 
 	return false;
+}
+
+bool UAssetsChecker::ESetTextureStandardSettins(FAssetData& ClickedAssetData)
+{
+	StandardAsset SAsset(ClickedAssetData);
+
+	TSharedPtr<FString> subfix = SAsset.GetAssetSubfix();
+
+	if (!subfix.IsValid())
+	{
+#ifdef ZH_CN
+		NtfyMsgLog(TEXT("资产后缀错误\n") + ClickedAssetData.AssetName.ToString());
+#else
+		NtfyMsgLog(TEXT("Asset's subfix error\n") + ClickedAssetData->AssetName.ToString());
+#endif
+		return false;
+	}
+
+	const TextureCompressionSettings* StandardCompressionSettings
+		= TextureSubfixCompressionSettingsMap.Find(*subfix);
+
+	const bool* StandardSRGBSettings
+		= TextureSubfixSRGBSettingsMap.Find(*subfix);
+
+	if (!StandardCompressionSettings || !StandardSRGBSettings)
+	{
+#ifdef ZH_CN
+		NtfyMsgLog(TEXT("找不到资产对应的正确配置\n") + ClickedAssetData.AssetName.ToString());
+#else
+		NtfyMsgLog(TEXT("Cannot find suitable fixing config\n") + ClickedAssetData->AssetName.ToString());
+#endif
+		return false;
+	}
+
+	ESetTextureAssetCompressionSettings(ClickedAssetData, *StandardCompressionSettings);
+	ESetTextureSRGBSettings(ClickedAssetData, *StandardSRGBSettings);
+
+	return true;
 }
 
 TArray<FString> UAssetsChecker::EGetAssetReferencesPath(
@@ -435,7 +473,7 @@ FVector2D UAssetsChecker::EGetTextureAssetMaxInGameSize(
 }
 
 
-TSharedPtr<TEnumAsByte<TextureCompressionSettings>> UAssetsChecker::EGetTextureAssetCompressionSettings(
+TSharedPtr<TextureCompressionSettings> UAssetsChecker::EGetTextureAssetCompressionSettings(
 	const FAssetData& AssetData)
 {
 	UObject* AssetOBJ = AssetData.GetAsset();
@@ -454,7 +492,7 @@ TSharedPtr<TEnumAsByte<TextureCompressionSettings>> UAssetsChecker::EGetTextureA
 
 	if(AssetT)
 	{
-		return MakeShared<TEnumAsByte<TextureCompressionSettings>>(AssetT->CompressionSettings);
+		return MakeShared<TextureCompressionSettings>(AssetT->CompressionSettings);
 	}
 
 	return nullptr;
@@ -483,6 +521,17 @@ bool UAssetsChecker::ESetTextureAssetCompressionSettings(
 		
 		AssetT->CompressionSettings = CompressionSetting;
 		AssetT->UpdateResource();
+
+#ifdef ZH_CN
+		NtfyMsgLog(TEXT("成功设置贴图压缩格式为\n") 
+			+ *TextureCompressionMap.Find(CompressionSetting) + "\n"
+			+ AssetData.AssetName.ToString());
+#else
+		NtfyMsgLog(TEXT("Successfully set the compression settings as\n")
+			+ *TextureCompressionMap.Find(CompressionSetting) + "\n"
+			+ AssetData.AssetName.ToString());
+#endif
+
 		return UEditorAssetLibrary::SaveLoadedAsset(AssetT);
 	}
 
@@ -536,6 +585,19 @@ bool UAssetsChecker::ESetTextureSRGBSettings(
 
 		AssetT->SRGB = sRGB;
 		AssetT->UpdateResource();
+
+		FString result = sRGB ? TEXT("true") : TEXT("false");
+
+#ifdef ZH_CN
+		NtfyMsgLog(TEXT("成功设置贴图sRGB为\n")
+			+  result + "\n"
+			+ AssetData.AssetName.ToString());
+#else
+		NtfyMsgLog(TEXT("Successfully set the sRGB settings as\n")
+			+ result + "\n"
+			+ AssetData.AssetName.ToString());
+#endif
+
 		return UEditorAssetLibrary::SaveLoadedAsset(AssetT);
 	}
 
@@ -669,15 +731,67 @@ void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
 
 		if (!Asset.GetAssetSubfix().IsValid())
 		{
+			OutList.Add(AssetDPtr);
 			continue;
 		}
 
-		const TextureCompressionSettings * result = TextureSubfixCompressionSettingsMap.Find(*Asset.GetAssetSubfix());
+		const TextureCompressionSettings * result = 
+			TextureSubfixCompressionSettingsMap.Find(*Asset.GetAssetSubfix());
 
 		if (!result)
 		{
 			OutList.Add(AssetDPtr);
 		}
+	}
+}
+
+void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
+	const TArray<TSharedPtr<FAssetData>>& FindInList, 
+	TArray<TSharedPtr<FAssetData>>& OutList)
+{
+	OutList.Empty();
+
+	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
+	{
+		if (!AssetDPtr->GetAsset()->IsA<UTexture2D>())
+		{
+			continue;
+		}
+
+		TSharedPtr<TextureCompressionSettings> CompressionS =
+			EGetTextureAssetCompressionSettings(*AssetDPtr);
+
+		TSharedPtr<bool> SRGBS =
+			EGetTextureAssetSRGBSettings(*AssetDPtr);
+
+		StandardAsset Asset(*AssetDPtr);
+
+		TSharedPtr<FString> subfix = Asset.GetAssetSubfix();
+
+		if (!subfix.IsValid())
+		{
+			continue;
+		}
+
+		const TextureCompressionSettings * standardCompressionSettings
+			= TextureSubfixCompressionSettingsMap.Find(*subfix);
+
+		const bool * standardSRGB
+			= TextureSubfixSRGBSettingsMap.Find(*subfix);
+
+
+		if (!(standardCompressionSettings && standardSRGB))
+		{
+			continue;
+		}
+		
+		if(*CompressionS == *standardCompressionSettings &&  *SRGBS == *standardSRGB)
+		{
+			continue;
+		}
+
+		OutList.Add(AssetDPtr);
+		
 	}
 }
 
@@ -728,9 +842,9 @@ void UAssetsChecker::ERemoveUnusedAssets(
 	if (NumOfAssetsDeleted == 0) return;
 
 #ifdef ZH_CN
-	NtfMsgLog(TEXT("成功删除") + FString::FromInt(NumOfAssetsDeleted) + TEXT("个未使用资产"));
+	NtfyMsgLog(TEXT("成功删除") + FString::FromInt(NumOfAssetsDeleted) + TEXT("个未使用资产"));
 #else
-	NtfMsgLog(FString::FromInt(NumOfAssetsDeleted) + TEXT(" assets have been deleted"));
+	NtfyMsgLog(FString::FromInt(NumOfAssetsDeleted) + TEXT(" assets have been deleted"));
 #endif
 }
 
@@ -884,17 +998,17 @@ void UAssetsChecker::ERemoveEmptyFolder(
 		else
 		{
 #ifdef ZH_CN
-			NtfMsgLog(TEXT("删除空文件夹[") + FolderPath + TEXT("]失败"));
+			NtfyMsgLog(TEXT("删除空文件夹[") + FolderPath + TEXT("]失败"));
 #else
-			NtfMsgLog(TEXT("Failed to delete empty folder:") + FolderPath);
+			NtfyMsgLog(TEXT("Failed to delete empty folder:") + FolderPath);
 #endif
 			;
 		}
 	}
 #ifdef ZH_CN
-	NtfMsgLog(TEXT("成功删除空文件夹[") + FString::FromInt(Counter) + TEXT("]"));
+	NtfyMsgLog(TEXT("成功删除空文件夹[") + FString::FromInt(Counter) + TEXT("]"));
 #else
-	NtfMsgLog(TEXT("Successfully deleted ") + FString::FromInt(Counter) + TEXT(" folders."));
+	NtfyMsgLog(TEXT("Successfully deleted ") + FString::FromInt(Counter) + TEXT(" folders."));
 #endif
 }
 
@@ -1001,9 +1115,9 @@ void UAssetsChecker::ReplaceName(
 	if (Counter >= 0)
 	{
 #ifdef ZH_CN
-		NtfMsgLog(FString::FromInt(Counter) + TEXT("个资产重命名替换成功"));
+		NtfyMsgLog(FString::FromInt(Counter) + TEXT("个资产重命名替换成功"));
 #else
-		NtfMsgLog(FString::FromInt(Counter) 
+		NtfyMsgLog(FString::FromInt(Counter) 
 			+ TEXT(" asset") 
 			+ (Counter > 1 ? TEXT("s'") : TEXT("'s")) 
 			+ TEXT(" name has been replaced."));
@@ -1041,9 +1155,9 @@ void UAssetsChecker::EFixUpRedirectors(
 	if (OutRedirectors.Num() == 0)
 	{
 #ifdef ZH_CN
-		NtfMsgLog(TEXT("[恭喜]\n未找到重定向资产(Redirector)"));
+		NtfyMsgLog(TEXT("[恭喜]\n未找到重定向资产(Redirector)"));
 #else
-		NtfMsgLog(TEXT("[Congratulations]\nNo redirector was found"));
+		NtfyMsgLog(TEXT("[Congratulations]\nNo redirector was found"));
 #endif
 		return;
 	}
@@ -1085,8 +1199,6 @@ void UAssetsChecker::ECheckerCheck(
 		DlgMsgLog(EAppMsgType::Ok, FString::FromInt(group));
 	}
 }
-
-#define ENUMCCC(var) #var
 
 void UAssetsChecker::CheckCheck()
 {

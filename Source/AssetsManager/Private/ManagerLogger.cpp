@@ -68,7 +68,7 @@ void NtfyMsg(const FString& Message)
 	FSlateNotificationManager::Get().AddNotification(NotifyInfo);
 }
 
-void NtfMsgLog(const FString& Message, bool isWarning)
+void NtfyMsgLog(const FString& Message, bool isWarning)
 {
 	NtfyMsg(Message);
 	MsgLog(Message, isWarning);

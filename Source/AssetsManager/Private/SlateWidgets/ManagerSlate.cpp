@@ -11,6 +11,8 @@
 
 #include "AssetRegistry/AssetRegistryModule.h"
 
+#include "StandardAsset/StandardAsset.h"
+
 #include "EditorReimportHandler.h"
 
 #include "EditorUtilityLibrary.h"
@@ -63,6 +65,7 @@
 #define USAGE_PREFIXERROR TEXT("资产前缀错误")
 #define USAGE_SAMENAMEASSETERROR TEXT("多资产重复命名错误")
 #define USAGE_TEXTURESUBFIXERROR TEXT("贴图不规范后缀")
+#define USAGE_TEXTURESETTINGSERROR TEXT("贴图资产设定错误")
 
 #else
 
@@ -73,6 +76,7 @@
 #define USAGE_PREFIXERROR TEXT("PrefixError")
 #define USAGE_SAMENAMEASSETERROR TEXT("SameNameError")
 #define USAGE_TEXTURESUBFIXERROR TEXT("SubfixError(Texture)")
+#define USAGE_TEXTURESETTINGSERROR TEXT("SettingsError(Texture)")
 
 #endif
 
@@ -122,6 +126,7 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 	UsageSelectionMaxInGameSizeError = MakeShared<FString>(USAGE_MAXINGAMESIZEERROR);
 	UsageSelectionSourceSizeError = MakeShared<FString>(USAGE_SOURCESIZEERROR);
 	UsageSelectionSubfixError = MakeShared<FString>(USAGE_TEXTURESUBFIXERROR);
+	UsageSelectionTextureSettinsError = MakeShared<FString>(USAGE_TEXTURESETTINGSERROR);
 
 	UsageFilterComboSourceItems.Add(UsageSelectedDefault);
 	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_UNUSED));
@@ -327,9 +332,19 @@ TSharedRef<ITableRow> SAssetsCheckerTab::OnGenerateRowForlist(
 {
 	if (m_ClassCheckState == Texture )
 	{
+		if (m_UsageCheckState == SubfixError)
+		{
+			return GenerateDefaultRowForList(AssetDataToDisplay, OwnerTable);
+		}
+
 		if (m_UsageCheckState == SourceSizeError)
 		{
 			return GenerateTextureRowForList_SourceSizeError(AssetDataToDisplay, OwnerTable);
+		}
+
+		if (m_UsageCheckState == TextureSettingsError)
+		{
+			return GenerateTextureRowForList_SettingsError(AssetDataToDisplay, OwnerTable);
 		}
 
 		return GenerateTextureRowForList_MaxInGameSizeError(AssetDataToDisplay, OwnerTable);
@@ -544,6 +559,82 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTexture
 				.FillWidth(0.1f)
 				[
 					ConstructSingleAssetReimportButtonBox(AssetDataToDisplay)
+				]
+		];
+
+	return ListViewRowWidget;
+}
+
+TSharedRef<STableRow<TSharedPtr<FAssetData>>> SAssetsCheckerTab::GenerateTextureRowForList_SettingsError(
+	TSharedPtr<FAssetData> AssetDataToDisplay,
+	const TSharedRef<STableViewBase>& OwnerTable)
+{
+	FSlateFontInfo ContentTextFont = GetFontInfo(9);
+
+	TSharedRef<STableRow<TSharedPtr<FAssetData>>> ListViewRowWidget
+		= SNew(STableRow<TSharedPtr<FAssetData>>, OwnerTable).Padding(FMargin(6.f))
+		[
+			SNew(SHorizontalBox)
+				// CheckBox
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Center)
+				.VAlign(VAlign_Center)
+				.Padding(FMargin(2.f))
+				.AutoWidth()
+				[
+					ConstructCheckBox(AssetDataToDisplay)
+				]
+				// Display Class
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Left)
+				.VAlign(VAlign_Center)
+				.FillWidth(0.05f)
+				[
+					ConstructAssetClassRowBox(AssetDataToDisplay, ContentTextFont)
+				]
+				
+				// Display Name
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Fill)
+				.VAlign(VAlign_Center)
+				.FillWidth(0.25f)
+				[
+					ConstructAssetNameRowBox(AssetDataToDisplay, ContentTextFont)
+				]
+
+				// Display CompressionSettins
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Left)
+				.VAlign(VAlign_Center)
+				.FillWidth(0.08f)
+				[
+					ConstructAssetTextureCompressionSettingsRowBox(AssetDataToDisplay, ContentTextFont)
+				]
+
+				// Display sRGBSettins
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Left)
+				.VAlign(VAlign_Center)
+				.FillWidth(0.03f)
+				[
+					ConstructAssetTextureSRGBRowBox(AssetDataToDisplay, ContentTextFont)
+				]
+
+				// Display Button
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Center)
+				.VAlign(VAlign_Center)
+				.FillWidth(0.1f)
+				[
+					ConstructSingleAssetDeleteButtonBox(AssetDataToDisplay)
+				]
+
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Center)
+				.VAlign(VAlign_Center)
+				.FillWidth(0.1f)
+				[
+					ConstructSingleTextureAssetSettingsFixButtonBox(AssetDataToDisplay)
 				]
 		];
 
@@ -834,6 +925,40 @@ TSharedRef<STextBlock> SAssetsCheckerTab::ConstructAssetTextureSizeRowBox(
 	return TextureAssetSizeBox;
 }
 
+TSharedRef<STextBlock> SAssetsCheckerTab::ConstructAssetTextureCompressionSettingsRowBox(const TSharedPtr<FAssetData>& AssetDataToDisplay, const FSlateFontInfo& FontInfo)
+{
+	TSharedPtr<TextureCompressionSettings> CompressionSettings 
+		= UAssetsChecker::EGetTextureAssetCompressionSettings(*AssetDataToDisplay);
+
+	if (CompressionSettings.IsValid())
+	{
+		const FString ShowString = *TextureCompressionMap.Find(*CompressionSettings);
+		TSharedRef<STextBlock> TextureCompressionSettinsBox = ConstructNormalTextBlock(ShowString, FontInfo);
+		return TextureCompressionSettinsBox;
+	};
+
+	const FString ShowString = "";
+	TSharedRef<STextBlock> TextureCompressionSettinsBox = ConstructNormalTextBlock(ShowString, FontInfo);
+	return TextureCompressionSettinsBox;
+}
+
+TSharedRef<STextBlock> SAssetsCheckerTab::ConstructAssetTextureSRGBRowBox(const TSharedPtr<FAssetData>& AssetDataToDisplay, const FSlateFontInfo& FontInfo)
+{
+	TSharedPtr<bool> SRGBSettings
+		= UAssetsChecker::EGetTextureAssetSRGBSettings(*AssetDataToDisplay);
+
+	if (SRGBSettings.IsValid())
+	{
+		const FString ShowString = *SRGBSettings ? "sRGB" : "NsRGB";
+		TSharedRef<STextBlock> TextureCompressionSettinsBox = ConstructNormalTextBlock(ShowString, FontInfo);
+		return TextureCompressionSettinsBox;
+	};
+
+	const FString ShowString = "";
+	TSharedRef<STextBlock> TextureCompressionSettinsBox = ConstructNormalTextBlock(ShowString, FontInfo);
+	return TextureCompressionSettinsBox;
+}
+
 #pragma endregion
 
 #pragma region ConstructSingleButton
@@ -877,16 +1002,16 @@ FReply SAssetsCheckerTab::OnSingleAssetDeleteButtonClicked(
 			return FReply::Handled();
 		}
 
-		// NtfMsgLog("Clicked OK");
+		// NtfyMsgLog("Clicked OK");
 	}
 
 	if (UAssetsChecker::EDeleteAsset(*ClickedAssetData))
 	{
 		// log
 #ifdef ZH_CN
-		NtfMsgLog(TEXT("成功删除") + ClickedAssetData->AssetName.ToString());
+		NtfyMsgLog(TEXT("成功删除") + ClickedAssetData->AssetName.ToString());
 #else
-		NtfMsgLog(TEXT("Successfully deleted ") + ClickedAssetData->AssetName.ToString());
+		NtfyMsgLog(TEXT("Successfully deleted ") + ClickedAssetData->AssetName.ToString());
 #endif
 
 		// update slistview
@@ -1170,6 +1295,33 @@ FReply SAssetsCheckerTab::OnSingleTextureAssetResetButtonClicked(
 	return FReply::Handled();
 }
 
+TSharedRef<SButton> SAssetsCheckerTab::ConstructSingleTextureAssetSettingsFixButtonBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay)
+{
+	TSharedRef<SButton> SingleTextureFixButtonBox =
+		SNew(SButton)
+#ifdef ZH_CN
+		.Text(FText::FromString(TEXT("修复")))
+#else
+		.Text(FText::FromString(TEXT("Fix")))
+#endif
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
+		.OnClicked(this,
+			&SAssetsCheckerTab::OnSingleTextureAssetSettingsFixButtonClicked,
+			AssetDataToDisplay);
+
+	return SingleTextureFixButtonBox;
+}
+
+FReply SAssetsCheckerTab::OnSingleTextureAssetSettingsFixButtonClicked(
+	TSharedPtr<FAssetData> ClickedAssetData)
+{
+	UAssetsChecker::ESetTextureStandardSettins(*ClickedAssetData);
+	RefreshAssetsListView();
+	return FReply::Handled();
+}
+
 #pragma endregion
 
 #pragma endregion
@@ -1400,15 +1552,15 @@ FReply SAssetsCheckerTab::OnSelectFixSelectedClicked()
 {
 	if (m_UsageCheckState == PrefixError)
 	{
-		TArray<TSharedPtr<FAssetData>> AssetReayRename;
+		TArray<TSharedPtr<FAssetData>> AssetsReadyRename;
 		TArray<TSharedPtr<FAssetData>> AssetShouldRename;
 
 		for (TSharedPtr<FAssetData> AssetData: AssetsDataSelected)
 		{
-			AssetReayRename.Add(AssetData);
+			AssetsReadyRename.Add(AssetData);
 		}
 
-		bool result = UAssetsChecker::EConfirmPrefixes(AssetReayRename, AssetShouldRename);
+		bool result = UAssetsChecker::EConfirmPrefixes(AssetsReadyRename, AssetShouldRename);
 
 		if (result)
 		{
@@ -1426,17 +1578,34 @@ FReply SAssetsCheckerTab::OnSelectFixSelectedClicked()
 
 			UAssetsChecker::EAddPrefixes(AssetToRename);
 			StoredAssetsData = UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(StoredFolderPaths);
-			// ConstuctClassFilterList(ClassFilterCurrent);
 			ConstuctClassFilterList(ClassFilterCurrent);
 		}
 
 		RefreshAssetsListView();
 		return FReply::Handled();
 	}
+
+	if (m_UsageCheckState == TextureSettingsError)
+	{
+		for (TSharedPtr<FAssetData> AssetData : AssetsDataSelected)
+		{
+			if(UAssetsChecker::ESetTextureStandardSettins(*AssetData))
+			{
+				if (SListViewAssetData.Contains(AssetData))
+				{
+					SListViewAssetData.Remove(AssetData);
+				}
+			}
+		}
+
+		RefreshAssetsListView();
+		return FReply::Handled();
+	}
+
 #ifdef ZH_CN
-	DlgMsgLog(EAppMsgType::Ok, FString(USAGEFILTER) + FString(TEXT("选择错误\n应该选择[资产前缀错误]")));
+	DlgMsgLog(EAppMsgType::Ok, FString(USAGEFILTER) + FString(TEXT("选择错误\n应该选择[资产前缀错误/资产设置错误]")));
 #else
-	DlgMsgLog(EAppMsgType::Ok, FString(TEXT("Choose a valid ")) + FString(USAGEFILTER) + FString(TEXT(" type!\nShould be[PrefixError]."))));
+	DlgMsgLog(EAppMsgType::Ok, FString(TEXT("Choose a valid ")) + FString(USAGEFILTER) + FString(TEXT(" type!\nShould be[PrefixError/TextureSettinsError]."))));
 #endif
 	return FReply::Handled();
 }
@@ -1568,17 +1737,17 @@ FReply SAssetsCheckerTab::OnOutputViewListInfoButtonClicked()
 		EFileWrite::FILEWRITE_Append))
 	{
 #ifdef ZH_CN
-		NtfMsgLog(TEXT("成功输出文件到") + FilePath);
+		NtfyMsgLog(TEXT("成功输出文件到") + FilePath);
 #else
-		NtfMsgLog(TEXT("Successfully saved assets manager log to ") + FilePath);
+		NtfyMsgLog(TEXT("Successfully saved assets manager log to ") + FilePath);
 #endif
 		return FReply::Handled();
 	};
 
 #ifdef ZH_CN
-	NtfMsgLog(TEXT("输出文件到") + FilePath + TEXT("失败"));
+	NtfyMsgLog(TEXT("输出文件到") + FilePath + TEXT("失败"));
 #else
-	NtfMsgLog(TEXT("Failed saving assets manager log to ") + FilePath);
+	NtfyMsgLog(TEXT("Failed saving assets manager log to ") + FilePath);
 #endif
 	;	return FReply::Handled();
 	
@@ -1684,6 +1853,11 @@ void SAssetsCheckerTab::OnClassFilterButtonChanged(
 		{
 			UsageFilterComboSourceItems.Add(UsageSelectionSubfixError);
 		}
+
+		if (!UsageFilterComboSourceItems.Contains(UsageSelectionTextureSettinsError))
+		{
+			UsageFilterComboSourceItems.Add(UsageSelectionTextureSettinsError);
+		}
 	}
 	else
 	{
@@ -1700,6 +1874,11 @@ void SAssetsCheckerTab::OnClassFilterButtonChanged(
 		if (UsageFilterComboSourceItems.Contains(UsageSelectionSubfixError))
 		{
 			UsageFilterComboSourceItems.Remove(UsageSelectionSubfixError);
+		}
+
+		if (UsageFilterComboSourceItems.Contains(UsageSelectionTextureSettinsError))
+		{
+			UsageFilterComboSourceItems.Remove(UsageSelectionTextureSettinsError);
 		}
 	}
 
@@ -1805,6 +1984,12 @@ void SAssetsCheckerTab::OnUsageFilterButtonChanged(
 	{
 		m_UsageCheckState = SubfixError;
 		UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+	}
+
+	if (*SelectedOption.Get() == USAGE_TEXTURESETTINGSERROR)
+	{
+		m_UsageCheckState = TextureSettingsError;
+		UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	RefreshAssetsListView();

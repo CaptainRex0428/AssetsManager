@@ -39,7 +39,7 @@ private:
 		DefaultUsageCheckState = 0,
 		Unused,
 		// for texture,
-		MaxInGameSizeError, SourceSizeError,SubfixError,
+		MaxInGameSizeError, SourceSizeError,SubfixError,TextureSettingsError,
 		// for prefix
 		PrefixError,
 		//for same name asset,
@@ -98,6 +98,10 @@ private:
 		TSharedPtr<FAssetData> AssetDataToDisplay,
 		const TSharedRef<STableViewBase>& OwnerTable);
 
+	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateTextureRowForList_SettingsError(
+		TSharedPtr<FAssetData> AssetDataToDisplay,
+		const TSharedRef<STableViewBase>& OwnerTable);
+
 #pragma region ConstructAssetInfo
 
 	// Construct CheckBox
@@ -138,6 +142,14 @@ private:
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
+	TSharedRef<STextBlock> ConstructAssetTextureCompressionSettingsRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
+	TSharedRef<STextBlock> ConstructAssetTextureSRGBRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
 #pragma endregion
 
 #pragma region ConstructSingleButton
@@ -168,6 +180,10 @@ private:
 	//Construct Texture Reset Button
 	TSharedRef<SButton> ConstructSingleTextureAssetResetButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
 	FReply OnSingleTextureAssetResetButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+
+	//Construct Texture Reset Button
+	TSharedRef<SButton> ConstructSingleTextureAssetSettingsFixButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureAssetSettingsFixButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
 
 #pragma endregion
 
@@ -238,6 +254,7 @@ private:
 	TSharedPtr<FString> UsageSelectionMaxInGameSizeError;
 	TSharedPtr<FString> UsageSelectionSourceSizeError;
 	TSharedPtr<FString> UsageSelectionSubfixError;
+	TSharedPtr<FString> UsageSelectionTextureSettinsError;
 	
 #pragma endregion
 
