@@ -4,6 +4,7 @@
 
 #include "AssetsChecker/AssetsChecker.h"
 #include "ManagerLogger.h"
+#include "StandardAsset/StandardAsset.h"
 
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
@@ -143,7 +144,7 @@ bool UAssetsChecker::EConfirmPrefixes(
 
 		ReadyToFixAssets.Add(selectedObj);
 
-		// clear the predix & subfix for material instance created by default editor.
+		// clear the prefix & subfix for material instance created by default editor.
 		if (selectedObj->GetAsset()->IsA<UMaterialInstanceConstant>())
 		{
 			OldName.RemoveFromStart("M_");
@@ -651,6 +652,35 @@ void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 	}
 }
 
+void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
+	const TArray<TSharedPtr<FAssetData>>& FindInList, 
+	TArray<TSharedPtr<FAssetData>>& OutList)
+{
+	OutList.Empty();
+
+	for (const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
+	{
+		if (!AssetDPtr->GetAsset()->IsA<UTexture2D>())
+		{
+			continue;
+		}
+
+		StandardAsset Asset(*AssetDPtr);
+
+		if (!Asset.GetAssetSubfix().IsValid())
+		{
+			continue;
+		}
+
+		const TextureCompressionSettings * result = TextureSubfixCompressionSettingsMap.Find(*Asset.GetAssetSubfix());
+
+		if (!result)
+		{
+			OutList.Add(AssetDPtr);
+		}
+	}
+}
+
 uint32 UAssetsChecker::EDeleteAssets(
 	const TArray<FAssetData>& AssetsData)
 {
@@ -942,6 +972,13 @@ int UAssetsChecker::EReplaceName(
 	return Counter;
 }
 
+TSharedPtr<FString> UAssetsChecker::EGetAssetNameSubfix(const FAssetData& AssetSelected)
+{
+	StandardAsset AssetS(AssetSelected);
+
+	return AssetS.GetAssetSubfix();
+}
+
 void UAssetsChecker::ReplaceName(
 	const FString& OriginStr, 
 	const FString& ReplaceStr)
@@ -1051,29 +1088,29 @@ void UAssetsChecker::ECheckerCheck(
 
 #define ENUMCCC(var) #var
 
-void UAssetsChecker::CheckCheck(TEnumAsByte<TextureCompressionSettings> Compression,const bool & sRGB)
+void UAssetsChecker::CheckCheck()
 {
 	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
 
-	for (const FAssetData & asset : SelectedAssetsData)
+	TArray<TSharedPtr<FAssetData>> InList;
+	TArray<TSharedPtr<FAssetData>> OutList;
+
+	for (auto a : SelectedAssetsData) 
 	{
-		if(*EGetTextureAssetCompressionSettings(asset) != Compression)
-		{
-			NtfyMsg("NOT EQUAL!!!");
-			
-			ESetTextureAssetCompressionSettings(asset, Compression);
-		}
-
-		if (*EGetTextureAssetSRGBSettings(asset) != sRGB)
-		{
-			NtfyMsg("NOT EQUAL!!!");
-
-			ESetTextureSRGBSettings(asset, sRGB);
-		}
+		InList.Add(MakeShared<FAssetData>(a));
 	}
+
+	EListTextureSubfixErrorAssetsForAssetList(InList, OutList);
+
+	for(auto a : OutList)
+	{
+		NtfyMsg(a->AssetName.ToString());
+	}
+	
 }
 	
 const TMap<UClass*, FString>& UAssetsChecker::EGetPrefixMap()
 {
 	return PrefixMap;
 }
+

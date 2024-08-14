@@ -39,7 +39,7 @@ private:
 		DefaultUsageCheckState = 0,
 		Unused,
 		// for texture,
-		MaxInGameSizeError, SourceSizeError,
+		MaxInGameSizeError, SourceSizeError,SubfixError,
 		// for prefix
 		PrefixError,
 		//for same name asset,
@@ -233,8 +233,11 @@ private:
 	
 	//------> UsageFilter DefaultStore
 	TSharedPtr<FString> UsageSelectedDefault;
+	
+	// only for texture
 	TSharedPtr<FString> UsageSelectionMaxInGameSizeError;
 	TSharedPtr<FString> UsageSelectionSourceSizeError;
+	TSharedPtr<FString> UsageSelectionSubfixError;
 	
 #pragma endregion
 

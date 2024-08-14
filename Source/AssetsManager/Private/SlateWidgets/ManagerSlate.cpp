@@ -62,6 +62,7 @@
 #define USAGE_SOURCESIZEERROR TEXT("原始贴图大小错误")
 #define USAGE_PREFIXERROR TEXT("资产前缀错误")
 #define USAGE_SAMENAMEASSETERROR TEXT("多资产重复命名错误")
+#define USAGE_TEXTURESUBFIXERROR TEXT("贴图不规范后缀")
 
 #else
 
@@ -71,6 +72,7 @@
 #define USAGE_SOURCESIZEERROR TEXT("SourceSizeError")
 #define USAGE_PREFIXERROR TEXT("PrefixError")
 #define USAGE_SAMENAMEASSETERROR TEXT("SameNameError")
+#define USAGE_TEXTURESUBFIXERROR TEXT("SubfixError(Texture)")
 
 #endif
 
@@ -119,6 +121,7 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 	UsageSelectedDefault = MakeShared<FString>(USAGE_NONE);
 	UsageSelectionMaxInGameSizeError = MakeShared<FString>(USAGE_MAXINGAMESIZEERROR);
 	UsageSelectionSourceSizeError = MakeShared<FString>(USAGE_SOURCESIZEERROR);
+	UsageSelectionSubfixError = MakeShared<FString>(USAGE_TEXTURESUBFIXERROR);
 
 	UsageFilterComboSourceItems.Add(UsageSelectedDefault);
 	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_UNUSED));
@@ -1676,6 +1679,11 @@ void SAssetsCheckerTab::OnClassFilterButtonChanged(
 		{
 			UsageFilterComboSourceItems.Add(UsageSelectionSourceSizeError);
 		}
+
+		if (!UsageFilterComboSourceItems.Contains(UsageSelectionSubfixError))
+		{
+			UsageFilterComboSourceItems.Add(UsageSelectionSubfixError);
+		}
 	}
 	else
 	{
@@ -1687,6 +1695,11 @@ void SAssetsCheckerTab::OnClassFilterButtonChanged(
 		if (UsageFilterComboSourceItems.Contains(UsageSelectionSourceSizeError))
 		{
 			UsageFilterComboSourceItems.Remove(UsageSelectionSourceSizeError);
+		}
+
+		if (UsageFilterComboSourceItems.Contains(UsageSelectionSubfixError))
+		{
+			UsageFilterComboSourceItems.Remove(UsageSelectionSubfixError);
 		}
 	}
 
@@ -1786,6 +1799,12 @@ void SAssetsCheckerTab::OnUsageFilterButtonChanged(
 	{
 		m_UsageCheckState = SourceSizeError;
 		UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+	}
+
+	if (*SelectedOption.Get() == USAGE_TEXTURESUBFIXERROR)
+	{
+		m_UsageCheckState = SubfixError;
+		UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	RefreshAssetsListView();

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -84,6 +84,17 @@ const TMap<TextureCompressionSettings, FString> TextureCompressionMap =
 	{TC_SingleFloat,"Single Float (R32F)"},
 	{TC_HDR_F32,"HDR High Precision (RGBA32F)"},
 	{TC_MAX,"MAX"}
+};
+
+const TMap<FString, TextureCompressionSettings> TextureSubfixCompressionSettingsMap =
+{
+	{"D",TC_Default},
+	{"E",TC_Default},
+	{"ARMS",TC_Masks},
+	{"N",TC_Normalmap},
+	{"Attr",TC_VectorDisplacementmap},
+	{"Detail",TC_VectorDisplacementmap},
+	{"AO",TC_Grayscale}
 };
 
 /**
@@ -183,26 +194,46 @@ public:
 
 #pragma region HandleAssetsName
 	int EReplaceName(const TArray<UObject*>& AssetsSelected, const FString& OriginStr, const FString& ReplaceStr);
+	
+	TSharedPtr<FString> EGetAssetNameSubfix(const FAssetData & AssetSelected);
+
 #pragma endregion
 
 #pragma region ListAssets
 	static TArray<TSharedPtr<FAssetData>> EListAssetsDataPtrUnderSelectedFolder(const FString& FolderPathSelected);
 	static TArray<TSharedPtr<FAssetData>> EListAssetsDataPtrUnderSelectedFolder(const TArray<FString>& FolderPathSelected);
 
-	static void EListUnusedAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
-	static void EListPrefixErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
-	static void EListSameNameErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
-	static void EListMaxInGameSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
-	static void EListSourceSizeErrorAssetsForAssetList(const TArray<TSharedPtr<FAssetData>>& FindInList, TArray<TSharedPtr<FAssetData>>& OutList);
+	static void EListUnusedAssetsForAssetList(
+		const TArray<TSharedPtr<FAssetData>>& FindInList, 
+		TArray<TSharedPtr<FAssetData>>& OutList);
+
+	static void EListPrefixErrorAssetsForAssetList(
+		const TArray<TSharedPtr<FAssetData>>& FindInList, 
+		TArray<TSharedPtr<FAssetData>>& OutList);
+
+	static void EListSameNameErrorAssetsForAssetList(
+		const TArray<TSharedPtr<FAssetData>>& FindInList, 
+		TArray<TSharedPtr<FAssetData>>& OutList);
+
+	static void EListMaxInGameSizeErrorAssetsForAssetList(
+		const TArray<TSharedPtr<FAssetData>>& FindInList, 
+		TArray<TSharedPtr<FAssetData>>& OutList);
+
+	static void EListSourceSizeErrorAssetsForAssetList(
+		const TArray<TSharedPtr<FAssetData>>& FindInList, 
+		TArray<TSharedPtr<FAssetData>>& OutList);
+
+	static void EListTextureSubfixErrorAssetsForAssetList(
+		const TArray<TSharedPtr<FAssetData>>& FindInList, 
+		TArray<TSharedPtr<FAssetData>>& OutList);
+
 #pragma endregion
 
-	// ¡Ù◊≈Œ™¡À≤‚ ‘ ’Ê√ª±µƒ
+	// ÁïôÁùÄ‰∏∫‰∫ÜÊµãËØï Ê≤°Âà´ÁöÑ
 	static void ECheckerCheck(const FAssetData & AssetData);
 
 	UFUNCTION(CallInEditor)
-	void CheckCheck(
-		TEnumAsByte<TextureCompressionSettings> Compression,
-		const bool & sRGB);
+	void CheckCheck();
 #pragma endregion
 
 #pragma region Call In Editor
