@@ -421,7 +421,6 @@ FVector2D UAssetsChecker::EGetTextureAssetMaxInGameSize(
 
 	if (bias > 0)
 	{
-		NtfyMsg("Gotcha");
 
 		double scale = pow(2, bias);
 		size.X /= scale;
