@@ -138,7 +138,8 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 			// main box
 			SNew(SVerticalBox)
 
-				// title slot
+#pragma regoion title
+
 				+ SVerticalBox::Slot()
 				.AutoHeight()
 				[
@@ -154,6 +155,9 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 				[
 					SNew(SBorder)
 				]
+#pragma endregion
+
+#pragma region InfoBar
 
 				// InfoBar
 				+ SVerticalBox::Slot()
@@ -168,6 +172,9 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 					SNew(SBorder)
 				]
 
+#pragma endregion
+
+#pragma region DropDown
 				// drop down menu
 				+ SVerticalBox::Slot()
 				.AutoHeight()
@@ -220,6 +227,9 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 					]
 				]
 
+#pragma endregion
+
+#pragma region InfoList
 				// info list
 				+ SVerticalBox::Slot()
 				.VAlign(VAlign_Fill)
@@ -231,14 +241,15 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 						ConstructAssetsListView()
 					]
 				]
-
+#pragma endregion
+#pragma region HandleSelected
 				// Handle Select
 				+ SVerticalBox::Slot()
 				.AutoHeight()
 				[					
 					ConstructHandleAllButtons()
 				]
-
+#pragma endregion
 				
 		];
 }
