@@ -138,7 +138,7 @@ void SAssetsCheckerTab::Construct(const FArguments& InArgs)
 			// main box
 			SNew(SVerticalBox)
 
-#pragma regoion title
+#pragma region title
 
 				+ SVerticalBox::Slot()
 				.AutoHeight()
