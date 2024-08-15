@@ -334,8 +334,6 @@ bool UAssetsChecker::ESetTextureStandardSettings(FAssetData& ClickedAssetData)
 
 	TSharedPtr<FString> subfix = SAsset.GetAssetSubfix();
 
-	NtfyMsg(*subfix);
-
 	if (!subfix.IsValid())
 	{
 #ifdef ZH_CN
@@ -351,8 +349,6 @@ bool UAssetsChecker::ESetTextureStandardSettings(FAssetData& ClickedAssetData)
 
 	const bool* StandardSRGBSettings
 		= TextureSubfixSRGBSettingsMap.Find(*subfix);
-
-	NtfyMsg(*StandardSRGBSettings ? "A" : "B");
 
 	if (!StandardCompressionSettings || !StandardSRGBSettings)
 	{
