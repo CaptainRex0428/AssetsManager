@@ -4,18 +4,20 @@
 
 #define CONTENTFOLDERMANAGERTABNAME "AssetsManager"
 
-#include "Widgets/SCompoundWidget.h"
+#include "SlateWidgets/SCommonSlate.h"
 
-class SAssetsCheckerTab: public SCompoundWidget
+class ASSETSMANAGER_API SManagerSlateTab: public SCommonSlate
 {
-	SLATE_BEGIN_ARGS(SAssetsCheckerTab){}
+	SLATE_BEGIN_ARGS(SManagerSlateTab){}
 	SLATE_ARGUMENT(FString,TitleText)
 	SLATE_ARGUMENT(TArray<TSharedPtr<FAssetData>>, StoredAssetsData)
 	SLATE_ARGUMENT(TArray<FString>, SelectedFolderPaths)
 	SLATE_END_ARGS()
 
 public:
-	void Construct(const FArguments& InArgs);
+	virtual void Construct(const FArguments& InArgs);
+
+protected:
 
 private:
 	TArray<FString> StoredFolderPaths;
@@ -49,25 +51,6 @@ private:
 	UsageCheckState m_UsageCheckState;
 
 	void SListViewRemoveAssetData(TSharedPtr<FAssetData> AssetData);
-
-#pragma region FontSet
-	FSlateFontInfo GetFontInfo(float FontSize, 
-		const FString& FontName = "EmbossedText");
-#pragma endregion
-
-#pragma region CustructTextBlock
-	// ConstrucStandard Name String
-	TSharedRef<STextBlock> ConstructNormalTextBlock(
-		const FString& StringToDisplay,
-		const FSlateFontInfo& FontInfo,
-		const FColor& FontColor = FColor::White,
-		const FString& ToolTip = L"");
-#pragma endregion
-
-#pragma region ButtonTextCustruct
-	TSharedRef<STextBlock> ConstructTextForButtons(
-		const FString& TextContent);
-#pragma endregion
 
 #pragma region OnGenerateRowForlist
 	// construct / refresh list view
