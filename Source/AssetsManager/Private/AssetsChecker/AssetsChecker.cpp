@@ -212,7 +212,7 @@ void UAssetsChecker::EAddPrefixes(
 			continue;
 		}
 
-		// clear the predix & subfix for material instance created by default editor.
+		// clear the prefix & subfix for material instance created by default editor.
 		if (selectedAsset.GetAsset()->IsA<UMaterialInstanceConstant>())
 		{
 			OldName.RemoveFromStart("M_");
@@ -256,12 +256,12 @@ void UAssetsChecker::EAddPrefixes(
 		FString OldName = selectedObj->GetName();
 		if (OldName.StartsWith(*prefix))
 		{
-			ScreenMsgLog(OldName + " alreay has prefix added", FColor::Red);
+			ScreenMsgLog(OldName + " already has prefix added", FColor::Red);
 			++AlreadyCounter;
 			continue;
 		}
 
-		// clear the predix & subfix for material instance created by default editor.
+		// clear the prefix & subfix for material instance created by default editor.
 		if (selectedObj->IsA<UMaterialInstanceConstant>())
 		{
 			OldName.RemoveFromStart("M_");
@@ -360,10 +360,8 @@ bool UAssetsChecker::ESetTextureStandardSettins(FAssetData& ClickedAssetData)
 		return false;
 	}
 
-	ESetTextureAssetCompressionSettings(ClickedAssetData, *StandardCompressionSettings);
-	ESetTextureSRGBSettings(ClickedAssetData, *StandardSRGBSettings);
-
-	return true;
+	return ESetTextureAssetCompressionSettings(ClickedAssetData, *StandardCompressionSettings) 
+		&& ESetTextureSRGBSettings(ClickedAssetData, *StandardSRGBSettings);
 }
 
 TArray<FString> UAssetsChecker::EGetAssetReferencesPath(
@@ -522,6 +520,8 @@ bool UAssetsChecker::ESetTextureAssetCompressionSettings(
 		AssetT->CompressionSettings = CompressionSetting;
 		AssetT->UpdateResource();
 
+		
+
 #ifdef ZH_CN
 		NtfyMsgLog(TEXT("成功设置贴图压缩格式为\n") 
 			+ *TextureCompressionMap.Find(CompressionSetting) + "\n"
@@ -532,7 +532,7 @@ bool UAssetsChecker::ESetTextureAssetCompressionSettings(
 			+ AssetData.AssetName.ToString());
 #endif
 
-		return UEditorAssetLibrary::SaveLoadedAsset(AssetT);
+		return UEditorAssetLibrary::SaveAsset(AssetData.GetObjectPathString(), false);
 	}
 
 	return false;
@@ -598,7 +598,7 @@ bool UAssetsChecker::ESetTextureSRGBSettings(
 			+ AssetData.AssetName.ToString());
 #endif
 
-		return UEditorAssetLibrary::SaveLoadedAsset(AssetT);
+		return UEditorAssetLibrary::SaveAsset(AssetData.GetObjectPathString(), false);
 	}
 
 	return false;
