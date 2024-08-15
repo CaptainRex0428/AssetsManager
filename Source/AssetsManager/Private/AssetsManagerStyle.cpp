@@ -42,14 +42,16 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
 
 	CustomStyleSet->SetContentRoot(IconDirectory);
 	const FVector2D Icon16x16(16.f, 16.f);
+	const FVector2D Icon32x32(32.f, 32.f);
+	const FVector2D Icon64x64(64.f, 64.f);
 
 	CustomStyleSet->Set(
 		"ContentBrowser.AssetsManager",
-		new FSlateImageBrush(IconDirectory / "LOGO256.png", Icon16x16));
+		new FSlateImageBrush(IconDirectory / "LOGO_GREY_256.png", Icon64x64));
 
 	CustomStyleSet->Set(
 		"ContentBrowser.DeleteUnusedFolders",
-		new FSlateImageBrush(IconDirectory / "LOGO256.png", Icon16x16));
+		new FSlateImageBrush(IconDirectory / "LOGO_RED_256.png", Icon64x64));
 
 	return CustomStyleSet;
 }
