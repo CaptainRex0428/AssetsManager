@@ -328,11 +328,13 @@ bool UAssetsChecker::ESetTextureSize(
 	return false;
 }
 
-bool UAssetsChecker::ESetTextureStandardSettins(FAssetData& ClickedAssetData)
+bool UAssetsChecker::ESetTextureStandardSettings(FAssetData& ClickedAssetData)
 {
 	StandardAsset SAsset(ClickedAssetData);
 
 	TSharedPtr<FString> subfix = SAsset.GetAssetSubfix();
+
+	NtfyMsg(*subfix);
 
 	if (!subfix.IsValid())
 	{
@@ -350,6 +352,8 @@ bool UAssetsChecker::ESetTextureStandardSettins(FAssetData& ClickedAssetData)
 	const bool* StandardSRGBSettings
 		= TextureSubfixSRGBSettingsMap.Find(*subfix);
 
+	NtfyMsg(*StandardSRGBSettings ? "A" : "B");
+
 	if (!StandardCompressionSettings || !StandardSRGBSettings)
 	{
 #ifdef ZH_CN
@@ -360,8 +364,10 @@ bool UAssetsChecker::ESetTextureStandardSettins(FAssetData& ClickedAssetData)
 		return false;
 	}
 
-	return ESetTextureAssetCompressionSettings(ClickedAssetData, *StandardCompressionSettings) 
-		&& ESetTextureSRGBSettings(ClickedAssetData, *StandardSRGBSettings);
+	bool StandardResult_Compression = ESetTextureAssetCompressionSettings(ClickedAssetData, *StandardCompressionSettings);
+	bool StandardResult_sRGB = ESetTextureSRGBSettings(ClickedAssetData, *StandardSRGBSettings);
+
+	return  StandardResult_Compression && StandardResult_sRGB;
 }
 
 TArray<FString> UAssetsChecker::EGetAssetReferencesPath(
@@ -535,7 +541,7 @@ bool UAssetsChecker::ESetTextureAssetCompressionSettings(
 		return UEditorAssetLibrary::SaveAsset(AssetData.GetObjectPathString(), false);
 	}
 
-	return false;
+	return true;
 }
 
 TSharedPtr<bool> UAssetsChecker::EGetTextureAssetSRGBSettings(const FAssetData& AssetData)
@@ -601,7 +607,7 @@ bool UAssetsChecker::ESetTextureSRGBSettings(
 		return UEditorAssetLibrary::SaveAsset(AssetData.GetObjectPathString(), false);
 	}
 
-	return false;
+	return true;
 }
 
 void UAssetsChecker::EListUnusedAssetsForAssetList(

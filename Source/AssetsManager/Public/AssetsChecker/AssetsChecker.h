@@ -190,7 +190,7 @@ public:
 		FAssetData& ClickedAssetData, 
 		double maxSize);
 
-	static bool ESetTextureStandardSettins(
+	static bool ESetTextureStandardSettings(
 		FAssetData& ClickedAssetData);
 
 #pragma endregion

@@ -1317,7 +1317,7 @@ TSharedRef<SButton> SAssetsCheckerTab::ConstructSingleTextureAssetSettingsFixBut
 FReply SAssetsCheckerTab::OnSingleTextureAssetSettingsFixButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	UAssetsChecker::ESetTextureStandardSettins(*ClickedAssetData);
+	UAssetsChecker::ESetTextureStandardSettings(*ClickedAssetData);
 	RefreshAssetsListView();
 	return FReply::Handled();
 }
@@ -1589,7 +1589,7 @@ FReply SAssetsCheckerTab::OnSelectFixSelectedClicked()
 	{
 		for (TSharedPtr<FAssetData> AssetData : AssetsDataSelected)
 		{
-			if(UAssetsChecker::ESetTextureStandardSettins(*AssetData))
+			if(UAssetsChecker::ESetTextureStandardSettings(*AssetData))
 			{
 				if (SListViewAssetData.Contains(AssetData))
 				{
