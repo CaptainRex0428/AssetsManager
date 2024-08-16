@@ -33,7 +33,7 @@ void FAssetsManagerModule::ShutdownModule()
 
 #pragma region ContentBrowserMenuExtend
 
-// Third bind. The actual function to excute.
+// Third bind. The actual function to execute.
 void FAssetsManagerModule::OnDeleteUnusedAssetButtonClicked()
 {
 	UAssetsChecker::ERemoveUnusedAssets(SelectedContentFolderPaths);
@@ -82,13 +82,13 @@ void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerButtonClicked)
 	);
 
-	MenuBuilder.AddMenuEntry
+	/*MenuBuilder.AddMenuEntry
 	(
 		FText::FromString(TEXT(CONTENTFOLDERMATERIALCREATORTABNAME)),
 		FText::FromString(TEXT("A tab window to test material tab inside the seleted folder.")),
 		FSlateIcon(FAssetsMangerStyle::GetStyleName(), "ContentBrowser.MaterialCreator"),
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnMaterialCreatButtonClicked)
-	);
+	);*/
 
 }
 
@@ -138,18 +138,16 @@ void FAssetsManagerModule::InitCBMenuExtension()
 void FAssetsManagerModule::RegisterCustomEditorTab()
 {
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
-		// tag
 		FName(CONTENTFOLDERMANAGERTABNAME),
 		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnManagerSlateTab))
 		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDERMANAGERTABNAME)))
 		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleName(),"ContentBrowser.AssetsManager"));
 
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
-		// tag
+	/*FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
 		FName(CONTENTFOLDERMATERIALCREATORTABNAME),
 		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnMaterialCreatorSlateTab))
 		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDERMATERIALCREATORTABNAME)))
-		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleName(), "ContentBrowser.MaterialCreator"));
+		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleName(), "ContentBrowser.MaterialCreator"));*/
 }
 
 TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs)

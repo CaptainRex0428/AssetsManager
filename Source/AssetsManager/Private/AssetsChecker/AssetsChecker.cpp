@@ -608,9 +608,14 @@ bool UAssetsChecker::ESetTextureSRGBSettings(
 
 void UAssetsChecker::EListUnusedAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode) 
+	{
+		OutList.Empty();
+	}
+	
 
 	for (const TSharedPtr<FAssetData> & DataSPTR: FindInList)
 	{
@@ -625,9 +630,13 @@ void UAssetsChecker::EListUnusedAssetsForAssetList(
 
 void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode)
+	{
+		OutList.Empty();
+	}
 
 	for(TSharedPtr<FAssetData> AssetD : FindInList)
 	{
@@ -647,9 +656,13 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 
 void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode)
+	{
+		OutList.Empty();
+	}
 
 	TMultiMap<FString, TSharedPtr<FAssetData>> AssetsMultiInfoMap;
 
@@ -678,9 +691,13 @@ void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
 
 void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode)
+	{
+		OutList.Empty();
+	}
 
 	for (TSharedPtr<FAssetData> AssetD : FindInList)
 	{
@@ -698,9 +715,13 @@ void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
 
 void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode)
+	{
+		OutList.Empty();
+	}
 
 	for (TSharedPtr<FAssetData> AssetD : FindInList)
 	{
@@ -718,9 +739,13 @@ void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 
 void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode)
+	{
+		OutList.Empty();
+	}
 
 	for (const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
@@ -749,9 +774,13 @@ void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
 
 void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode)
+	{
+		OutList.Empty();
+	}
 
 	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{

@@ -137,31 +137,38 @@ public:
 
 	static void EListUnusedAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 	static void EListPrefixErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 	static void EListSameNameErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 	static void EListMaxInGameSizeErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 	static void EListSourceSizeErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 	static void EListTextureSubfixErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 	static void EListTextureSettingsErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList,
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 #pragma endregion
 
