@@ -18,6 +18,8 @@
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
 
+#include "Components/Image.h"
+
 #include "HAL/FileManager.h"
 
 
@@ -139,15 +141,10 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 			SNew(SVerticalBox)
 
 #pragma region title
-
 				+ SVerticalBox::Slot()
 				.AutoHeight()
 				[
-					SNew(STextBlock)
-						.Text(FText::FromString(InArgs._TitleText))
-						.Font(TitleTextFont)
-						.Justification(ETextJustify::Center)
-						.ColorAndOpacity(FColor::White)
+					ConstructTitleTextBlock(InArgs._TitleText,GetFontInfo(24))
 				]
 
 				+ SVerticalBox::Slot()
@@ -156,92 +153,58 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 					SNew(SBorder)
 				]
 #pragma endregion
+				+SVerticalBox::Slot()
+				[
+					SNew(SSplitter)
+					.Orientation(Orient_Vertical)
 
+					+SSplitter::Slot()
+					.MinSize(80.f)
+					.Value(0.15f)
+					[
 #pragma region InfoBar
-
-				// InfoBar
-				+ SVerticalBox::Slot()
-				.AutoHeight()
-				[
-					ConstructInfoBox(StoredFolderPaths,GetFontInfo(12))
-				]
-
-				+ SVerticalBox::Slot()
-				.AutoHeight()
-				[
-					SNew(SBorder)
-				]
-
+						SNew(SVerticalBox)
+						// InfoBar
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						[
+							ConstructInfoBox(StoredFolderPaths, GetFontInfo(12))
+						]
 #pragma endregion
+					]
 
+					+SSplitter::Slot()
+					.MinSize(200.f)
+					[
+						SNew(SVerticalBox)
 #pragma region DropDown
-				// drop down menu
-				+ SVerticalBox::Slot()
-				.AutoHeight()
-				[
-					SNew(SHorizontalBox)
-						
-					+SHorizontalBox::Slot()
-					.FillWidth(.25f)
-					.Padding(FMargin(2.f))
-					[
-						SNew(SHorizontalBox)
-						+SHorizontalBox::Slot()
-						.AutoWidth()
-						[
-							SNew(STextBlock)
-							.Font(GetFontInfo(12))
-							.Text(FText::FromString(CLASSFILTER))
-							.Justification(ETextJustify::Right)
-							.ColorAndOpacity(FColor::White)
-						]
 
-						+SHorizontalBox::Slot()
-						.FillWidth(.5f)
+						// drop down menu
+						+ SVerticalBox::Slot()
+						.AutoHeight()
 						[
-							ConstructClassFilterButton()
+							ConstructDropDownMenuBox()
 						]
-					]
-
-					+ SHorizontalBox::Slot()
-					.FillWidth(.25f)
-					.Padding(FMargin(2.f))
-					[
-						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot()
-						.AutoWidth()
-						[
-							SNew(STextBlock)
-							.Font(GetFontInfo(12))
-							.Text(FText::FromString(USAGEFILTER))
-							.Justification(ETextJustify::Right)
-							.ColorAndOpacity(FColor::White)
-						]
-
-						+ SHorizontalBox::Slot()
-						.FillWidth(.5f)
-						[
-							ConstructUsageFilterButton()
-						]
-
-					]
-				]
 
 #pragma endregion
 
 #pragma region InfoList
-				// info list
-				+ SVerticalBox::Slot()
-				.VAlign(VAlign_Fill)
-				[
-					SNew(SScrollBox)
+						// info list
+						+ SVerticalBox::Slot()
+						.VAlign(VAlign_Fill)
+						[
+							SNew(SScrollBox)
 
-					+ SScrollBox::Slot()
-					[
-						ConstructAssetsListView()
+							+ SScrollBox::Slot()
+							[
+								ConstructAssetsListView()
+							]
+						]
+#pragma endregion
+
 					]
 				]
-#pragma endregion
+
 #pragma region HandleSelected
 				// Handle Select
 				+ SVerticalBox::Slot()
@@ -673,8 +636,16 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructInfoBox(
 	TSharedRef<SVerticalBox> AssetsListViewInfoBox =
 		SNew(SVerticalBox)
 
+		// count slot
+		+ SVerticalBox::Slot()
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
+		.Padding(FMargin(1.5f))
+		[
+			ConstructListAssetsCountInfo(FontInfo)
+		]
 		// path slot
-		+SVerticalBox::Slot()
+		+ SVerticalBox::Slot()
 		.HAlign(HAlign_Center)
 		.VAlign(VAlign_Center)
 		.AutoHeight()
@@ -682,15 +653,9 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructInfoBox(
 		[
 			ConstructListPathsInfo(FolderPaths, GetFontInfo(9))
 		]
-
-		// count slot
-		+SVerticalBox::Slot()
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
-		.Padding(FMargin(1.5f))
-		[
-			ConstructListAssetsCountInfo(FontInfo)
-		];
+		
+		;
+		
 
 	return AssetsListViewInfoBox;
 }
@@ -1715,6 +1680,85 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 #endif
 	;	return FReply::Handled();
 	
+}
+
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDropDownMenuBox()
+{
+
+	TSharedRef<SHorizontalBox> DropDownMenu = 
+
+		SNew(SHorizontalBox)
+		
+		+SHorizontalBox::Slot()
+		[
+			SNew(SOverlay)
+
+				+ SOverlay::Slot()
+				[
+					SNew(SBorder)
+				]
+
+				+ SOverlay::Slot()
+				[
+					SNew(SHorizontalBox)
+					+SHorizontalBox::Slot()
+					[
+						SNew(SHeaderRow)
+					]
+				]
+
+			+SOverlay::Slot()
+			[
+				SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot()
+					.FillWidth(.25f)
+					.Padding(FMargin(2.f))
+					[
+						SNew(SHorizontalBox)
+							+ SHorizontalBox::Slot()
+							.AutoWidth()
+							[
+								SNew(STextBlock)
+									.Font(GetFontInfo(12))
+									.Text(FText::FromString(CLASSFILTER))
+									.Justification(ETextJustify::Right)
+									.ColorAndOpacity(FColor::White)
+							]
+
+							+ SHorizontalBox::Slot()
+							.FillWidth(.5f)
+							[
+								ConstructClassFilterButton()
+							]
+					]
+
+					+ SHorizontalBox::Slot()
+					.FillWidth(.25f)
+					.Padding(FMargin(2.f))
+					[
+						SNew(SHorizontalBox)
+							+ SHorizontalBox::Slot()
+							.AutoWidth()
+							[
+								SNew(STextBlock)
+									.Font(GetFontInfo(12))
+									.Text(FText::FromString(USAGEFILTER))
+									.Justification(ETextJustify::Right)
+									.ColorAndOpacity(FColor::White)
+							]
+
+							+ SHorizontalBox::Slot()
+							.FillWidth(.5f)
+							[
+								ConstructUsageFilterButton()
+							]
+
+					]
+			]
+		]
+		;
+
+	return DropDownMenu;
 }
 
 #pragma endregion

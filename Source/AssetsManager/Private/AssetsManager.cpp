@@ -58,13 +58,6 @@ void FAssetsManagerModule::OnMaterialCreatButtonClicked()
 void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 {
 	// Third bind. 
-	/*MenuBuilder.AddMenuEntry
-	(
-		FText::FromString(TEXT("Delete Unused Assets")),
-		FText::FromString(TEXT("Safely delete assets never used or referenced.")),
-		FSlateIcon(),
-		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnDeleteUnusedAssetButtonClicked)
-	);*/
 
 	MenuBuilder.AddMenuEntry
 	(
@@ -81,15 +74,6 @@ void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 		FSlateIcon(FAssetsMangerStyle::GetStyleName(),"ContentBrowser.AssetsManager"),
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerButtonClicked)
 	);
-
-	/*MenuBuilder.AddMenuEntry
-	(
-		FText::FromString(TEXT(CONTENTFOLDERMATERIALCREATORTABNAME)),
-		FText::FromString(TEXT("A tab window to test material tab inside the seleted folder.")),
-		FSlateIcon(FAssetsMangerStyle::GetStyleName(), "ContentBrowser.MaterialCreator"),
-		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnMaterialCreatButtonClicked)
-	);*/
-
 }
 
 // First bind. Define the position for inserting menu entry.
@@ -142,12 +126,6 @@ void FAssetsManagerModule::RegisterCustomEditorTab()
 		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnManagerSlateTab))
 		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDERMANAGERTABNAME)))
 		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleName(),"ContentBrowser.AssetsManager"));
-
-	/*FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
-		FName(CONTENTFOLDERMATERIALCREATORTABNAME),
-		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnMaterialCreatorSlateTab))
-		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDERMATERIALCREATORTABNAME)))
-		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleName(), "ContentBrowser.MaterialCreator"));*/
 }
 
 TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs)

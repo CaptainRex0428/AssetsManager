@@ -208,6 +208,8 @@ private:
 
 #pragma region SComboListFilter
 
+	TSharedRef<SHorizontalBox> ConstructDropDownMenuBox();
+
 	//------> ClassFilter
 	TArray<TSharedPtr<FString>> ClassFilterComboSourceItems;
 	TSharedPtr<STextBlock> ClassFilterComboDisplayText;
