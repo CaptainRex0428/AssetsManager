@@ -52,10 +52,55 @@ private:
 
 	void SListViewRemoveAssetData(TSharedPtr<FAssetData> AssetData);
 
+
+#pragma region SComboListFilter
+
+	TSharedRef<SHorizontalBox> ConstructDropDownMenuBox();
+
+	//------> ClassFilter
+	TArray<TSharedPtr<FString>> ClassFilterComboSourceItems;
+	TSharedPtr<STextBlock> ClassFilterComboDisplayText;
+	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructClassFilterButton();
+	TSharedRef<SWidget> OnGenerateClassFilterButton(TSharedPtr<FString> SourceItem);
+	void ConstuctClassFilterList(TSharedPtr<FString> SelectedOption);
+	void OnClassFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
+
+	TSharedPtr<FString> ClassFilterCurrent;
+	TSharedPtr<FString> ClassFilterDefault;
+
+	TSharedPtr<SComboBox<TSharedPtr<FString>>> ClassFilterComboBox;
+
+	//------> UsageFilter
+	TArray<TSharedPtr<FString>> UsageFilterComboSourceItems;
+	TSharedPtr<STextBlock> UsageFilterComboDisplayText;
+	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructUsageFilterButton();
+	TSharedRef<SWidget> OnGenerateUsageFilterButton(TSharedPtr<FString> SourceItem);
+	void OnUsageFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
+
+	TSharedPtr<SComboBox<TSharedPtr<FString>>> UsageFilterComboBox;
+
+	//------> UsageFilter DefaultStore
+	TSharedPtr<FString> UsageSelectedDefault;
+
+	// only for texture
+	TSharedPtr<FString> UsageSelectionMaxInGameSizeError;
+	TSharedPtr<FString> UsageSelectionSourceSizeError;
+	TSharedPtr<FString> UsageSelectionSubfixError;
+	TSharedPtr<FString> UsageSelectionTextureSettinsError;
+
+
+	
+ 
+
 #pragma region OnGenerateRowForlist
 	// construct / refresh list view
 	TSharedRef<SListView<TSharedPtr<FAssetData>>> ConstructAssetsListView();
 	TSharedPtr<SListView<TSharedPtr<FAssetData>>> ConstructedAssetsListView;
+
+	TSharedRef<SHeaderRow> ConstructHeaderRow();
+	TSharedPtr<SHeaderRow> ConstructedHeaderRow;
+	void OnColumnWidthChanged(const FText & ColumnID,float width);
+
 	void RefreshAssetsListView();
 
 	// For Assets List
@@ -91,9 +136,7 @@ private:
 	TSharedRef<SCheckBox> ConstructCheckBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
 	void OnCheckBoxStateChanged(ECheckBoxState NewState, TSharedPtr<FAssetData> AssetData);
 
-#pragma endregion
-
-#pragma region ConstructAssetInfo
+#pragma region ConstructCounterInfo
 	
 	// Construct Assets List info 
 	TSharedRef<SVerticalBox> ConstructInfoBox(
@@ -110,6 +153,9 @@ private:
 	TSharedPtr<STextBlock> ClassListViewCountBlock;
 	TSharedPtr<STextBlock> SelectedCountBlock;
 
+#pragma endregion
+
+#pragma region ConstructAssetInfo
 	// Construct Standard Name Box
 	TSharedRef<STextBlock> ConstructAssetNameRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
@@ -134,6 +180,7 @@ private:
 		const FSlateFontInfo& FontInfo);
 
 #pragma endregion
+
 
 #pragma region ConstructSingleButton
 	// Construct Delete Button
@@ -204,43 +251,6 @@ private:
 #pragma region OutputViewListInfo
 	TSharedRef<SButton> ConstructOutputViewListInfoButton();
 	FReply OnOutputViewListInfoButtonClicked();
-#pragma endregion
-
-#pragma region SComboListFilter
-
-	TSharedRef<SHorizontalBox> ConstructDropDownMenuBox();
-
-	//------> ClassFilter
-	TArray<TSharedPtr<FString>> ClassFilterComboSourceItems;
-	TSharedPtr<STextBlock> ClassFilterComboDisplayText;
-	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructClassFilterButton();
-	TSharedRef<SWidget> OnGenerateClassFilterButton(TSharedPtr<FString> SourceItem);
-	void ConstuctClassFilterList(TSharedPtr<FString> SelectedOption);
-	void OnClassFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
-	
-	TSharedPtr<FString> ClassFilterCurrent;
-	TSharedPtr<FString> ClassFilterDefault;
-
-	TSharedPtr<SComboBox<TSharedPtr<FString>>> ClassFilterComboBox;
-
-	//------> UsageFilter
-	TArray<TSharedPtr<FString>> UsageFilterComboSourceItems;
-	TSharedPtr<STextBlock> UsageFilterComboDisplayText;
-	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructUsageFilterButton();
-	TSharedRef<SWidget> OnGenerateUsageFilterButton(TSharedPtr<FString> SourceItem);
-	void OnUsageFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
-	
-	TSharedPtr<SComboBox<TSharedPtr<FString>>> UsageFilterComboBox;
-	
-	//------> UsageFilter DefaultStore
-	TSharedPtr<FString> UsageSelectedDefault;
-	
-	// only for texture
-	TSharedPtr<FString> UsageSelectionMaxInGameSizeError;
-	TSharedPtr<FString> UsageSelectionSourceSizeError;
-	TSharedPtr<FString> UsageSelectionSubfixError;
-	TSharedPtr<FString> UsageSelectionTextureSettinsError;
-	
 #pragma endregion
 
 };

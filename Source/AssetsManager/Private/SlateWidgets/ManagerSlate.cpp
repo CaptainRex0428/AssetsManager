@@ -6,6 +6,8 @@
 #include "AssetsChecker/AssetsChecker.h"
 #include "ManagerLogger.h"
 #include "SlateBasics.h"
+#include "Slate.h"
+#include "SlateExtras.h"
 
 #include "AssetsManagerConfig.h"
 
@@ -18,7 +20,6 @@
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
 
-#include "Components/Image.h"
 
 #include "HAL/FileManager.h"
 
@@ -193,9 +194,9 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 						+ SVerticalBox::Slot()
 						.VAlign(VAlign_Fill)
 						[
-							SNew(SScrollBox)
-
-							+ SScrollBox::Slot()
+							SNew(SHorizontalBox)
+								
+							+SHorizontalBox::Slot()
 							[
 								ConstructAssetsListView()
 							]
@@ -239,18 +240,51 @@ void SManagerSlateTab::SListViewRemoveAssetData(TSharedPtr<FAssetData> AssetData
 
 TSharedRef<SListView<TSharedPtr<FAssetData>>> SManagerSlateTab::ConstructAssetsListView()
 {
-	FScrollBarStyle scrollbarStyle;
-	scrollbarStyle.SetThickness(30);
 
 	ConstructedAssetsListView =
 		SNew(SListView<TSharedPtr<FAssetData>>)
 		.ItemHeight(36.f)
-		.ScrollBarStyle(&scrollbarStyle)
 		.ListItemsSource(&SListViewAssetData)
 		.OnGenerateRow(this, &SManagerSlateTab::OnGenerateRowForlist)
-		.OnMouseButtonDoubleClick(this,&SManagerSlateTab::OnRowMouseButtonDoubleClicked);
+		.OnMouseButtonDoubleClick(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked)
+		.HeaderRow(ConstructHeaderRow());
 
 	return ConstructedAssetsListView.ToSharedRef();
+}
+
+TSharedRef<SHeaderRow> SManagerSlateTab::ConstructHeaderRow()
+{
+	ConstructedHeaderRow =
+		SNew(SHeaderRow)
+		.CanSelectGeneratedColumn(true)
+
+		+SHeaderRow::Column(FName("CheckBox"))
+		.DefaultLabel(FText::FromString("Check Box"))
+		.OnWidthChanged(this,&SManagerSlateTab::OnColumnWidthChanged)
+
+		+SHeaderRow::Column(FName("AssetName")).DefaultLabel(FText::FromString("Asset Name"))
+		;
+	
+	return ConstructedHeaderRow.ToSharedRef();
+}
+
+void SManagerSlateTab::OnColumnWidthChanged(const FText& ColumnID,float width)
+{
+}
+
+void SManagerSlateTab::RefreshAssetsListView()
+{
+	CheckBoxesArray.Empty();
+	AssetsDataSelected.Empty();
+
+	SelectedCountBlock->SetText(FText::FromString(FString::FromInt(0)));
+
+	if (ConstructedAssetsListView.IsValid())
+	{
+		ConstructedAssetsListView->RebuildList();
+	}
+
+	ListViewCountBlock->SetText(FText::FromString(FString::FromInt(SListViewAssetData.Num())));
 }
 
 TSharedRef<ITableRow> SManagerSlateTab::OnGenerateRowForlist(
@@ -566,21 +600,6 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SManagerSlateTab::GenerateTextureR
 		];
 
 	return ListViewRowWidget;
-}
-
-void SManagerSlateTab::RefreshAssetsListView()
-{
-	CheckBoxesArray.Empty();
-	AssetsDataSelected.Empty();
-	
-	SelectedCountBlock->SetText(FText::FromString(FString::FromInt(0)));
-
-	if(ConstructedAssetsListView.IsValid())
-	{
-		ConstructedAssetsListView->RebuildList();
-	}
-
-	ListViewCountBlock->SetText(FText::FromString(FString::FromInt(SListViewAssetData.Num())));
 }
 
 TSharedRef<SCheckBox> SManagerSlateTab::ConstructCheckBox(
