@@ -6,6 +6,7 @@
 
 #include "SlateWidgets/SCommonSlate.h"
 
+
 /**
  * 
  */
@@ -18,4 +19,8 @@ class SMaterialCreatorSlate : public SCommonSlate
 public:
 	virtual void Construct(const FArguments& InArgs);
 
+private:
+	TSharedRef<SWidget> ConstructPropertyTable();
+
+	TSharedRef<SHeaderRow> ConstructHeader();
 };
