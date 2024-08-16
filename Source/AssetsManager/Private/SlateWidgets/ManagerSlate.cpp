@@ -189,6 +189,10 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 #pragma endregion
 
+#pragma region ListHeader
+
+#pragma endregion
+
 #pragma region InfoList
 						// info list
 						+ SVerticalBox::Slot()
@@ -247,29 +251,9 @@ TSharedRef<SListView<TSharedPtr<FAssetData>>> SManagerSlateTab::ConstructAssetsL
 		.ListItemsSource(&SListViewAssetData)
 		.OnGenerateRow(this, &SManagerSlateTab::OnGenerateRowForlist)
 		.OnMouseButtonDoubleClick(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked)
-		.HeaderRow(ConstructHeaderRow());
+		;
 
 	return ConstructedAssetsListView.ToSharedRef();
-}
-
-TSharedRef<SHeaderRow> SManagerSlateTab::ConstructHeaderRow()
-{
-	ConstructedHeaderRow =
-		SNew(SHeaderRow)
-		.CanSelectGeneratedColumn(true)
-
-		+SHeaderRow::Column(FName("CheckBox"))
-		.DefaultLabel(FText::FromString("Check Box"))
-		.OnWidthChanged(this,&SManagerSlateTab::OnColumnWidthChanged)
-
-		+SHeaderRow::Column(FName("AssetName")).DefaultLabel(FText::FromString("Asset Name"))
-		;
-	
-	return ConstructedHeaderRow.ToSharedRef();
-}
-
-void SManagerSlateTab::OnColumnWidthChanged(const FText& ColumnID,float width)
-{
 }
 
 void SManagerSlateTab::RefreshAssetsListView()

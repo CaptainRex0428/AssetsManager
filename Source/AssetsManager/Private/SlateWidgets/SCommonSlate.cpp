@@ -59,3 +59,10 @@ TSharedRef<STextBlock> SCommonSlate::ConstructTextForButtons(
 
 	return ContentBlock;
 }
+
+TSharedRef<SSplitter> SCommonSlate::ConstructCommonSpliterRow(int SubComponentCount)
+{
+	TSharedRef<SSplitter> Spliter = SNew(SSplitter);
+
+	return TSharedRef<SSplitter>();
+}

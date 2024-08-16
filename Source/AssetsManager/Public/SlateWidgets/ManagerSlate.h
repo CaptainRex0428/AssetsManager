@@ -97,10 +97,6 @@ private:
 	TSharedRef<SListView<TSharedPtr<FAssetData>>> ConstructAssetsListView();
 	TSharedPtr<SListView<TSharedPtr<FAssetData>>> ConstructedAssetsListView;
 
-	TSharedRef<SHeaderRow> ConstructHeaderRow();
-	TSharedPtr<SHeaderRow> ConstructedHeaderRow;
-	void OnColumnWidthChanged(const FText & ColumnID,float width);
-
 	void RefreshAssetsListView();
 
 	// For Assets List

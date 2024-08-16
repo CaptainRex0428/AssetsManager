@@ -44,4 +44,7 @@ public:
 
 #pragma endregion
 
+#pragma region ConstructCommonSpliterRow
+	TSharedRef<SSplitter> ConstructCommonSpliterRow(int SubComponentCount);
+#pragma endregion
 };
