@@ -87,10 +87,7 @@ private:
 	TSharedPtr<FString> UsageSelectionSourceSizeError;
 	TSharedPtr<FString> UsageSelectionSubfixError;
 	TSharedPtr<FString> UsageSelectionTextureSettinsError;
-
-
-	
- 
+#pragma endregion
 
 #pragma region OnGenerateRowForlist
 	// construct / refresh list view
@@ -98,6 +95,8 @@ private:
 	TSharedPtr<SListView<TSharedPtr<FAssetData>>> ConstructedAssetsListView;
 
 	void RefreshAssetsListView();
+
+	TSharedRef<SHorizontalBox> ConstructTitleRow();
 
 	// For Assets List
 	TSharedRef<ITableRow> OnGenerateRowForlist(

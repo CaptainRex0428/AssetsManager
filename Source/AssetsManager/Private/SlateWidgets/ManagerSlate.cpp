@@ -190,7 +190,11 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 #pragma endregion
 
 #pragma region ListHeader
-
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						[
+							ConstructTitleRow()
+						]
 #pragma endregion
 
 #pragma region InfoList
@@ -269,6 +273,47 @@ void SManagerSlateTab::RefreshAssetsListView()
 	}
 
 	ListViewCountBlock->SetText(FText::FromString(FString::FromInt(SListViewAssetData.Num())));
+}
+
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructTitleRow()
+{
+	TArray<TSharedRef<SWidget>> TitleArray;
+	
+	TSharedRef<STextBlock> TA = ConstructNormalTextBlock("A", GetFontInfo(9));
+	TA->SetMargin(8.0f);
+	TitleArray.Add(TA);
+
+	TSharedRef<STextBlock> TB = ConstructNormalTextBlock("B", GetFontInfo(9));
+	TB->SetMargin(8.0f);
+	TitleArray.Add(TB);
+	
+	TSharedRef<STextBlock> TC = ConstructNormalTextBlock("C", GetFontInfo(9));
+	TC->SetMargin(8.0f);
+	TitleArray.Add(TC);
+
+	TSharedRef<STextBlock> TD = ConstructNormalTextBlock("D", GetFontInfo(9));
+	TD->SetMargin(8.0f);
+	TitleArray.Add(TD);
+
+	TSharedRef<SHorizontalBox> TitleRow =
+		SNew(SHorizontalBox)
+
+		+ SHorizontalBox::Slot()
+		[
+			SNew(SOverlay)
+
+				+ SOverlay::Slot()
+				[
+					SNew(SBorder)
+				]
+
+				+ SOverlay::Slot()
+				[
+					ConstructCommonSpliterRow(4, TitleArray)
+				]
+		];
+
+	return TitleRow;
 }
 
 TSharedRef<ITableRow> SManagerSlateTab::OnGenerateRowForlist(

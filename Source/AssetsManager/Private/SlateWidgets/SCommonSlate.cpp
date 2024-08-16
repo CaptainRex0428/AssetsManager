@@ -60,9 +60,35 @@ TSharedRef<STextBlock> SCommonSlate::ConstructTextForButtons(
 	return ContentBlock;
 }
 
-TSharedRef<SSplitter> SCommonSlate::ConstructCommonSpliterRow(int SubComponentCount)
+TSharedRef<SSplitter> SCommonSlate::ConstructCommonSpliterRow(
+	int SubComponentCount,
+	TArray<TSharedRef<SWidget>>Blocks,
+	float MinSize,
+	EOrientation Orient)
 {
-	TSharedRef<SSplitter> Spliter = SNew(SSplitter);
+	TSharedRef<SSplitter> Spliter = SNew(SSplitter).Orientation(Orient);
 
-	return TSharedRef<SSplitter>();
+	for (int i = 0; i<SubComponentCount; i++)
+	{
+		if (i < Blocks.Num()) 
+		{
+			Spliter->AddSlot(i)
+				.MinSize(MinSize)
+				[Blocks[i]];
+			continue;
+		}
+
+		Spliter->AddSlot(i)
+		[
+			SNew(SHorizontalBox)
+			+SHorizontalBox::Slot()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(TEXT("Unknown")))
+				.Font(GetFontInfo(9))
+			]
+		];
+	}
+
+	return Spliter;
 }

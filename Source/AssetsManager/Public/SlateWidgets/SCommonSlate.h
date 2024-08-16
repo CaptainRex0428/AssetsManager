@@ -45,6 +45,10 @@ public:
 #pragma endregion
 
 #pragma region ConstructCommonSpliterRow
-	TSharedRef<SSplitter> ConstructCommonSpliterRow(int SubComponentCount);
+	TSharedRef<SSplitter> ConstructCommonSpliterRow(
+		int SubComponentCount,
+		TArray<TSharedRef<SWidget>> Blocks,
+		float MinSize = 10.f,
+		EOrientation Orient = Orient_Horizontal);
 #pragma endregion
 };
