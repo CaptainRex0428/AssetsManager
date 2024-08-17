@@ -22,7 +22,7 @@ private:
 	void OnDeleteUnusedAssetButtonClicked();
 	void OnDeleteEmptyFolderButtonClicked();
 	void OnAssetsManagerButtonClicked();
-	void OnTestButtonClicked();
+	void OnMaterialCreatButtonClicked();
 
 	void AddEntryCBMenuExtension(class FMenuBuilder& MenuBuilder);
 	TSharedRef<FExtender> CoordCBMenuExtension(const TArray<FString>& SelectedPaths);
@@ -36,6 +36,8 @@ private:
 #pragma region CustomEditorTab
 	void RegisterCustomEditorTab();
 
-	TSharedRef<SDockTab> OnSpawnAssetsCheckerTab(const FSpawnTabArgs& SpawnTabArgs);
+	TSharedRef<SDockTab> OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs);
+	TSharedRef<SDockTab> OnSpawnMaterialCreatorSlateTab(const FSpawnTabArgs& SpawnTabArgs);
+	
 #pragma endregion
 };
