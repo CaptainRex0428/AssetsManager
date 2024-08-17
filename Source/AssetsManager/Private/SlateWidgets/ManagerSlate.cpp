@@ -278,28 +278,33 @@ void SManagerSlateTab::RefreshAssetsListView()
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructTitleRow()
 {
 	TArray<TSharedRef<SWidget>> TitleArray;
+	TArray<float> TitleSize;
 	
 	TSharedRef<STextBlock> TA = ConstructTitleTextBlock("A", GetFontInfo(9));
 	TA->SetMargin(8.0f);
 	TA->SetHighlightColor(FLinearColor::Gray);
 	TitleArray.Add(TA);
+	TitleSize.Add(0.1f);
 
 	TSharedRef<STextBlock> TB = ConstructTitleTextBlock("B", GetFontInfo(9));
 	TB->SetMargin(8.0f);
 	TB->SetHighlightColor(FLinearColor::Gray);
 	TitleArray.Add(TB);
+	TitleSize.Add(1.f);
 	
 	TSharedRef<STextBlock> TC = ConstructTitleTextBlock("C", GetFontInfo(9));
 	TC->SetMargin(8.0f);
 	TC->SetHighlightColor(FLinearColor::Gray);
 	TitleArray.Add(TC);
+	TitleSize.Add(2.f);
 
 	TSharedRef<STextBlock> TD = ConstructTitleTextBlock("D", GetFontInfo(9));
 	TD->SetMargin(8.0f);
 	TC->SetHighlightColor(FLinearColor::Gray);
 	TitleArray.Add(TD);
+	TitleSize.Add(1.f);
 	
-	TSharedRef<SSplitter> Splitter = ConstructCommonSpliterRow(4, TitleArray);
+	TSharedRef<SSplitter> Splitter = ConstructCommonSpliterRow(4, TitleArray, TitleSize);
 
 	TSharedRef<SHorizontalBox> TitleRow =
 		SNew(SHorizontalBox)
@@ -363,45 +368,39 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SManagerSlateTab::GenerateDefaultR
 {
 	FSlateFontInfo ContentTextFont = GetFontInfo(9);
 
+	auto a = ConstructCheckBox(AssetDataToDisplay);
+	float sizea = 0.1f;
+
+	auto b = ConstructAssetClassRowBox(AssetDataToDisplay, ContentTextFont);
+	float sizeb = 1.f;
+
+	auto c = ConstructAssetNameRowBox(AssetDataToDisplay, ContentTextFont);
+	float sizec = 2.f;
+
+	auto d = ConstructSingleAssetDeleteButtonBox(AssetDataToDisplay);
+	float sized = 1.f;
+
+	TArray<TSharedRef<SWidget>> slots;
+	TArray<float> slotsize;
+
+	slots.Add(a);
+	slotsize.Add(sizea);
+	
+	slots.Add(b);
+	slotsize.Add(sizeb);
+	
+	slots.Add(c);
+	slotsize.Add(sizec);
+	
+	slots.Add(d);
+	slotsize.Add(sized);
+
+
 	TSharedRef<STableRow<TSharedPtr<FAssetData>>> ListViewRowWidget
 		= SNew(STableRow<TSharedPtr<FAssetData>>, OwnerTable)
 		.Padding(FMargin(6.f))
 		[
-			SNew(SHorizontalBox)
-				// CheckBox
-				+ SHorizontalBox::Slot()
-				.HAlign(HAlign_Center)
-				.VAlign(VAlign_Center)
-				.Padding(FMargin(2.f))
-				.AutoWidth()
-				[
-					ConstructCheckBox(AssetDataToDisplay)
-				]
-				// DisplayClass
-				+ SHorizontalBox::Slot()
-				.HAlign(HAlign_Left)
-				.VAlign(VAlign_Center)
-				.FillWidth(0.15f)
-				[
-					ConstructAssetClassRowBox(AssetDataToDisplay, ContentTextFont)
-				]
-				// DisplayName
-				+ SHorizontalBox::Slot()
-				.HAlign(HAlign_Fill)
-				.VAlign(VAlign_Center)
-				.FillWidth(0.25f)
-				[
-					ConstructAssetNameRowBox(AssetDataToDisplay, ContentTextFont)
-				]
-
-				// DisplayButton
-				+ SHorizontalBox::Slot()
-				.HAlign(HAlign_Right)
-				.VAlign(VAlign_Center)
-				.FillWidth(0.08f)
-				[
-					ConstructSingleAssetDeleteButtonBox(AssetDataToDisplay)
-				]
+			ConstructCommonSpliterRow(4,slots,slotsize)
 		];
 
 	return ListViewRowWidget;

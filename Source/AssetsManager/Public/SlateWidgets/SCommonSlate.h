@@ -49,10 +49,11 @@ public:
 	TSharedRef<SSplitter> ConstructCommonSpliterRow(
 		int SubComponentCount,
 		TArray<TSharedRef<SWidget>> Blocks,
+		TArray<float> BlocksSize,
 		float MinSize = 10.f,
 		EOrientation Orient = Orient_Horizontal);
 
-	void OnCheck(int32 index);
+	void OnCheck();
 
 #pragma endregion
 };
