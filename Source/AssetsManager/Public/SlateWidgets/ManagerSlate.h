@@ -98,6 +98,8 @@ private:
 
 	TSharedRef<SHorizontalBox> ConstructTitleRow();
 
+	void OnResizeFinished();
+
 	// For Assets List
 	TSharedRef<ITableRow> OnGenerateRowForlist(
 		TSharedPtr<FAssetData> AssetDataToDisplay,

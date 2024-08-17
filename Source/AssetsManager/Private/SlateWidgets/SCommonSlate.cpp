@@ -1,6 +1,8 @@
 
 #include "SlateWidgets/SCommonSlate.h"
 
+#include "ManagerLogger.h"
+
 FSlateFontInfo SCommonSlate::GetFontInfo(
 	float FontSize, 
 	const FString& FontName)
@@ -66,19 +68,25 @@ TSharedRef<SSplitter> SCommonSlate::ConstructCommonSpliterRow(
 	float MinSize,
 	EOrientation Orient)
 {
-	TSharedRef<SSplitter> Spliter = SNew(SSplitter).Orientation(Orient);
+	TSharedRef<SSplitter> Spliter =
+		SNew(SSplitter)
+		.Orientation(Orient)
+		.OnHandleHovered(this,&SCommonSlate::OnCheck);
 
 	for (int i = 0; i<SubComponentCount; i++)
 	{
 		if (i < Blocks.Num()) 
 		{
-			Spliter->AddSlot(i)
-				.MinSize(MinSize)
-				[Blocks[i]];
+			Spliter
+			->AddSlot(i)
+			.MinSize(MinSize)
+			[Blocks[i]];
 			continue;
 		}
 
-		Spliter->AddSlot(i)
+		Spliter
+		->AddSlot(i)
+		.MinSize(MinSize)
 		[
 			SNew(SHorizontalBox)
 			+SHorizontalBox::Slot()
@@ -91,4 +99,9 @@ TSharedRef<SSplitter> SCommonSlate::ConstructCommonSpliterRow(
 	}
 
 	return Spliter;
+}
+
+void SCommonSlate::OnCheck(int32 index)
+{
+	NtfyMsg(FString::FromInt(index));
 }

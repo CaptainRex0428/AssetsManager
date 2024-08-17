@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Widgets/SCompoundWidget.h"
-
+#include "Widgets/Layout/SSplitter.h"
 /**
  * 
  */
@@ -45,10 +45,14 @@ public:
 #pragma endregion
 
 #pragma region ConstructCommonSpliterRow
+	
 	TSharedRef<SSplitter> ConstructCommonSpliterRow(
 		int SubComponentCount,
 		TArray<TSharedRef<SWidget>> Blocks,
 		float MinSize = 10.f,
 		EOrientation Orient = Orient_Horizontal);
+
+	void OnCheck(int32 index);
+
 #pragma endregion
 };

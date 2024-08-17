@@ -279,21 +279,27 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructTitleRow()
 {
 	TArray<TSharedRef<SWidget>> TitleArray;
 	
-	TSharedRef<STextBlock> TA = ConstructNormalTextBlock("A", GetFontInfo(9));
+	TSharedRef<STextBlock> TA = ConstructTitleTextBlock("A", GetFontInfo(9));
 	TA->SetMargin(8.0f);
+	TA->SetHighlightColor(FLinearColor::Gray);
 	TitleArray.Add(TA);
 
-	TSharedRef<STextBlock> TB = ConstructNormalTextBlock("B", GetFontInfo(9));
+	TSharedRef<STextBlock> TB = ConstructTitleTextBlock("B", GetFontInfo(9));
 	TB->SetMargin(8.0f);
+	TB->SetHighlightColor(FLinearColor::Gray);
 	TitleArray.Add(TB);
 	
-	TSharedRef<STextBlock> TC = ConstructNormalTextBlock("C", GetFontInfo(9));
+	TSharedRef<STextBlock> TC = ConstructTitleTextBlock("C", GetFontInfo(9));
 	TC->SetMargin(8.0f);
+	TC->SetHighlightColor(FLinearColor::Gray);
 	TitleArray.Add(TC);
 
-	TSharedRef<STextBlock> TD = ConstructNormalTextBlock("D", GetFontInfo(9));
+	TSharedRef<STextBlock> TD = ConstructTitleTextBlock("D", GetFontInfo(9));
 	TD->SetMargin(8.0f);
+	TC->SetHighlightColor(FLinearColor::Gray);
 	TitleArray.Add(TD);
+	
+	TSharedRef<SSplitter> Splitter = ConstructCommonSpliterRow(4, TitleArray);
 
 	TSharedRef<SHorizontalBox> TitleRow =
 		SNew(SHorizontalBox)
@@ -309,7 +315,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructTitleRow()
 
 				+ SOverlay::Slot()
 				[
-					ConstructCommonSpliterRow(4, TitleArray)
+					Splitter
 				]
 		];
 
