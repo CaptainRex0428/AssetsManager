@@ -12,9 +12,9 @@ void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArguments&
 	this->ColumnsNum = this->TitleColumns->Num();
 	this->ColumnsInitWidth = InArgs._ColumnsInitWidth;
 
-	this->OnGenerateRowList = InArgs._OnGenerateRowList;
-	this->OnGenerateHeaderRow = InArgs._OnGenerateHeaderRow;
-	this->OnMouseButtonDoubleClickListRow = InArgs._OnMouseButtonDoubleClickListRow;
+	// this->OnGenerateRowList = InArgs._OnGenerateRowList;
+	// this->OnGenerateHeaderRow = InArgs._OnGenerateHeaderRow;
+	// this->OnMouseButtonDoubleClickListRow = InArgs._OnMouseButtonDoubleClickListRow;
 
 	// Construct Header
 	SplitterRows->Empty();
@@ -27,7 +27,7 @@ void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArguments&
 	this->ListView = SNew(SListView<ItemType>)
 	.ItemHeight(36.f)
 	.ScrollBarStyle(&scrollbarStyle)
-	.ListItemsSource(&ListSourceItems)
+	.ListItemsSource(&InArgs._ListSourceItems)
 	.OnGenerateRow(
 		this, 
 		&SCustomTable<ItemType>::OnGenerateRowForlist)
@@ -87,7 +87,7 @@ TSharedRef<ITableRow> SCustomTable<ItemType>::OnGenerateRowForlist(
 	ItemType ItemData, 
 	const TSharedRef<STableViewBase>& OwnerTable)
 {
-	TSharedPtr<SSplitter> SplitterRow = OnGenerateRowL ist(
+	TSharedPtr<SSplitter> SplitterRow = OnGenerateRowList(
 		ItemData, 
 		this->ColumnsNum,
 		this->ColumnsInitWidth,
@@ -109,12 +109,6 @@ TSharedRef<ITableRow> SCustomTable<ItemType>::OnGenerateRowForlist(
 		];
 
 	return ListViewRowWidget;
-}
-
-template<typename ItemType>
-void SCustomTable<ItemType>::OnRowMouseButtonDoubleClicked(ItemType ItemData)
-{
-	OnMouseButtonDoubleClickListRow(ItemType ItemData);
 }
 
 template<typename ItemType>

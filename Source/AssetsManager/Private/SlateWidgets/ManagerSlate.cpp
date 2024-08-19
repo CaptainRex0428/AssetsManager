@@ -135,86 +135,86 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_PREFIXERROR));
 	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_SAMENAMEASSETERROR));
 
-	ChildSlot
-		[
-			// main box
-			SNew(SVerticalBox)
+	TSharedPtr<SVerticalBox> MainUI = SNew(SVerticalBox);
 
 #pragma region title
-				+ SVerticalBox::Slot()
-				.AutoHeight()
-				[
-					ConstructTitleTextBlock(InArgs._TitleText,GetFontInfo(24))
-				]
+	MainUI->AddSlot()
+		.AutoHeight()
+		[
+			ConstructTitleTextBlock(InArgs._TitleText, GetFontInfo(24))
+		];
 
-				+ SVerticalBox::Slot()
-				.AutoHeight()
-				[
-					SNew(SBorder)
-				]
+	MainUI->AddSlot()
+		.AutoHeight()
+		[
+			SNew(SBorder)
+
+		];
 #pragma endregion
-				+SVerticalBox::Slot()
-				[
-					SNew(SSplitter)
-					.Orientation(Orient_Vertical)
 
-					+SSplitter::Slot()
-					.MinSize(80.f)
-					.Value(0.15f)
-					[
-#pragma region InfoBar
-						SNew(SVerticalBox)
-						// InfoBar
-						+ SVerticalBox::Slot()
-						.AutoHeight()
-						[
-							ConstructInfoBox(StoredFolderPaths, GetFontInfo(12))
-						]
-#pragma endregion
-					]
+#pragma region Info
 
-					+SSplitter::Slot()
-					.MinSize(200.f)
-					[
-						SNew(SVerticalBox)
+	TSharedPtr<SSplitter> ContentBox = SNew(SSplitter)
+		.Orientation(Orient_Vertical);
+
+	TSharedPtr<SVerticalBox> InfoBox = SNew(SVerticalBox);
+	TSharedPtr<SVerticalBox> HandleBox = SNew(SVerticalBox);
+	
+	TSharedPtr<SVerticalBox> HandleButton = ConstructHandleAllButtons();
+
+	InfoBox->AddSlot()
+		.AutoHeight()
+		[
+			ConstructInfoBox(StoredFolderPaths, GetFontInfo(12))
+		];
+
+	ContentBox->AddSlot()
+		.MinSize(80.f)
+		.Value(0.15f)
+		[
+			InfoBox.ToSharedRef()
+		];
+
+	ContentBox->AddSlot()
+		.MinSize(200.f)
+		[
+			HandleBox.ToSharedRef()
+		];
+
 #pragma region DropDown
-
-						// drop down menu
-						+ SVerticalBox::Slot()
-						.AutoHeight()
-						[
-							ConstructDropDownMenuBox()
-						]
-
+	HandleBox->AddSlot()
+		.AutoHeight()
+		[
+			ConstructDropDownMenuBox()
+		];
 #pragma endregion
 
 #pragma region InfoList
-						// info list
-						+ SVerticalBox::Slot()
-						.VAlign(VAlign_Fill)
-						[
-							SNew(SScrollBox)
 
-							+ SScrollBox::Slot()
-							[
-								ConstructAssetsListView()
-							]
-						]
-#pragma endregion
+	HandleBox->AddSlot()
+		.VAlign(VAlign_Fill)
+		[
+			SNew(SScrollBox)
 
-					]
-				]
-
-#pragma region HandleSelected
-				// Handle Select
-				+ SVerticalBox::Slot()
-				.AutoHeight()
-				[					
-					ConstructHandleAllButtons()
-				]
-#pragma endregion
-				
+			+ SScrollBox::Slot()
+			[
+				ConstructAssetsListView()
+			]
 		];
+#pragma endregion
+
+#pragma endregion
+
+	MainUI->AddSlot()[ContentBox.ToSharedRef()];
+
+	MainUI->AddSlot().AutoHeight()[ConstructHandleAllButtons()];
+
+	ChildSlot
+	[
+		MainUI.ToSharedRef()
+
+	];
+
 }
 
 void SManagerSlateTab::SListViewRemoveAssetData(TSharedPtr<FAssetData> AssetData)

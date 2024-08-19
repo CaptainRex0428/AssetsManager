@@ -13,10 +13,6 @@ class ASSETSMANAGER_API SCustomTable : public SCommonSlate
 
 public:
 	using FOnGenerateRowList = typename TSlateDelegates<ItemType>::FOnGenerateRow;
-	/*using FOnItemScrolledIntoView = typename TSlateDelegates< ItemType >::FOnItemScrolledIntoView;
-	using FOnSelectionChanged = typename TSlateDelegates< NullableItemType >::FOnSelectionChanged;
-	using FIsSelectableOrNavigable = typename TSlateDelegates< ItemType >::FIsSelectableOrNavigable;
-	using FOnMouseButtonClick = typename TSlateDelegates< ItemType >::FOnMouseButtonClick;*/
 	using FOnMouseButtonDoubleClickListRow = typename TSlateDelegates< ItemType >::FOnMouseButtonDoubleClickListRow;
 
 	
@@ -26,7 +22,6 @@ public:
 		_TitleColumns(),
 		_ColumnsInitWidth(),
 		_OnGenerateRowList(),
-		_OnGenerateHeaderRow(),
 		_OnMouseButtonDoubleClickListRow(),
 		_OnSlotResizedRows(),
 		_ListSourceItems()
@@ -38,7 +33,6 @@ public:
 	SLATE_ARGUMENT(TArray<ItemType>&, ListSourceItems)
 
 	SLATE_EVENT(FOnGenerateRowList,OnGenerateRowList)
-	SLATE_EVENT(FOnGenerateHeaderRow, OnGenerateHeaderRow)
 	SLATE_EVENT(FOnMouseButtonDoubleClickListRow, OnMouseButtonDoubleClickListRow)
 
 	DECLARE_DELEGATE_OneParam(
@@ -54,12 +48,7 @@ public:
 	virtual void Construct(const SCustomTable<ItemType>::FArguments& InArgs);
 
 	void Rebuilt();
-	
 
-protected:
-	FOnGenerateRowList OnGenerateRowList;
-	FOnMouseButtonDoubleClickListRow OnMouseButtonDoubleClickListRow;
-	FOnSlotResizedRows OnSlotResizedRows;
 
 private:
 	TSharedPtr<SVerticalBox> MainTable;
@@ -85,9 +74,6 @@ private:
 	TSharedRef<ITableRow> OnGenerateRowForlist(
 		ItemType ItemData,
 		const TSharedRef<STableViewBase>& OwnerTable);
-
-	void OnRowMouseButtonDoubleClicked(
-		ItemType ItemData);
 
 	void ConstructHeaderRow();
 };
