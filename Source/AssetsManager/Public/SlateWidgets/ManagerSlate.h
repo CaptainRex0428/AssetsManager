@@ -25,6 +25,9 @@ private:
 	TArray<TSharedPtr<FAssetData>> SListViewClassFilterAssetData;
 	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
 
+	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
+	TArray<float> SManagerCustomTableTitleRowColumnsInitWidth;
+
 	TArray<TSharedRef<SCheckBox>>  CheckBoxesArray;
 	TArray<TSharedPtr<FAssetData>> AssetsDataSelected;
 
@@ -51,6 +54,8 @@ private:
 	UsageCheckState m_UsageCheckState;
 
 	void SListViewRemoveAssetData(TSharedPtr<FAssetData> AssetData);
+
+	inline int32 SSSTest(int32 num) { return num * num; };
 
 #pragma region OnGenerateRowForlist
 	// construct / refresh list view

@@ -4,6 +4,8 @@
 
 #include "Widgets/SCompoundWidget.h"
 
+#include "ManagerLogger.h"
+
 /**
  * 
  */
@@ -13,6 +15,42 @@ class ASSETSMANAGER_API SCommonSlate : public SCompoundWidget
 	SLATE_END_ARGS()
 
 public:
+
+	static enum CustomTableColumnType
+	{
+		//basic
+		Column_UClass= 0, Column_AssetName, Column_AssetPath, Column_PerAssetHanle,
+
+		//texture
+		Column_TextureMaxInGameSize, Column_TextureSourceSize, Column_TextureCompressionSettings, Column_TextureSRGB
+	};
+
+	const TMap<CustomTableColumnType, FString> CustomTableColumnTypeToString =
+	{
+		{Column_UClass,TEXT("Class")},
+		{Column_AssetName,TEXT("Name")},
+		{Column_AssetPath,TEXT("Path")},
+		{Column_PerAssetHanle,TEXT("Handler")},
+
+		{Column_TextureMaxInGameSize,TEXT("MaxInGameSize")},
+		{Column_TextureSourceSize,TEXT("SourceSize")},
+		{Column_TextureCompressionSettings,TEXT("CompressionSettings")},
+		{Column_TextureSRGB,TEXT("sRGB")}
+	};
+
+	inline const TMap<CustomTableColumnType, FString>& GetCustomTableColumnTypeToStringMap() { return CustomTableColumnTypeToString; };
+	inline TSharedPtr<FString> GetCustomTableColumnTypeToString(CustomTableColumnType type) 
+	{
+		const FString * StrTab = CustomTableColumnTypeToString.Find(type);
+
+		if (StrTab)
+		{
+			return MakeShared<FString>(*StrTab);
+		}
+		
+		return nullptr; 
+	};
+
 
 #pragma region FontSet
 	FSlateFontInfo GetFontInfo(float FontSize,

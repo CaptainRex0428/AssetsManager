@@ -1,6 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SlateWidgets/ManagerSlate.h"
+#include "SlateWidgets/SCustomTable.h"
 
 #include "AssetsManager.h"
 #include "AssetsChecker/AssetsChecker.h"
@@ -191,15 +192,29 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 #pragma region InfoList
 
+	SManagerCustomTableTitleRowColumnsType.Add(SCommonSlate::Column_UClass);
+	SManagerCustomTableTitleRowColumnsInitWidth.Add(0.1f);
+
+	SManagerCustomTableTitleRowColumnsType.Add(SCommonSlate::Column_AssetName);
+	SManagerCustomTableTitleRowColumnsInitWidth.Add(0.3f);
+
+	SManagerCustomTableTitleRowColumnsType.Add(SCommonSlate::Column_PerAssetHanle);
+	SManagerCustomTableTitleRowColumnsInitWidth.Add(0.4f);
+
 	HandleBox->AddSlot()
 		.VAlign(VAlign_Fill)
 		[
-			SNew(SScrollBox)
+			//SNew(SScrollBox)
 
-			+ SScrollBox::Slot()
-			[
-				ConstructAssetsListView()
-			]
+			//+ SScrollBox::Slot()
+			//[
+				SNew(SCustomTable<TSharedPtr<FAssetData>>)
+					.SourceItems(&SListViewAssetData)
+					.ColumnsType(&SManagerCustomTableTitleRowColumnsType)
+					.ColumnsInitWidth(&SManagerCustomTableTitleRowColumnsInitWidth)
+					.OnGenerateSplitterRow(this,&SManagerSlateTab::SSSTest)
+				// ConstructAssetsListView()
+			//]
 		];
 #pragma endregion
 
