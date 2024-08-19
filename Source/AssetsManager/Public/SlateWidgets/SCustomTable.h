@@ -135,7 +135,9 @@ inline TSharedRef<SSplitter> SCustomTable<ItemType>::ConstructTableHeaderRow()
 
 	MainTable->InsertSlot(0)
 		.AutoHeight()
-		[TableHeaderRow.ToSharedRef()];
+		[
+			TableHeaderRow.ToSharedRef()
+		];
 
 	this->ColumnsCount = ColumnsType->Num() + 1;
 
