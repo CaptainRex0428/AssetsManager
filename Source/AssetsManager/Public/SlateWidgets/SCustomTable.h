@@ -4,78 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "SlateWidgets/SCommonSlate.h"
+
 /**
  * 
  */
-template <typename ItemType>
 class ASSETSMANAGER_API SCustomTable : public SCommonSlate
-{
+{	
 
 public:
-	using FOnGenerateRowList = typename TSlateDelegates<ItemType>::FOnGenerateRow;
-	using FOnMouseButtonDoubleClickListRow = typename TSlateDelegates< ItemType >::FOnMouseButtonDoubleClickListRow;
-
-	
-
-public:
-	SLATE_BEGIN_ARGS(SCustomTable) :
-		_TitleColumns(),
-		_ColumnsInitWidth(),
-		_OnGenerateRowList(),
-		_OnMouseButtonDoubleClickListRow(),
-		_OnSlotResizedRows(),
-		_ListSourceItems()
-	{}
-
-	SLATE_ARGUMENT(TSharedPtr<TArray<FString>>&,TitleColumns)
-	SLATE_ARGUMENT(TSharedPtr<TArray<float>>&,ColumnsInitWidth)
-
-	SLATE_ARGUMENT(TArray<ItemType>&, ListSourceItems)
-
-	SLATE_EVENT(FOnGenerateRowList,OnGenerateRowList)
-	SLATE_EVENT(FOnMouseButtonDoubleClickListRow, OnMouseButtonDoubleClickListRow)
-
-	DECLARE_DELEGATE_OneParam(
-		FOnSlotResizedRows,
-		/** The new size coefficient of the slot */
-		float);
-
-	SLATE_EVENT(FOnSlotResizedRows, OnSlotResizedRows)
+	SLATE_BEGIN_ARGS(SCustomTable) {}
 	
 	SLATE_END_ARGS()
 
 public:
-	virtual void Construct(const SCustomTable<ItemType>::FArguments& InArgs);
-
-	void Rebuilt();
-
-
-private:
-	TSharedPtr<SVerticalBox> MainTable;
-
-	TSharedPtr<TArray<FString>> TitleColumns;
-	TSharedPtr<float> ColumnsInitWidth;
-	uint32 ColumnsNum;
-	TSharedPtr<SSplitter> HeaderRow;
-
-	TSharedPtr<SListView<ItemType>> ListView;
-
-	TSharedPtr<TArray<TSharedPtr<SSplitter>>> SplitterRows;
-
-private:
-	float GetColumnInitWidth(uint32 index);
-	float GetColumnWidth(uint32 index);
-
-	void OnSplitterColumResized(
-		float size,
-		uint32 index);
-
-
-	TSharedRef<ITableRow> OnGenerateRowForlist(
-		ItemType ItemData,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	void ConstructHeaderRow();
+	virtual void Construct(const SCustomTable::FArguments& InArgs);
 };
 
 
