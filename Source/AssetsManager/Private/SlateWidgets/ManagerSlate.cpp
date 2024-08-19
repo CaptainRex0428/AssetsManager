@@ -222,7 +222,23 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	MainUI->AddSlot()[ContentBox.ToSharedRef()];
 
-	MainUI->AddSlot().AutoHeight()[ConstructHandleAllButtons()];
+	MainUI->AddSlot().AutoHeight()
+		[
+			SNew(SOverlay)
+				+SOverlay::Slot()
+				[
+					SNew(SVerticalBox)
+				]
+
+				+ SOverlay::Slot()
+				[
+					SNew(SHeaderRow)
+				]
+				+ SOverlay::Slot()
+				[
+					ConstructHandleAllButtons()
+				]
+		];
 
 	ChildSlot
 	[

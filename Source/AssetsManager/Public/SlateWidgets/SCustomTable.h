@@ -60,6 +60,10 @@ private:
 	TSharedPtr<SListView<ItemType>> TableListView;
 	TSharedRef<SListView<ItemType>> ConstructTableListView();
 
+	TSharedRef<ITableRow> OnTableGenerateRowForlist(
+		ItemType ItemIn,
+		const TSharedRef<STableViewBase>& OwnerTable);
+
 	TArray<TSharedPtr<SSplitter>> RowsAsSplitter;
 	
 	void OnTableColumnResized(
@@ -84,6 +88,8 @@ inline void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArg
 	MainTable = SNew(SVerticalBox);
 
 	ConstructTableHeaderRow();
+
+	ConstructTableListView();
 
 #pragma region TestButton
 	TestButton = 
@@ -213,11 +219,36 @@ inline TSharedRef<SListView<ItemType>> SCustomTable<ItemType>::ConstructTableLis
 		SNew(SListView<TSharedPtr<FAssetData>>)
 		.ItemHeight(36.f)
 		.ScrollBarStyle(&scrollbarStyle)
-		.ListItemsSource(SourceItems);
-		//.OnGenerateRow(this, &SManagerSlateTab::OnGenerateRowForlist)
+		.ListItemsSource(SourceItems)
+		.OnGenerateRow(this, &SCustomTable<ItemType>::OnTableGenerateRowForlist);
 		//.OnMouseButtonDoubleClick(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked);
 
+		MainTable->AddSlot().AutoHeight()
+			[
+				SNew(SScrollBox)
+				+SScrollBox::Slot()
+				[
+					TableListView.ToSharedRef()
+				]
+			];
+
 	return TableListView.ToSharedRef();
+}
+
+template<typename ItemType>
+inline TSharedRef<ITableRow> SCustomTable<ItemType>::OnTableGenerateRowForlist(
+	ItemType ItemIn,
+	const TSharedRef<STableViewBase>& OwnerTable)
+{
+	TSharedRef<STableRow<TSharedPtr<FAssetData>>> ListViewRowWidget
+		= SNew(STableRow<TSharedPtr<FAssetData>>, OwnerTable)
+		.Padding(FMargin(6.f))
+		[
+			// Splitter
+			ConstructNormalTextBlock("TEST", GetFontInfo(9))
+		];
+
+	return ListViewRowWidget;
 }
 
 template<typename ItemType>
