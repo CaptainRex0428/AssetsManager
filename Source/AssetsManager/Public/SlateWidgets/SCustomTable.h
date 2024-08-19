@@ -223,7 +223,7 @@ inline TSharedRef<SListView<ItemType>> SCustomTable<ItemType>::ConstructTableLis
 		.OnGenerateRow(this, &SCustomTable<ItemType>::OnTableGenerateRowForlist);
 		//.OnMouseButtonDoubleClick(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked);
 
-		MainTable->AddSlot().AutoHeight()
+		MainTable->AddSlot().VAlign(VAlign_Fill)
 			[
 				SNew(SScrollBox)
 				+SScrollBox::Slot()
