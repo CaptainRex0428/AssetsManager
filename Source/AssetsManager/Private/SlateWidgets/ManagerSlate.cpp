@@ -1716,78 +1716,61 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDropDownMenuBox()
 {
 
-	TSharedRef<SHorizontalBox> DropDownMenu = 
+	TSharedPtr<SHorizontalBox> DropDownContent =
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.FillWidth(.25f)
+		.Padding(FMargin(2.f))
+		[
+			SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				[
+					SNew(STextBlock)
+						.Font(GetFontInfo(12))
+						.Text(FText::FromString(CLASSFILTER))
+						.Justification(ETextJustify::Right)
+						.ColorAndOpacity(FColor::White)
+				]
+
+				+ SHorizontalBox::Slot()
+				.FillWidth(.5f)
+				[
+					ConstructClassFilterButton()
+				]
+		]
+
+		+ SHorizontalBox::Slot()
+		.FillWidth(.25f)
+		.Padding(FMargin(2.f))
+		[
+			SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				[
+					SNew(STextBlock)
+						.Font(GetFontInfo(12))
+						.Text(FText::FromString(USAGEFILTER))
+						.Justification(ETextJustify::Right)
+						.ColorAndOpacity(FColor::White)
+				]
+
+				+ SHorizontalBox::Slot()
+				.FillWidth(.5f)
+				[
+					ConstructUsageFilterButton()
+				]
+
+		];
+
+	TSharedRef<SHorizontalBox> DropDownMenu =
 
 		SNew(SHorizontalBox)
-		
-		+SHorizontalBox::Slot()
+
+		+ SHorizontalBox::Slot()
 		[
-			SNew(SOverlay)
-
-				+ SOverlay::Slot()
-				[
-					SNew(SBorder)
-				]
-
-				+ SOverlay::Slot()
-				[
-					SNew(SHorizontalBox)
-					+SHorizontalBox::Slot()
-					[
-						SNew(SHeaderRow)
-					]
-				]
-
-			+SOverlay::Slot()
-			[
-				SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot()
-					.FillWidth(.25f)
-					.Padding(FMargin(2.f))
-					[
-						SNew(SHorizontalBox)
-							+ SHorizontalBox::Slot()
-							.AutoWidth()
-							[
-								SNew(STextBlock)
-									.Font(GetFontInfo(12))
-									.Text(FText::FromString(CLASSFILTER))
-									.Justification(ETextJustify::Right)
-									.ColorAndOpacity(FColor::White)
-							]
-
-							+ SHorizontalBox::Slot()
-							.FillWidth(.5f)
-							[
-								ConstructClassFilterButton()
-							]
-					]
-
-					+ SHorizontalBox::Slot()
-					.FillWidth(.25f)
-					.Padding(FMargin(2.f))
-					[
-						SNew(SHorizontalBox)
-							+ SHorizontalBox::Slot()
-							.AutoWidth()
-							[
-								SNew(STextBlock)
-									.Font(GetFontInfo(12))
-									.Text(FText::FromString(USAGEFILTER))
-									.Justification(ETextJustify::Right)
-									.ColorAndOpacity(FColor::White)
-							]
-
-							+ SHorizontalBox::Slot()
-							.FillWidth(.5f)
-							[
-								ConstructUsageFilterButton()
-							]
-
-					]
-			]
-		]
-		;
+			ConstructOverlayOpaque(DropDownContent,3)
+		];
 
 	return DropDownMenu;
 }

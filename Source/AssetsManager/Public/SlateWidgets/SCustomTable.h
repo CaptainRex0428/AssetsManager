@@ -10,10 +10,8 @@ template< typename ArgumentType >
 class TCustomSlateDelegates : public TSlateDelegates<ArgumentType>
 {
 public:
-	DECLARE_DELEGATE_RetVal_OneParam(
-		int32 , 
-		FOnGenerateSplitterRow, 
-		int32)
+	typedef TDelegate<int32(int32)> FOnGenerateSplitterRow;
+	typedef TDelegate<TArray<TSharedPtr<SWidget>>(ArgumentType)> FOnConstructRowWidgets;
 };
 
 /**
@@ -24,6 +22,7 @@ class ASSETSMANAGER_API SCustomTable : public SCommonSlate
 {	
 public:
 	using FOnGenerateSplitterRow = TCustomSlateDelegates<ItemType>::FOnGenerateSplitterRow;
+	using FOnConstructRowWidgets = TCustomSlateDelegates<ItemType>::FOnConstructRowWidgets;
 
 public:
 	
@@ -35,6 +34,7 @@ public:
 	SLATE_ARGUMENT(TArray<ItemType>*,SourceItems)
 
 	SLATE_EVENT(FOnGenerateSplitterRow,OnGenerateSplitterRow)
+	SLATE_EVENT(FOnConstructRowWidgets,OnConstructRowWidgets)
 	
 	SLATE_END_ARGS()
 
@@ -46,6 +46,7 @@ public:
 private:
 
 	FOnGenerateSplitterRow OnGenerateSplitterRow;
+	FOnConstructRowWidgets OnConstructRowWidgets;
 
 	TArray<SCommonSlate::CustomTableColumnType>* ColumnsType;
 	TArray<float>* ColumnsInitWidth;
@@ -70,6 +71,8 @@ private:
 		float size, 
 		uint32 index);
 
+	FReply OnTitleColumnClicked(uint32 ColumnIndex);
+
 	TSharedPtr<SButton> TestButton;
 	FReply OnTestButtonClicked();
 };
@@ -84,6 +87,7 @@ inline void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArg
 	this->SourceItems = InArgs._SourceItems;
 
 	this->OnGenerateSplitterRow = InArgs._OnGenerateSplitterRow;
+	this->OnConstructRowWidgets = InArgs._OnConstructRowWidgets;
 
 	MainTable = SNew(SVerticalBox);
 
@@ -146,64 +150,47 @@ inline TSharedRef<SSplitter> SCustomTable<ItemType>::ConstructTableHeaderRow()
 		RowsAsSplitter.Insert(TableHeaderRow,0);
 	}
 
-	TableHeaderRow->AddSlot(0)
-		.Value(0.02f)
-		.Resizable(false)
-		.OnSlotResized(this, &SCustomTable<ItemType>::OnTableColumnResized, uint32(0))
-		[
-			SNew(SOverlay)
-
-				+ SOverlay::Slot()
-				[
-					SNew(SBorder)
-						.BorderBackgroundColor(FLinearColor::Gray)
-						.ColorAndOpacity(FColor::Black)
-				]
-
-				+ SOverlay::Slot()
-				[
-					ConstructTitleTextBlock("*", GetFontInfo(10))
-				]
-		];
-
-	for(uint32 columnIndex = 0; columnIndex <this->ColumnsCount-1; columnIndex ++)
+	for(uint32 columnIndex = 0; columnIndex <this->ColumnsCount; columnIndex ++)
 	{
 		float widthInit = 0.2f;
 
-		if (columnIndex < (uint32)(ColumnsInitWidth->Num()))
+		TSharedPtr<SButton> ColumnButton =
+			SNew(SButton)
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Fill)
+			.OnClicked(this, &SCustomTable<ItemType>::OnTitleColumnClicked, columnIndex);
+
+		if(columnIndex == 0)
 		{
-			widthInit = (*ColumnsInitWidth)[columnIndex];
+			ColumnButton->SetContent(ConstructTitleTextBlock("*", GetFontInfo(13)));
+			widthInit = 0.03f;
+		}
+		else 
+		{
+			if ((columnIndex - 1) < (uint32)(ColumnsInitWidth->Num()))
+			{
+				widthInit = (*ColumnsInitWidth)[columnIndex - 1];
+			}
+
+			CustomTableColumnType type = (*ColumnsType)[columnIndex - 1];
+
+			TSharedPtr<FString> ColumnName = GetCustomTableColumnTypeToString(type);
+
+			if (!ColumnName.IsValid())
+			{
+				ColumnName = MakeShared<FString>(TEXT("[Undefined]"));
+			}
+
+			ColumnButton->SetContent(ConstructTitleTextBlock(*ColumnName, GetFontInfo(13)));
 		}
 
-		CustomTableColumnType type = (*ColumnsType)[columnIndex];
-
-		TSharedPtr<FString> ColumnName = GetCustomTableColumnTypeToString(type);
-
-		if(!ColumnName.IsValid())
-		{
-			ColumnName = MakeShared<FString>(TEXT("[Undefined]"));
-		}
-
-		TableHeaderRow->AddSlot(columnIndex+1)
+		TableHeaderRow->AddSlot(columnIndex)
 			.Value(widthInit)
 			.MinSize(10.f)
-			.OnSlotResized(this, &SCustomTable<ItemType>::OnTableColumnResized, columnIndex+1)
+			.Resizable(columnIndex ? true : false)
+			.OnSlotResized(this, &SCustomTable<ItemType>::OnTableColumnResized, columnIndex)
 			[
-				SNew(SOverlay)
-
-				+SOverlay::Slot()
-				[
-					SNew(SBorder)
-					.BorderBackgroundColor(FLinearColor::Gray)
-					.ColorAndOpacity(FColor::Black)
-				]
-
-				+ SOverlay::Slot()
-				.Padding(0.f,3.f,0.f,3.f)
-				[
-					ConstructTitleTextBlock(*ColumnName, GetFontInfo(13))
-				]
-				
+				ConstructOverlayOpaque(ColumnButton,3)
 			];
 			
 	}
@@ -242,12 +229,16 @@ inline TSharedRef<ITableRow> SCustomTable<ItemType>::OnTableGenerateRowForlist(
 	ItemType ItemIn,
 	const TSharedRef<STableViewBase>& OwnerTable)
 {
+	TArray<TSharedPtr<SWidget>> WidgetList = this->OnConstructRowWidgets.Execute(ItemIn);
+	
+	TSharedPtr<SSplitter> WidgetRow = SNew(SSplitter);  
+
 	TSharedRef<STableRow<TSharedPtr<FAssetData>>> ListViewRowWidget
 		= SNew(STableRow<TSharedPtr<FAssetData>>, OwnerTable)
 		.Padding(FMargin(6.f))
 		[
 			// Splitter
-			ConstructNormalTextBlock("TEST", GetFontInfo(9))
+			WidgetRow.ToSharedRef()
 		];
 
 	return ListViewRowWidget;
@@ -265,6 +256,14 @@ inline void SCustomTable<ItemType>::OnTableColumnResized(
 }
 
 template<typename ItemType>
+inline FReply SCustomTable<ItemType>::OnTitleColumnClicked(uint32 ColumnIndex)
+{
+	NtfyMsg(FString::FromInt(ColumnIndex));
+
+	return FReply::Handled();
+}
+
+template<typename ItemType>
 inline FReply SCustomTable<ItemType>::OnTestButtonClicked()
 {
 	NtfyMsg("Test");
@@ -275,5 +274,3 @@ inline FReply SCustomTable<ItemType>::OnTestButtonClicked()
 
 	return FReply::Handled();
 }
-
-

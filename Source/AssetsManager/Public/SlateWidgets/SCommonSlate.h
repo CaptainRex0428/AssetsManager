@@ -82,4 +82,9 @@ public:
 
 #pragma endregion
 
+#pragma region BKGFill
+	TSharedRef<SOverlay> ConstructOverlayOpaque(
+		TSharedPtr<SWidget> DisplayWidget, 
+		int DisplayLayer);
+#pragma endregion
 };

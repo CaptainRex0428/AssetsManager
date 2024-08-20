@@ -59,3 +59,30 @@ TSharedRef<STextBlock> SCommonSlate::ConstructTextForButtons(
 
 	return ContentBlock;
 }
+
+TSharedRef<SOverlay> SCommonSlate::ConstructOverlayOpaque(
+	TSharedPtr<SWidget> DisplayWidget, 
+	int DisplayLayer)
+{
+	TSharedPtr<SOverlay> Overlay = SNew(SOverlay);
+
+	for (int32 LayerIndex = 0; LayerIndex < DisplayLayer -2; ++ LayerIndex)
+	{
+		Overlay->AddSlot()
+			[
+				SNew(SHorizontalBox)
+			];
+	}
+
+	Overlay->AddSlot()
+		[
+			SNew(SHeaderRow)
+		];
+
+	Overlay->AddSlot()
+		[
+			DisplayWidget.ToSharedRef()
+		];
+
+	return Overlay.ToSharedRef();
+}
