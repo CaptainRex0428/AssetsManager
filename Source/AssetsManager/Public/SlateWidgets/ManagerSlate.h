@@ -66,6 +66,8 @@ private:
 	// 
 	TArray<TSharedPtr<SWidget>> OnConstructTableRow(TSharedPtr<FAssetData> AssetToDisplay);
 
+	TSharedRef<SHorizontalBox> ConstructSingleDealPanel(TSharedPtr<FAssetData> ClickedAssetData);
+
 	// For Assets List
 	TSharedRef<ITableRow> OnGenerateRowForlist(
 		TSharedPtr<FAssetData> AssetDataToDisplay,

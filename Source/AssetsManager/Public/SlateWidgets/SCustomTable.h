@@ -315,7 +315,6 @@ inline TSharedRef<ITableRow> SCustomTable<ItemType>::OnTableGenerateRowForlist(
 		= SNew(STableRow<TSharedPtr<FAssetData>>, OwnerTable)
 		.Padding(FMargin(6.f))
 		[
-			// Splitter
 			WidgetRow.ToSharedRef()
 		];
 

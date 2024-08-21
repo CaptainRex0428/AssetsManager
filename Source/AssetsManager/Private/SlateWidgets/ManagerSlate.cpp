@@ -619,10 +619,34 @@ TArray<TSharedPtr<SWidget>> SManagerSlateTab::OnConstructTableRow(TSharedPtr<FAs
 	WidgetArray.Add(ClassWidget);
 	TSharedPtr<STextBlock> NameWidget = ConstructAssetNameRowBox(AssetToDisplay,GetFontInfo(9));
 	WidgetArray.Add(NameWidget);
-	TSharedPtr<SButton> DealWidget = ConstructSingleAssetDeleteButtonBox(AssetToDisplay);
+	
+	TSharedPtr<SHorizontalBox> DealWidget = ConstructSingleDealPanel(AssetToDisplay);
 	WidgetArray.Add(DealWidget);
 
 	return WidgetArray;
+}
+
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(TSharedPtr<FAssetData> ClickedAssetData)
+{
+	TSharedPtr<SHorizontalBox> DealPanel = SNew(SHorizontalBox);
+
+	DealPanel->AddSlot()
+		.HAlign(HAlign_Fill)
+		[
+			
+				ConstructSingleAssetDeleteButtonBox(ClickedAssetData)
+				
+		];
+
+	DealPanel->AddSlot()
+		.HAlign(HAlign_Fill)
+		[
+
+			ConstructSingleAssetDeleteButtonBox(ClickedAssetData)
+
+		];
+
+	return DealPanel.ToSharedRef();
 }
 
 TSharedRef<SCheckBox> SManagerSlateTab::ConstructCheckBox(
