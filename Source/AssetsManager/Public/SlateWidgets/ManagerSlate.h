@@ -55,13 +55,16 @@ private:
 
 	void SListViewRemoveAssetData(TSharedPtr<FAssetData> AssetData);
 
-	inline int32 SSSTest(int32 num) { return num * num; };
-
 #pragma region OnGenerateRowForlist
+	
+
 	// construct / refresh list view
 	TSharedRef<SListView<TSharedPtr<FAssetData>>> ConstructAssetsListView();
 	TSharedPtr<SListView<TSharedPtr<FAssetData>>> ConstructedAssetsListView;
 	void RefreshAssetsListView();
+
+	// 
+	TArray<TSharedPtr<SWidget>> OnConstructTableRow(TSharedPtr<FAssetData> AssetToDisplay);
 
 	// For Assets List
 	TSharedRef<ITableRow> OnGenerateRowForlist(

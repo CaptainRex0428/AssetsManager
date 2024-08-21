@@ -204,17 +204,13 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	HandleBox->AddSlot()
 		.VAlign(VAlign_Fill)
 		[
-			//SNew(SScrollBox)
 
-			//+ SScrollBox::Slot()
-			//[
 				SNew(SCustomTable<TSharedPtr<FAssetData>>)
 					.SourceItems(&SListViewAssetData)
 					.ColumnsType(&SManagerCustomTableTitleRowColumnsType)
 					.ColumnsInitWidth(&SManagerCustomTableTitleRowColumnsInitWidth)
-					.OnGenerateSplitterRow(this,&SManagerSlateTab::SSSTest)
+					.OnConstructRowWidgets(this,&SManagerSlateTab::OnConstructTableRow)
 				// ConstructAssetsListView()
-			//]
 		];
 #pragma endregion
 
@@ -612,6 +608,21 @@ void SManagerSlateTab::RefreshAssetsListView()
 	}
 
 	ListViewCountBlock->SetText(FText::FromString(FString::FromInt(SListViewAssetData.Num())));
+}
+
+TArray<TSharedPtr<SWidget>> SManagerSlateTab::OnConstructTableRow(TSharedPtr<FAssetData> AssetToDisplay)
+{
+	TArray<TSharedPtr<SWidget>> WidgetArray;
+	WidgetArray.Empty();
+
+	TSharedPtr<STextBlock> ClassWidget = ConstructAssetClassRowBox(AssetToDisplay, GetFontInfo(9));
+	WidgetArray.Add(ClassWidget);
+	TSharedPtr<STextBlock> NameWidget = ConstructAssetNameRowBox(AssetToDisplay,GetFontInfo(9));
+	WidgetArray.Add(NameWidget);
+	TSharedPtr<SButton> DealWidget = ConstructSingleAssetDeleteButtonBox(AssetToDisplay);
+	WidgetArray.Add(DealWidget);
+
+	return WidgetArray;
 }
 
 TSharedRef<SCheckBox> SManagerSlateTab::ConstructCheckBox(
