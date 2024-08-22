@@ -90,9 +90,18 @@ private:
 	TSharedPtr<STextBlock> SelectedCountBlock;
 
 	// Construct Standard Name Box
+	TSharedRef<SEditableTextBox> ConstructEditAssetNameRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
+	void OnEditableAssetNameRowBoxCommitted(
+		const FText& NewText, 
+		ETextCommit::Type CommitType,
+		const TSharedPtr<FAssetData>& AssetDataToDisplay) const;
+
 	TSharedRef<STextBlock> ConstructAssetNameRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
-		const FSlateFontInfo & FontInfo);
+		const FSlateFontInfo& FontInfo);
 
 	// Construct Standard Class Box
 	TSharedRef<STextBlock> ConstructAssetClassRowBox(

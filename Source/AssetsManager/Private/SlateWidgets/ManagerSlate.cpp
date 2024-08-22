@@ -328,10 +328,10 @@ TArray<TSharedPtr<SWidget>> SManagerSlateTab::OnConstructTableRow(
 	ClassWidget->SetJustification(ETextJustify::Center);
 	ClassWidget->SetMargin(FMargin(3.f));
 
-	TSharedPtr<STextBlock> NameWidget = ConstructAssetNameRowBox(AssetToDisplay,GetFontInfo(9));
-	NameWidget->SetAutoWrapText(true);
-	NameWidget->SetJustification(ETextJustify::Center);
-	NameWidget->SetMargin(FMargin(3.f));
+	TSharedPtr<SEditableTextBox> NameWidget = ConstructEditAssetNameRowBox(AssetToDisplay,GetFontInfo(9));
+	//NameWidget->SetAutoWrapText(true);
+	NameWidget->SetJustification(ETextJustify::Left);
+	//NameWidget->SetMargin(FMargin(3.f));
 
 	TSharedPtr<STextBlock> TextureSizeWidget = ConstructAssetTextureSizeRowBox(AssetToDisplay,GetFontInfo(9));
 	TextureSizeWidget->SetAutoWrapText(true);
@@ -618,6 +618,36 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructListAssetsCountInfo(
 	return ListAssetsCountInfo;
 }
 
+TSharedRef<SEditableTextBox> SManagerSlateTab::ConstructEditAssetNameRowBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	const FSlateFontInfo& FontInfo)
+{
+	const FString DisplayAssetName = AssetDataToDisplay->AssetName.ToString();
+	const FString DisplayAssetPath = AssetDataToDisplay->GetSoftObjectPath().ToString();
+	
+	TSharedPtr<SEditableTextBox> AssetNameBox = SNew(SEditableTextBox)
+		.Text(FText::FromString(DisplayAssetName))
+		.Font(FontInfo)
+		.Justification(ETextJustify::Left)
+		.ClearKeyboardFocusOnCommit(true)
+		.Padding(FMargin(1.f))
+		.ToolTipText(FText::FromString(DisplayAssetPath))
+		.OnTextCommitted(this,&SManagerSlateTab::OnEditableAssetNameRowBoxCommitted,AssetDataToDisplay);
+
+	return AssetNameBox.ToSharedRef();
+}
+
+void SManagerSlateTab::OnEditableAssetNameRowBoxCommitted(
+	const FText& NewText, 
+	ETextCommit::Type CommitType,
+	TSharedPtr<FAssetData>& AssetDataToDisplay)
+{
+	if(CommitType==ETextCommit::OnEnter)
+	{
+		NtfyMsg("CheckCheck");
+	}
+}
+
 TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetNameRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
@@ -625,9 +655,14 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetNameRowBox(
 	const FString DisplayAssetName = AssetDataToDisplay->AssetName.ToString();
 	const FString DisplayAssetPath = AssetDataToDisplay->GetSoftObjectPath().ToString();
 
-	TSharedRef<STextBlock> AssetNameBox = ConstructNormalTextBlock(DisplayAssetName, FontInfo, ETextJustify::Left, FColor::White,DisplayAssetPath);
+	TSharedPtr<STextBlock> AssetNameBox = 
+		ConstructNormalTextBlock(
+			DisplayAssetName, 
+			FontInfo, 
+			ETextJustify::Left, 
+			FColor::White,DisplayAssetPath);
 
-	return AssetNameBox;
+	return AssetNameBox.ToSharedRef();
 }
 
 TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetClassRowBox(
@@ -637,7 +672,6 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetClassRowBox(
 	const FString DisplayAssetClass = AssetDataToDisplay->GetClass()->GetName();
 
 	TSharedRef<STextBlock> AssetClassBox = ConstructNormalTextBlock(DisplayAssetClass,FontInfo);
-
 	return AssetClassBox;
 }
 
