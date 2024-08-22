@@ -65,8 +65,9 @@ private:
 private:
 
 	TSharedPtr<SVerticalBox> MainTable;
-	TSharedPtr<SSplitter> TableHeaderRow;
-	TSharedRef<SSplitter> ConstructTableHeaderRow();
+	TSharedPtr<SSplitter> TableHeader;
+	TSharedPtr<SHorizontalBox> TableHeaderRow;
+	TSharedRef<SHorizontalBox> ConstructTableHeaderRow();
 
 	TSharedPtr<SListView<ItemType>> TableListView;
 	TSharedRef<SListView<ItemType>> ConstructTableListView();
@@ -122,14 +123,14 @@ inline void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArg
 	ConstructTableListView();
 
 #pragma region TestButton
-	TestButton = 
+	/*TestButton =
 		SNew(SButton)
 		.OnClicked(this, &SCustomTable<ItemType>::OnTestButtonClicked)
 		.ContentPadding(FMargin(5.f));
 	TestButton->SetContent(ConstructTextForButtons(TEXT("测试")));
 
 	MainTable->AddSlot()
-		.AutoHeight()[TestButton.ToSharedRef()];
+		.AutoHeight()[TestButton.ToSharedRef()];*/
 #pragma endregion
 
 	ChildSlot
@@ -200,7 +201,7 @@ inline void SCustomTable<ItemType>::RefreshTable()
 }
 
 template<typename ItemType>
-inline TSharedRef<SSplitter> SCustomTable<ItemType>::ConstructTableHeaderRow()
+inline TSharedRef<SHorizontalBox> SCustomTable<ItemType>::ConstructTableHeaderRow()
 {
 	if (MainTable->IsValidSlotIndex(0) 
 		&& MainTable->GetSlot(0).GetWidget() == TableHeaderRow.ToSharedRef())
@@ -208,14 +209,16 @@ inline TSharedRef<SSplitter> SCustomTable<ItemType>::ConstructTableHeaderRow()
 		MainTable->RemoveSlot(TableHeaderRow.ToSharedRef());
 	}
 	
-	if (RowsAsSplitter.Contains(TableHeaderRow))
+	if (RowsAsSplitter.Contains(TableHeader))
 	{
-		RowsAsSplitter.Remove(TableHeaderRow);
+		RowsAsSplitter.Remove(TableHeader);
 	}
 
-	TableHeaderRow = SNew(SSplitter)
+	TableHeader = SNew(SSplitter)
 		.Orientation(Orient_Horizontal)
 		.HitDetectionSplitterHandleSize(5.f);
+
+	TableHeaderRow = SNew(SHorizontalBox);
 
 	MainTable->InsertSlot(0)
 		.AutoHeight()
@@ -223,9 +226,9 @@ inline TSharedRef<SSplitter> SCustomTable<ItemType>::ConstructTableHeaderRow()
 			TableHeaderRow.ToSharedRef()
 		];
 
-	if(!RowsAsSplitter.Contains(TableHeaderRow))
+	if(!RowsAsSplitter.Contains(TableHeader))
 	{
-		RowsAsSplitter.Insert(TableHeaderRow,0);
+		RowsAsSplitter.Insert(TableHeader,0);
 	}
 
 	this->ColumnsCount = ColumnsType->Num() + 1;
@@ -264,7 +267,7 @@ inline TSharedRef<SSplitter> SCustomTable<ItemType>::ConstructTableHeaderRow()
 			ColumnButton->SetContent(ConstructTitleTextBlock(*ColumnName, GetFontInfo(13)));
 		}
 
-		TableHeaderRow->AddSlot(columnIndex)
+		TableHeader->AddSlot(columnIndex)
 			.Value(widthInit)
 			.MinSize(20.f)
 			.Resizable(columnIndex ? true : false)
@@ -274,6 +277,20 @@ inline TSharedRef<SSplitter> SCustomTable<ItemType>::ConstructTableHeaderRow()
 			];
 			
 	}
+
+	TableHeaderRow->AddSlot()
+		.FillWidth(.985f)
+		.VAlign(VAlign_Fill)
+		[
+			TableHeader.ToSharedRef()
+		];
+
+	TableHeaderRow->AddSlot()
+		.FillWidth(.015f)
+		.VAlign(VAlign_Fill)
+		[
+			SNew(SSpacer).Size(FVector2D(.1f,.2f))
+		];
 
 	return TableHeaderRow.ToSharedRef();
 }
@@ -385,8 +402,8 @@ inline TSharedRef<ITableRow> SCustomTable<ItemType>::OnTableGenerateRowForlist(
 
 		WidgetRow->AddSlot(ColumnIndex)
 			.OnSlotResized(this, &SCustomTable<ItemType>::OnTableColumnResized, ColumnIndex)
-			.Resizable(TableHeaderRow->SlotAt(ColumnIndex).CanBeResized())
-			.Value(TableHeaderRow->SlotAt(ColumnIndex).GetSizeValue())
+			.Resizable(TableHeader->SlotAt(ColumnIndex).CanBeResized())
+			.Value(TableHeader->SlotAt(ColumnIndex).GetSizeValue())
 			[
 				RowWidget
 			];

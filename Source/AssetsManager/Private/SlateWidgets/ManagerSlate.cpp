@@ -292,10 +292,10 @@ void SManagerSlateTab::ConstructHeaderRow()
 	SManagerCustomTableTitleRowColumnsInitWidth.Add(0.04f);
 
 	SManagerCustomTableTitleRowColumnsType.Add(Column_AssetName);
-	SManagerCustomTableTitleRowColumnsInitWidth.Add(0.15f);
+	SManagerCustomTableTitleRowColumnsInitWidth.Add(0.1f);
 
 	SManagerCustomTableTitleRowColumnsType.Add(Column_PerAssetHandle);
-	SManagerCustomTableTitleRowColumnsInitWidth.Add(0.15f);
+	SManagerCustomTableTitleRowColumnsInitWidth.Add(0.1f);
 
 	if (m_ClassCheckState == Texture)
 	{
@@ -307,10 +307,10 @@ void SManagerSlateTab::ConstructHeaderRow()
 		if (m_UsageCheckState == TextureSettingsError)
 		{
 			SManagerCustomTableTitleRowColumnsType.Insert(Column_TextureSRGB,3);
-			SManagerCustomTableTitleRowColumnsInitWidth.Insert(0.03f, 3);
+			SManagerCustomTableTitleRowColumnsInitWidth.Insert(0.04f, 3);
 			
 			SManagerCustomTableTitleRowColumnsType.Insert(Column_TextureCompressionSettings,3);
-			SManagerCustomTableTitleRowColumnsInitWidth.Insert(0.08f, 3);
+			SManagerCustomTableTitleRowColumnsInitWidth.Insert(0.1f, 3);
 		}
 
 	}
