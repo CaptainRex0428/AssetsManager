@@ -29,9 +29,6 @@ private:
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
 	TArray<float> SManagerCustomTableTitleRowColumnsInitWidth;
 
-	TArray<TSharedRef<SCheckBox>>  CheckBoxesArray;
-	TArray<TSharedPtr<FAssetData>> AssetsDataSelected;
-
 	enum ClassCheckState
 	{
 		DefaultClassCheckState = 0,
@@ -58,53 +55,22 @@ private:
 
 #pragma region OnGenerateRowForlist
 	
-
-	// construct / refresh list view
-	TSharedRef<SListView<TSharedPtr<FAssetData>>> ConstructAssetsListView();
-	TSharedPtr<SListView<TSharedPtr<FAssetData>>> ConstructedAssetsListView;
-	void RefreshAssetsListView();
-
-	// 
 	TSharedPtr<SCustomTable<TSharedPtr<FAssetData>>> CustomTableList;
-	TArray<TSharedPtr<SWidget>> OnConstructTableRow(TSharedPtr<FAssetData> AssetToDisplay);
 
-	TSharedRef<SHorizontalBox> ConstructSingleDealPanel(TSharedPtr<FAssetData> ClickedAssetData);
+	void ConstructHeaderRow();
+
+	TArray<TSharedPtr<SWidget>> OnConstructTableRow(
+		TSharedPtr<FAssetData> AssetToDisplay);
+
+	TSharedRef<SHorizontalBox> ConstructSingleDealPanel(
+		TSharedPtr<FAssetData> ClickedAssetData);
+
 	void OnTableCheckBoxStateChanged();
 
-	// For Assets List
-	TSharedRef<ITableRow> OnGenerateRowForlist(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	// For List item button clicked
 	void OnRowMouseButtonDoubleClicked(
 		TSharedPtr<FAssetData> AssetDataToDisplay);
 
-	// CheckState = Default
-	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateDefaultRowForList(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	// CheckState = Texture
-	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateTextureRowForList_MaxInGameSizeError(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateTextureRowForList_SourceSizeError(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateTextureRowForList_SettingsError(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-#pragma region ConstructAssetInfo
-
-	// Construct CheckBox
-	TSharedRef<SCheckBox> ConstructCheckBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	void OnCheckBoxStateChanged(ECheckBoxState NewState, TSharedPtr<FAssetData> AssetData);
-
-#pragma endregion
+	void RefreshAssetsListView();
 
 #pragma region ConstructAssetInfo
 	

@@ -189,6 +189,7 @@ inline void SCustomTable<ItemType>::RefreshTable()
 {
 	CheckBoxArray.Empty();
 	CheckBoxSelected.Empty();
+	RowsAsSplitter.Empty();
 
 	ConstructTableHeaderRow();
 
@@ -201,7 +202,8 @@ inline void SCustomTable<ItemType>::RefreshTable()
 template<typename ItemType>
 inline TSharedRef<SSplitter> SCustomTable<ItemType>::ConstructTableHeaderRow()
 {
-	if (MainTable->IsValidSlotIndex(0) && MainTable->GetSlot(0).GetWidget() == TableHeaderRow.ToSharedRef())
+	if (MainTable->IsValidSlotIndex(0) 
+		&& MainTable->GetSlot(0).GetWidget() == TableHeaderRow.ToSharedRef())
 	{
 		MainTable->RemoveSlot(TableHeaderRow.ToSharedRef());
 	}
@@ -213,7 +215,7 @@ inline TSharedRef<SSplitter> SCustomTable<ItemType>::ConstructTableHeaderRow()
 
 	TableHeaderRow = SNew(SSplitter)
 		.Orientation(Orient_Horizontal)
-		.HitDetectionSplitterHandleSize(10.f);
+		.HitDetectionSplitterHandleSize(5.f);
 
 	MainTable->InsertSlot(0)
 		.AutoHeight()
@@ -221,12 +223,12 @@ inline TSharedRef<SSplitter> SCustomTable<ItemType>::ConstructTableHeaderRow()
 			TableHeaderRow.ToSharedRef()
 		];
 
-	this->ColumnsCount = ColumnsType->Num() + 1;
-
 	if(!RowsAsSplitter.Contains(TableHeaderRow))
 	{
 		RowsAsSplitter.Insert(TableHeaderRow,0);
 	}
+
+	this->ColumnsCount = ColumnsType->Num() + 1;
 
 	for(uint32 columnIndex = 0; columnIndex <this->ColumnsCount; columnIndex ++)
 	{
@@ -240,8 +242,8 @@ inline TSharedRef<SSplitter> SCustomTable<ItemType>::ConstructTableHeaderRow()
 
 		if(columnIndex == 0)
 		{
-			ColumnButton->SetContent(ConstructTitleTextBlock("*", GetFontInfo(13)));
-			widthInit = 0.03f;
+			ColumnButton->SetContent(ConstructTitleTextBlock("*", GetFontInfo(9)));
+			widthInit = 0.02f;
 		}
 		else 
 		{
@@ -264,7 +266,7 @@ inline TSharedRef<SSplitter> SCustomTable<ItemType>::ConstructTableHeaderRow()
 
 		TableHeaderRow->AddSlot(columnIndex)
 			.Value(widthInit)
-			.MinSize(10.f)
+			.MinSize(20.f)
 			.Resizable(columnIndex ? true : false)
 			.OnSlotResized(this, &SCustomTable<ItemType>::OnTableColumnResized, columnIndex)
 			[
@@ -310,6 +312,7 @@ inline TSharedRef<SCheckBox> SCustomTable<ItemType>::ConstructRowCheckBox(
 		SNew(SCheckBox)
 		.Type(ESlateCheckBoxType::CheckBox)
 		.Padding(FMargin(3.f))
+		.HAlign(HAlign_Center)
 		.IsChecked(ECheckBoxState::Unchecked)
 		.Visibility(EVisibility::Visible)
 		.OnCheckStateChanged(this,&SCustomTable<ItemType>::OnCheckBoxStateChanged,ItemIn);
@@ -364,11 +367,13 @@ inline TSharedRef<ITableRow> SCustomTable<ItemType>::OnTableGenerateRowForlist(
 	for(uint32 ColumnIndex = 0 ; ColumnIndex < ColumnsCount; ++ColumnIndex)
 	{
 		
-		TSharedRef<SWidget> RowWidget = ConstructNormalTextBlock(TEXT("[No Info]"),GetFontInfo(9));
+		TSharedRef<SWidget> RowWidget = ConstructNormalTextBlock(TEXT("[No Info]"),GetFontInfo(9),ETextJustify::Center);
 
 		if (ColumnIndex == (uint32)0)
 		{
-			RowWidget = ConstructRowCheckBox(ItemIn);
+			RowWidget = SNew(SHorizontalBox)
+				+SHorizontalBox::Slot().HAlign(HAlign_Center)
+				[ConstructRowCheckBox(ItemIn)];
 		}
 		else
 		{
