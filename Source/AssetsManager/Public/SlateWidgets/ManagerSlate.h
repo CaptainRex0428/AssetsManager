@@ -5,6 +5,7 @@
 #define CONTENTFOLDERMANAGERTABNAME "AssetsManager"
 
 #include "SlateWidgets/SCommonSlate.h"
+#include "SlateWidgets/SCustomTable.h"
 
 class ASSETSMANAGER_API SManagerSlateTab: public SCommonSlate
 {
@@ -64,9 +65,11 @@ private:
 	void RefreshAssetsListView();
 
 	// 
+	TSharedPtr<SCustomTable<TSharedPtr<FAssetData>>> CustomTableList;
 	TArray<TSharedPtr<SWidget>> OnConstructTableRow(TSharedPtr<FAssetData> AssetToDisplay);
 
 	TSharedRef<SHorizontalBox> ConstructSingleDealPanel(TSharedPtr<FAssetData> ClickedAssetData);
+	void OnTableCheckBoxStateChanged();
 
 	// For Assets List
 	TSharedRef<ITableRow> OnGenerateRowForlist(
@@ -184,34 +187,44 @@ private:
 
 #pragma region GenerateHandleAllButton
 
-	TSharedRef<SVerticalBox> ConstructHandleAllButtons();
+	TSharedPtr<SVerticalBox> HandleAllBox;
+	TSharedRef<SVerticalBox> ConstructHandleAllBox();
+
+	TSharedPtr<SHorizontalBox> DynamicHandleAllBox;
+	TSharedRef<SHorizontalBox> ConstructDynamicHandleAllBox();
 
 #pragma endregion
 
 #pragma region DeleteAllSelectedButton
+	TSharedPtr<SButton> DeleteAllSelectedButton;
 	TSharedRef<SButton> ConstructDeleteAllSelectedButton();
 	FReply OnDeleteAllSelectedButtonClicked();
 #pragma endregion
 
 #pragma region De/SelectAllButton
+	TSharedPtr<SButton> SelectAllButton;
 	TSharedRef<SButton> ConstructSelectAllButton();
 	FReply OnSelectAllButtonClicked();
 
+	TSharedPtr<SButton> UnselectAllButton;
 	TSharedRef<SButton> ConstructDeselectAllButton();
 	FReply OnDeselectAllButtonClicked();
 #pragma endregion
 	
 #pragma region FixAllSelectedButton
+	TSharedPtr<SButton> FixSelectedButton;
 	TSharedRef<SButton> ConstructFixSelectedButton();
 	FReply OnSelectFixSelectedClicked();
 #pragma endregion
 
 #pragma region FixRedirectorsButton
+	TSharedPtr<SButton> FixUpRedirectorButton;
 	TSharedRef<SButton> ConstructFixUpRedirectorButton();
 	FReply OnFixUpRedirectorButtonClicked();
 #pragma endregion
 
 #pragma region OutputViewListInfo
+	TSharedPtr<SButton> OutputViewListInfoButton;
 	TSharedRef<SButton> ConstructOutputViewListInfoButton();
 	FReply OnOutputViewListInfoButtonClicked();
 #pragma endregion

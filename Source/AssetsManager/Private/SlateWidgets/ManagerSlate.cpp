@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SlateWidgets/ManagerSlate.h"
-#include "SlateWidgets/SCustomTable.h"
+
 
 #include "AssetsManager.h"
 #include "AssetsChecker/AssetsChecker.h"
@@ -136,6 +136,15 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_PREFIXERROR));
 	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_SAMENAMEASSETERROR));
 
+	ConstructSelectAllButton();
+	ConstructDeselectAllButton();
+	ConstructDeleteAllSelectedButton();
+	ConstructFixSelectedButton();
+	ConstructFixUpRedirectorButton();
+	ConstructOutputViewListInfoButton();
+
+	ConstructDynamicHandleAllBox();
+
 	TSharedPtr<SVerticalBox> MainUI = SNew(SVerticalBox);
 
 #pragma region title
@@ -161,7 +170,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	TSharedPtr<SVerticalBox> InfoBox = SNew(SVerticalBox);
 	TSharedPtr<SVerticalBox> HandleBox = SNew(SVerticalBox);
 	
-	TSharedPtr<SVerticalBox> HandleButton = ConstructHandleAllButtons();
+	TSharedPtr<SVerticalBox> HandleButton = ConstructHandleAllBox();
 
 	InfoBox->AddSlot()
 		.AutoHeight()
@@ -201,15 +210,19 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	SManagerCustomTableTitleRowColumnsType.Add(SCommonSlate::Column_PerAssetHanle);
 	SManagerCustomTableTitleRowColumnsInitWidth.Add(0.4f);
 
+	CustomTableList = SNew(SCustomTable<TSharedPtr<FAssetData>>)
+		.SourceItems(&SListViewAssetData)
+		.ColumnsType(&SManagerCustomTableTitleRowColumnsType)
+		.ColumnsInitWidth(&SManagerCustomTableTitleRowColumnsInitWidth)
+		.OnConstructRowWidgets(this, &SManagerSlateTab::OnConstructTableRow)
+		.OnTableCheckBoxStateChanged(this, &SManagerSlateTab::OnTableCheckBoxStateChanged)
+		.OnTableRowMouseButtonDoubleClicked(this,&SManagerSlateTab::OnRowMouseButtonDoubleClicked);
+
 	HandleBox->AddSlot()
 		.VAlign(VAlign_Fill)
 		[
 
-				SNew(SCustomTable<TSharedPtr<FAssetData>>)
-					.SourceItems(&SListViewAssetData)
-					.ColumnsType(&SManagerCustomTableTitleRowColumnsType)
-					.ColumnsInitWidth(&SManagerCustomTableTitleRowColumnsInitWidth)
-					.OnConstructRowWidgets(this,&SManagerSlateTab::OnConstructTableRow)
+			CustomTableList.ToSharedRef()
 				// ConstructAssetsListView()
 		];
 #pragma endregion
@@ -218,23 +231,19 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	MainUI->AddSlot()[ContentBox.ToSharedRef()];
 
+
+#pragma region HandleAllBox
+
+	
+
+	ConstructHandleAllBox();
+
 	MainUI->AddSlot().AutoHeight()
 		[
-			SNew(SOverlay)
-				+SOverlay::Slot()
-				[
-					SNew(SVerticalBox)
-				]
-
-				+ SOverlay::Slot()
-				[
-					SNew(SHeaderRow)
-				]
-				+ SOverlay::Slot()
-				[
-					ConstructHandleAllButtons()
-				]
+			ConstructOverlayOpaque(this->HandleAllBox,3)
 		];
+
+#pragma endregion
 
 	ChildSlot
 	[
@@ -244,7 +253,8 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 }
 
-void SManagerSlateTab::SListViewRemoveAssetData(TSharedPtr<FAssetData> AssetData)
+void SManagerSlateTab::SListViewRemoveAssetData(
+	TSharedPtr<FAssetData> AssetData)
 {
 	if (StoredAssetsData.Contains(AssetData))
 	{
@@ -307,7 +317,8 @@ TSharedRef<ITableRow> SManagerSlateTab::OnGenerateRowForlist(
 	return GenerateDefaultRowForList(AssetDataToDisplay, OwnerTable);
 }
 
-void SManagerSlateTab::OnRowMouseButtonDoubleClicked(TSharedPtr<FAssetData> AssetDataToDisplay)
+void SManagerSlateTab::OnRowMouseButtonDoubleClicked(
+	TSharedPtr<FAssetData> AssetDataToDisplay)
 {
 	TArray<FAssetData> AssetDataArray;
 	AssetDataArray.Add(*AssetDataToDisplay);
@@ -597,56 +608,114 @@ TSharedRef<STableRow<TSharedPtr<FAssetData>>> SManagerSlateTab::GenerateTextureR
 
 void SManagerSlateTab::RefreshAssetsListView()
 {
-	CheckBoxesArray.Empty();
-	AssetsDataSelected.Empty();
-	
-	SelectedCountBlock->SetText(FText::FromString(FString::FromInt(0)));
 
-	if(ConstructedAssetsListView.IsValid())
+	if (CustomTableList.IsValid())
 	{
-		ConstructedAssetsListView->RebuildList();
+		CustomTableList->RefreshTable();
 	}
 
-	ListViewCountBlock->SetText(FText::FromString(FString::FromInt(SListViewAssetData.Num())));
+	ListViewCountBlock->SetText(FText::FromString(FString::FromInt(CustomTableList->GetListItems().Num())));
+	SelectedCountBlock->SetText(FText::FromString(FString::FromInt(CustomTableList->GetSelectedItems().Num())));
+	
 }
 
-TArray<TSharedPtr<SWidget>> SManagerSlateTab::OnConstructTableRow(TSharedPtr<FAssetData> AssetToDisplay)
+TArray<TSharedPtr<SWidget>> SManagerSlateTab::OnConstructTableRow(
+	TSharedPtr<FAssetData> AssetToDisplay)
 {
 	TArray<TSharedPtr<SWidget>> WidgetArray;
 	WidgetArray.Empty();
 
 	TSharedPtr<STextBlock> ClassWidget = ConstructAssetClassRowBox(AssetToDisplay, GetFontInfo(9));
-	WidgetArray.Add(ClassWidget);
 	TSharedPtr<STextBlock> NameWidget = ConstructAssetNameRowBox(AssetToDisplay,GetFontInfo(9));
-	WidgetArray.Add(NameWidget);
-	
+	TSharedPtr<STextBlock> TextureSizeWidget = ConstructAssetTextureSizeRowBox(AssetToDisplay,GetFontInfo(9));
+	TSharedPtr<STextBlock> TextureCompressionSettingsWidget = ConstructAssetTextureCompressionSettingsRowBox(AssetToDisplay,GetFontInfo(9));
+	TSharedPtr<STextBlock> TextureSRGBSettingsWidget = ConstructAssetTextureSRGBRowBox(AssetToDisplay,GetFontInfo(9));
+
+	// to sync
 	TSharedPtr<SHorizontalBox> DealWidget = ConstructSingleDealPanel(AssetToDisplay);
+
+	WidgetArray.Add(ClassWidget);
+
+	if (m_ClassCheckState == Texture) WidgetArray.Add(TextureSizeWidget);
+
+	WidgetArray.Add(NameWidget);
+
+	if (m_UsageCheckState == TextureSettingsError)
+	{
+		WidgetArray.Add(TextureCompressionSettingsWidget);
+		WidgetArray.Add(TextureSRGBSettingsWidget);
+	}
+	
 	WidgetArray.Add(DealWidget);
 
 	return WidgetArray;
 }
 
-TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(TSharedPtr<FAssetData> ClickedAssetData)
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(
+	TSharedPtr<FAssetData> ClickedAssetData)
 {
 	TSharedPtr<SHorizontalBox> DealPanel = SNew(SHorizontalBox);
 
+	if (m_ClassCheckState == Texture)
+	{
+		if (m_UsageCheckState == TextureSettingsError)
+		{
+			DealPanel->AddSlot()
+				.HAlign(HAlign_Fill)
+				[
+					ConstructSingleTextureAssetSettingsFixButtonBox(ClickedAssetData)
+				];
+		}
+
+		if (m_UsageCheckState == SourceSizeError)
+		{
+			DealPanel->AddSlot()
+				.HAlign(HAlign_Fill)
+				[
+					ConstructSingleAssetReimportButtonBox(ClickedAssetData)
+				];
+		}
+
+		if (m_UsageCheckState == SourceSizeError)
+		{
+			DealPanel->AddSlot()
+				.HAlign(HAlign_Fill)
+				[
+					ConstructSingleTextureAsset2KButtonBox(ClickedAssetData)
+				];
+
+			DealPanel->AddSlot()
+				.HAlign(HAlign_Fill)
+				[
+					ConstructSingleTextureAsset1KButtonBox(ClickedAssetData)
+				];
+
+			DealPanel->AddSlot()
+				.HAlign(HAlign_Fill)
+				[
+					ConstructSingleTextureAsset512ButtonBox(ClickedAssetData)
+				];
+
+			DealPanel->AddSlot()
+				.HAlign(HAlign_Fill)
+				[
+					ConstructSingleTextureAssetResetButtonBox(ClickedAssetData)
+				];
+		}
+	}
+
 	DealPanel->AddSlot()
 		.HAlign(HAlign_Fill)
 		[
-			
 				ConstructSingleAssetDeleteButtonBox(ClickedAssetData)
-				
-		];
-
-	DealPanel->AddSlot()
-		.HAlign(HAlign_Fill)
-		[
-
-			ConstructSingleAssetDeleteButtonBox(ClickedAssetData)
-
 		];
 
 	return DealPanel.ToSharedRef();
+}
+
+void SManagerSlateTab::OnTableCheckBoxStateChanged()
+{
+	SelectedCountBlock->SetText(FText::FromString(FString::FromInt(CustomTableList->GetSelectedItems().Num())));
 }
 
 TSharedRef<SCheckBox> SManagerSlateTab::ConstructCheckBox(
@@ -1009,7 +1078,7 @@ FReply SManagerSlateTab::OnSingleAssetDeleteButtonClicked(
 		NtfyMsgLog(TEXT("Successfully deleted ") + ClickedAssetData->AssetName.ToString());
 #endif
 
-		// update slistview
+		// update slist view
 		SListViewRemoveAssetData(ClickedAssetData);
 		RefreshAssetsListView();
 	};
@@ -1323,11 +1392,11 @@ FReply SManagerSlateTab::OnSingleTextureAssetSettingsFixButtonClicked(
 
 #pragma region GenerateHandleAllButton
 
-TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllButtons()
+TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllBox()
 {
-	TSharedRef<SVerticalBox> HandleBox =
-		SNew(SVerticalBox)
-		+ SVerticalBox::Slot()
+	this->HandleAllBox = SNew(SVerticalBox);
+
+	this->HandleAllBox->AddSlot()
 		.AutoHeight()
 		[
 			SNew(SHorizontalBox)
@@ -1336,47 +1405,36 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllButtons()
 				.FillWidth(.2f)
 				.Padding(5.f)
 				[
-					ConstructSelectAllButton()
+					this->SelectAllButton.ToSharedRef()
 				]
 
 				+ SHorizontalBox::Slot()
 				.FillWidth(.25f)
 				.Padding(5.f)
 				[
-					ConstructDeselectAllButton()
+					this->UnselectAllButton.ToSharedRef()
 				]
-		]
+		];
 
-		// Handle Buttons
-		+ SVerticalBox::Slot()
+	this->HandleAllBox->AddSlot()
 		.AutoHeight()
 		[
 			SNew(SHorizontalBox)
-
 				+ SHorizontalBox::Slot()
 				.FillWidth(.35f)
 				.Padding(5.f)
 				[
-					ConstructDeleteAllSelectedButton()
+					this->DeleteAllSelectedButton.ToSharedRef()
 				]
-		]
+		];
 
-		// Fix Buttons
-		+ SVerticalBox::Slot()
+	this->HandleAllBox->AddSlot()
 		.AutoHeight()
 		[
-			SNew(SHorizontalBox)
+			this->DynamicHandleAllBox.ToSharedRef()
+		];
 
-				+ SHorizontalBox::Slot()
-				.FillWidth(.35f)
-				.Padding(5.f)
-				[
-					ConstructFixSelectedButton()
-				]
-		]
-
-		// Fix Up Redirectors
-		+ SVerticalBox::Slot()
+	this->HandleAllBox->AddSlot()
 		.AutoHeight()
 		[
 			SNew(SHorizontalBox)
@@ -1385,12 +1443,11 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllButtons()
 				.FillWidth(.5f)
 				.Padding(5.f)
 				[
-					ConstructFixUpRedirectorButton()
+					this->FixUpRedirectorButton.ToSharedRef()
 				]
-		]
+		];
 
-		// Output
-		+SVerticalBox::Slot()
+	this->HandleAllBox->AddSlot()
 			.AutoHeight()
 			[
 				SNew(SHorizontalBox)
@@ -1399,14 +1456,32 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllButtons()
 					.FillWidth(.5f)
 					.Padding(5.f)
 					[
-						ConstructOutputViewListInfoButton()
+						this->OutputViewListInfoButton.ToSharedRef()
 					]
 			];
 
-	
+	return HandleAllBox.ToSharedRef();
+}
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDynamicHandleAllBox()
+{
+	this->DynamicHandleAllBox = SNew(SHorizontalBox);
 
-	return HandleBox;
-};
+	if(m_UsageCheckState == TextureSettingsError || m_UsageCheckState == PrefixError)
+	{
+		this->DynamicHandleAllBox->InsertSlot(0)
+			.Padding(5.f)
+			[
+				this->FixSelectedButton.ToSharedRef()
+			];
+	}
+	else
+	{
+		this->DynamicHandleAllBox->RemoveSlot(this->FixSelectedButton.ToSharedRef());
+	}
+
+	return this->DynamicHandleAllBox.ToSharedRef();
+}
+;
 
 #pragma endregion
 
@@ -1414,41 +1489,43 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllButtons()
 
 TSharedRef<SButton> SManagerSlateTab::ConstructDeleteAllSelectedButton()
 {
-	TSharedRef<SButton> DeleteAllSelectedButton =
+	this -> DeleteAllSelectedButton =
 		SNew(SButton)
 		.OnClicked(this, &SManagerSlateTab::OnDeleteAllSelectedButtonClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	DeleteAllSelectedButton->SetContent(ConstructTextForButtons(TEXT("删除选择的资产")));
+	this->DeleteAllSelectedButton->SetContent(ConstructTextForButtons(TEXT("删除选择的资产")));
 #else
-	DeleteAllSelectedButton->SetContent(ConstructTextForButtons(TEXT("Delete All Selected")));
+	this->DeleteAllSelectedButton->SetContent(ConstructTextForButtons(TEXT("Delete All Selected")));
 #endif
-	return DeleteAllSelectedButton;
+	return this->DeleteAllSelectedButton.ToSharedRef();
 }
 
 FReply SManagerSlateTab::OnDeleteAllSelectedButtonClicked()
 {
-	if (AssetsDataSelected.Num() == 0)
+	TArray<TSharedPtr<FAssetData>> AssetList = CustomTableList->GetSelectedItems();
+
+	if (AssetList.Num() == 0)
 	{
 		return FReply::Handled();
 	}
 
 	TArray<FAssetData> AssetsDataToDelete;
 
-	for (TSharedPtr<FAssetData> AssetDataPtr : AssetsDataSelected)
+	for (TSharedPtr<FAssetData> AssetDataPtr : AssetList)
 	{
 		AssetsDataToDelete.Add(*AssetDataPtr.Get());
 	}
 
 	if (UAssetsChecker::EDeleteAssets(AssetsDataToDelete))
 	{
-		for (TSharedPtr<FAssetData> AssetDataPtr : AssetsDataSelected)
+		for (TSharedPtr<FAssetData> AssetDataPtr : AssetList)
 		{
 			SListViewRemoveAssetData(AssetDataPtr);
 		}
-	}
 
-	RefreshAssetsListView();
+		RefreshAssetsListView();
+	}
 
 	return FReply::Handled();
 }
@@ -1459,68 +1536,44 @@ FReply SManagerSlateTab::OnDeleteAllSelectedButtonClicked()
 
 TSharedRef<SButton> SManagerSlateTab::ConstructSelectAllButton()
 {
-	TSharedRef<SButton> SelectAllButton =
+	this->SelectAllButton =
 		SNew(SButton)
 		.OnClicked(this, &SManagerSlateTab::OnSelectAllButtonClicked)
 		.ContentPadding(FMargin(5.f));
 
 #ifdef ZH_CN
-	SelectAllButton->SetContent(ConstructTextForButtons(TEXT("全选")));
+	this->SelectAllButton->SetContent(ConstructTextForButtons(TEXT("全选")));
 #else
-	SelectAllButton->SetContent(ConstructTextForButtons(TEXT("Select All")));
+	this->SelectAllButton->SetContent(ConstructTextForButtons(TEXT("Select All")));
 #endif
 
-	return SelectAllButton;
+	return this->SelectAllButton.ToSharedRef();
 }
 
 FReply SManagerSlateTab::OnSelectAllButtonClicked()
 {
-	if (CheckBoxesArray.Num() == 0)
-	{
-		return FReply::Handled();
-	}
-
-	for (const TSharedRef<SCheckBox> CheckBox : CheckBoxesArray)
-	{
-		if (!CheckBox->IsChecked())
-		{
-			CheckBox->ToggleCheckedState();
-		}
-	}
-
+	CustomTableList->SelectAll();
 	return FReply::Handled();
 }
 
 TSharedRef<SButton> SManagerSlateTab::ConstructDeselectAllButton()
 {
-	TSharedRef<SButton> DeselectAllButton =
+	this -> UnselectAllButton =
 		SNew(SButton)
 		.OnClicked(this, &SManagerSlateTab::OnDeselectAllButtonClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	DeselectAllButton->SetContent(ConstructTextForButtons(TEXT("取消全选")));
+	this->UnselectAllButton->SetContent(ConstructTextForButtons(TEXT("取消全选")));
 #else
-	DeselectAllButton->SetContent(ConstructTextForButtons(TEXT("Deselect All")));
+	this->UnselectAllButton->SetContent(ConstructTextForButtons(TEXT("Deselect All")));
 #endif
 
-	return DeselectAllButton;
+	return this->UnselectAllButton.ToSharedRef();
 }
 
 FReply SManagerSlateTab::OnDeselectAllButtonClicked()
 {
-	if (CheckBoxesArray.Num() == 0)
-	{
-		return FReply::Handled();
-	}
-
-	for (const TSharedRef<SCheckBox> CheckBox : CheckBoxesArray)
-	{
-		if (CheckBox->IsChecked())
-		{
-			CheckBox->ToggleCheckedState();
-		}
-	}
-
+	CustomTableList->UnselectAll();
 	return FReply::Handled();
 }
 
@@ -1530,27 +1583,29 @@ FReply SManagerSlateTab::OnDeselectAllButtonClicked()
 
 TSharedRef<SButton> SManagerSlateTab::ConstructFixSelectedButton()
 {
-	TSharedRef<SButton> DeselectAllButton =
+	this->FixSelectedButton =
 		SNew(SButton)
 		.OnClicked(this, &SManagerSlateTab::OnSelectFixSelectedClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	DeselectAllButton->SetContent(ConstructTextForButtons(TEXT("修复选择的资产")));
+	this->FixSelectedButton->SetContent(ConstructTextForButtons(TEXT("修复选择的资产")));
 #else
-	DeselectAllButton->SetContent(ConstructTextForButtons(TEXT("Fix All Selected")));
+	this->FixSelectedButton->SetContent(ConstructTextForButtons(TEXT("Fix All Selected")));
 #endif
 
-	return DeselectAllButton;
+	return this->FixSelectedButton.ToSharedRef();
 }
 
 FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 {
+	TArray< TSharedPtr<FAssetData>> AssetsList = CustomTableList->GetSelectedItems();
+
 	if (m_UsageCheckState == PrefixError)
 	{
 		TArray<TSharedPtr<FAssetData>> AssetsReadyRename;
 		TArray<TSharedPtr<FAssetData>> AssetShouldRename;
 
-		for (TSharedPtr<FAssetData> AssetData: AssetsDataSelected)
+		for (TSharedPtr<FAssetData> AssetData: AssetsList)
 		{
 			AssetsReadyRename.Add(AssetData);
 		}
@@ -1582,7 +1637,7 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 
 	if (m_UsageCheckState == TextureSettingsError)
 	{
-		for (TSharedPtr<FAssetData> AssetData : AssetsDataSelected)
+		for (TSharedPtr<FAssetData> AssetData : AssetsList)
 		{
 			if(UAssetsChecker::ESetTextureStandardSettings(*AssetData))
 			{
@@ -1611,17 +1666,17 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 
 TSharedRef<SButton> SManagerSlateTab::ConstructFixUpRedirectorButton()
 {
-	TSharedRef<SButton> FixUpRedirectorButton = 
+	this->FixUpRedirectorButton = 
 		SNew(SButton)
 		.OnClicked(this, &SManagerSlateTab::OnFixUpRedirectorButtonClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- 修复所选文件夹中的重定向器(Redirector) --")));
+	this->FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- 修复所选文件夹中的重定向器(Redirector) --")));
 #else
-	FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- Fix Up Redirectors In Selected Folders --")));
+	this->FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- Fix Up Redirectors In Selected Folders --")));
 #endif
 
-	return FixUpRedirectorButton;
+	return this->FixUpRedirectorButton.ToSharedRef();
 }
 
 FReply SManagerSlateTab::OnFixUpRedirectorButtonClicked()
@@ -1635,18 +1690,18 @@ FReply SManagerSlateTab::OnFixUpRedirectorButtonClicked()
 
 TSharedRef<SButton> SManagerSlateTab::ConstructOutputViewListInfoButton()
 {
-	TSharedRef<SButton> FixUpRedirectorButton =
+	this->OutputViewListInfoButton =
 		SNew(SButton)
 		.OnClicked(this,&SManagerSlateTab::OnOutputViewListInfoButtonClicked)
 		.ContentPadding(FMargin(5.f));
 
 #ifdef ZH_CN
-	FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- 输出列表到文件 --")));
+	this->OutputViewListInfoButton->SetContent(ConstructTextForButtons(TEXT("-- 输出列表到文件 --")));
 #else
-	FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- Output view list to log file --")));
+	this->OutputViewListInfoButton->SetContent(ConstructTextForButtons(TEXT("-- Output view list to log file --")));
 #endif
 
-	return FixUpRedirectorButton;
+	return this->OutputViewListInfoButton.ToSharedRef();
 }
 
 FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()

@@ -11,6 +11,8 @@ class TCustomSlateDelegates : public TSlateDelegates<ArgumentType>
 {
 public:
 	typedef TDelegate<TArray<TSharedPtr<SWidget>>(ArgumentType)> FOnConstructRowWidgets;
+	typedef TDelegate<void()> FOnTableCheckBoxStateChanged;
+	typedef TDelegate<void(ArgumentType)> FOnTableRowMouseButtonDoubleClicked;
 };
 
 /**
@@ -21,6 +23,8 @@ class ASSETSMANAGER_API SCustomTable : public SCommonSlate
 {	
 public:
 	using FOnConstructRowWidgets = TCustomSlateDelegates<ItemType>::FOnConstructRowWidgets;
+	using FOnTableCheckBoxStateChanged = TCustomSlateDelegates<ItemType>::FOnTableCheckBoxStateChanged;
+	using FOnTableRowMouseButtonDoubleClicked = TCustomSlateDelegates<ItemType>::FOnTableRowMouseButtonDoubleClicked;
 
 public:
 	
@@ -32,17 +36,26 @@ public:
 	SLATE_ARGUMENT(TArray<ItemType>*,SourceItems)
 
 	SLATE_EVENT(FOnConstructRowWidgets,OnConstructRowWidgets)
+	SLATE_EVENT(FOnTableCheckBoxStateChanged, OnTableCheckBoxStateChanged)
+	SLATE_EVENT(FOnTableRowMouseButtonDoubleClicked, OnTableRowMouseButtonDoubleClicked)
 	
 	SLATE_END_ARGS()
 
 public:
 	virtual void Construct(const SCustomTable<ItemType>::FArguments& InArgs);
 
+	virtual const TArray<ItemType> & GetSelectedItems();
+	virtual const TArray<ItemType> & GetListItems();
+	virtual void SelectAll();
+	virtual void UnselectAll();
+
 	virtual void RefreshTable();
 
 private:
 
 	FOnConstructRowWidgets OnConstructRowWidgets;
+	FOnTableCheckBoxStateChanged OnTableCheckBoxStateChanged;
+	FOnTableRowMouseButtonDoubleClicked  OnTableRowMouseButtonDoubleClicked;
 
 	TArray<SCommonSlate::CustomTableColumnType>* ColumnsType;
 	TArray<float>* ColumnsInitWidth;
@@ -60,8 +73,10 @@ private:
 
 	TArray<TSharedPtr<SCheckBox>> CheckBoxArray;
 	TArray<ItemType> CheckBoxSelected;
+	
 	TSharedRef<SCheckBox> ConstructRowCheckBox(
 		const ItemType ItemIn);
+	
 	void OnCheckBoxStateChanged(
 		ECheckBoxState NewState,
 		const ItemType ItemIn);
@@ -71,6 +86,8 @@ private:
 		const TSharedRef<STableViewBase>& OwnerTable);
 
 	TArray<TSharedPtr<SSplitter>> RowsAsSplitter;
+
+	void OnRowMouseButtonDoubleClicked(ItemType ItemIn);
 	
 	void OnTableColumnResized(
 		float size, 
@@ -92,6 +109,8 @@ inline void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArg
 	this->SourceItems = InArgs._SourceItems;
 
 	this->OnConstructRowWidgets = InArgs._OnConstructRowWidgets;
+	this->OnTableCheckBoxStateChanged = InArgs._OnTableCheckBoxStateChanged;
+	this->OnTableRowMouseButtonDoubleClicked = InArgs._OnTableRowMouseButtonDoubleClicked;
 
 	this->CheckBoxArray.Empty();
 	this->CheckBoxSelected.Empty();
@@ -120,11 +139,63 @@ inline void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArg
 }
 
 template<typename ItemType>
+inline const TArray<ItemType>& SCustomTable<ItemType>::GetSelectedItems()
+{
+	return CheckBoxSelected;
+}
+
+template<typename ItemType>
+inline const TArray<ItemType>& SCustomTable<ItemType>::GetListItems()
+{
+	return *this->SourceItems;
+}
+
+template<typename ItemType>
+inline void SCustomTable<ItemType>::SelectAll()
+{
+	if (CheckBoxArray.Num() == 0)
+	{
+		return;
+	}
+
+	for (const TSharedPtr<SCheckBox> CheckBox : CheckBoxArray)
+	{
+		if (!CheckBox->IsChecked())
+		{
+			CheckBox->ToggleCheckedState();
+		}
+	}
+}
+
+template<typename ItemType>
+inline void SCustomTable<ItemType>::UnselectAll()
+{
+	if (CheckBoxArray.Num() == 0)
+	{
+		return;
+	}
+
+	for (const TSharedPtr<SCheckBox> CheckBox : CheckBoxArray)
+	{
+		if (CheckBox->IsChecked())
+		{
+			CheckBox->ToggleCheckedState();
+		}
+	}
+}
+
+template<typename ItemType>
 inline void SCustomTable<ItemType>::RefreshTable()
 {
+	CheckBoxArray.Empty();
+	CheckBoxSelected.Empty();
+
 	ConstructTableHeaderRow();
 
-	TableListView->RebuildList();
+	if (TableListView.IsValid()) 
+	{
+		TableListView->RebuildList();
+	}
 }
 
 template<typename ItemType>
@@ -216,8 +287,8 @@ inline TSharedRef<SListView<ItemType>> SCustomTable<ItemType>::ConstructTableLis
 		.ItemHeight(36.f)
 		.ScrollBarStyle(&scrollbarStyle)
 		.ListItemsSource(SourceItems)
-		.OnGenerateRow(this, &SCustomTable<ItemType>::OnTableGenerateRowForlist);
-		//.OnMouseButtonDoubleClick(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked);
+		.OnGenerateRow(this, &SCustomTable<ItemType>::OnTableGenerateRowForlist)
+		.OnMouseButtonDoubleClick(this, &SCustomTable<ItemType>::OnRowMouseButtonDoubleClicked);
 
 		MainTable->AddSlot().VAlign(VAlign_Fill)
 			[
@@ -260,10 +331,16 @@ inline void SCustomTable<ItemType>::OnCheckBoxStateChanged(
 		{
 			CheckBoxSelected.Remove(ItemIn);
 		}
+
+		this->OnTableCheckBoxStateChanged.Execute();
+
 		break;
 
 	case ECheckBoxState::Checked:
 		CheckBoxSelected.AddUnique(ItemIn);
+		
+		this->OnTableCheckBoxStateChanged.Execute();
+		
 		break;
 
 	case ECheckBoxState::Undetermined:
@@ -322,6 +399,12 @@ inline TSharedRef<ITableRow> SCustomTable<ItemType>::OnTableGenerateRowForlist(
 }
 
 template<typename ItemType>
+inline void SCustomTable<ItemType>::OnRowMouseButtonDoubleClicked(ItemType ItemIn)
+{
+	OnTableRowMouseButtonDoubleClicked.Execute(ItemIn);
+}
+
+template<typename ItemType>
 inline void SCustomTable<ItemType>::OnTableColumnResized(
 	float size, 
 	uint32 index)
@@ -335,6 +418,18 @@ inline void SCustomTable<ItemType>::OnTableColumnResized(
 template<typename ItemType>
 inline FReply SCustomTable<ItemType>::OnTitleColumnClicked(uint32 ColumnIndex)
 {
+	if (ColumnIndex == 0)
+	{
+		if(CheckBoxArray.Num() != CheckBoxSelected.Num())
+		{
+			this->SelectAll();
+			return FReply::Handled();
+		}
+
+		this->UnselectAll();
+		return FReply::Handled();
+	}
+
 	NtfyMsg(FString::FromInt(ColumnIndex));
 
 	return FReply::Handled();
