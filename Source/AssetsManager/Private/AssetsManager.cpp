@@ -130,6 +130,8 @@ void FAssetsManagerModule::RegisterCustomEditorTab()
 
 TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs)
 {
+	TArray<TSharedPtr<FAssetData>> assets = UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(SelectedContentFolderPaths);
+
 	return
 	SNew(SDockTab).TabRole(ETabRole::NomadTab)
 		[
@@ -137,7 +139,7 @@ TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnManagerSlateTab(const FSpawnTa
 				//.TitleText(CONTENTFOLDERMANAGERTABNAME)
 				.TitleText("Assets Manager")
 				.SelectedFolderPaths(SelectedContentFolderPaths)
-				.StoredAssetsData(UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(SelectedContentFolderPaths))
+				.StoredAssetsData(&assets)
 		];
 }
 

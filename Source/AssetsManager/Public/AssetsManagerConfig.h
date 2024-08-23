@@ -1,5 +1,18 @@
 #pragma once
 
+#include "Materials/Material.h"
+#include "Materials/MaterialinstanceConstant.h"
+#include "Particles/ParticleSystem.h"
+#include "Sound/SoundCue.h"
+#include "Sound/SoundWave.h"
+#include "Engine/Texture.h"
+#include "Engine/Texture2DArray.h"
+#include "Blueprint/Userwidget.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "NiagaraSystem.h"
+#include "NiagaraEmitter.h"
+#include "PhysicsEngine/PhysicsAsset.h"
+
 #define ModuleLanguage_ZH 1
 
 #if ModuleLanguage_ZH
