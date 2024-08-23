@@ -4,16 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SlateWidgets/SCommonSlate.h"
-
-
-template< typename ArgumentType >
-class TCustomSlateDelegates : public TSlateDelegates<ArgumentType>
-{
-public:
-	typedef TDelegate<TArray<TSharedPtr<SWidget>>(ArgumentType)> FOnConstructRowWidgets;
-	typedef TDelegate<void()> FOnTableCheckBoxStateChanged;
-	typedef TDelegate<void(ArgumentType)> FOnTableRowMouseButtonDoubleClicked;
-};
+#include "SlateWidgets/TCustomSlateDelegates.h"
 
 /**
  * 

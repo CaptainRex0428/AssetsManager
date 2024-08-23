@@ -6,6 +6,7 @@
 
 #include "SlateWidgets/SCommonSlate.h"
 #include "SlateWidgets/SCustomTable.h"
+#include "SlateWidgets/SCustomEditableText.h"
 
 class ASSETSMANAGER_API SManagerSlateTab: public SCommonSlate
 {
@@ -90,14 +91,15 @@ private:
 	TSharedPtr<STextBlock> SelectedCountBlock;
 
 	// Construct Standard Name Box
-	TSharedRef<SEditableTextBox> ConstructEditAssetNameRowBox(
+	TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> ConstructEditAssetNameRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
-	void OnEditableAssetNameRowBoxCommitted(
-		const FText& NewText, 
+	FText OnAssetDataToText(const TSharedPtr<FAssetData> AssetDataToDisplay);
+	bool OnItemDataCommitted(
+		const FText& TextIn,
 		ETextCommit::Type CommitType,
-		const TSharedPtr<FAssetData>& AssetDataToDisplay) const;
+		TSharedPtr<FAssetData> AssetDataToDisplay);
 
 	TSharedRef<STextBlock> ConstructAssetNameRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,

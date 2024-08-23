@@ -328,9 +328,9 @@ TArray<TSharedPtr<SWidget>> SManagerSlateTab::OnConstructTableRow(
 	ClassWidget->SetJustification(ETextJustify::Center);
 	ClassWidget->SetMargin(FMargin(3.f));
 
-	TSharedPtr<SEditableTextBox> NameWidget = ConstructEditAssetNameRowBox(AssetToDisplay,GetFontInfo(9));
+	TSharedPtr<SCustomEditableText<TSharedPtr<FAssetData>>> NameWidget = ConstructEditAssetNameRowBox(AssetToDisplay,GetFontInfo(9));
 	//NameWidget->SetAutoWrapText(true);
-	NameWidget->SetJustification(ETextJustify::Left);
+	//NameWidget->SetJustification(ETextJustify::Left);
 	//NameWidget->SetMargin(FMargin(3.f));
 
 	TSharedPtr<STextBlock> TextureSizeWidget = ConstructAssetTextureSizeRowBox(AssetToDisplay,GetFontInfo(9));
@@ -618,34 +618,43 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructListAssetsCountInfo(
 	return ListAssetsCountInfo;
 }
 
-TSharedRef<SEditableTextBox> SManagerSlateTab::ConstructEditAssetNameRowBox(
+TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> SManagerSlateTab::ConstructEditAssetNameRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
-	const FString DisplayAssetName = AssetDataToDisplay->AssetName.ToString();
+	
 	const FString DisplayAssetPath = AssetDataToDisplay->GetSoftObjectPath().ToString();
 	
-	TSharedPtr<SEditableTextBox> AssetNameBox = SNew(SEditableTextBox)
-		.Text(FText::FromString(DisplayAssetName))
-		.Font(FontInfo)
-		.Justification(ETextJustify::Left)
-		.ClearKeyboardFocusOnCommit(true)
-		.Padding(FMargin(1.f))
-		.ToolTipText(FText::FromString(DisplayAssetPath))
-		.OnTextCommitted(this,&SManagerSlateTab::OnEditableAssetNameRowBoxCommitted,AssetDataToDisplay);
+	TSharedPtr<SCustomEditableText<TSharedPtr<FAssetData>>> AssetNameBox =
+		SNew(SCustomEditableText<TSharedPtr<FAssetData>>)
+		.SourceItem(MakeShared<FAssetData>(*AssetDataToDisplay))
+		.Font(GetFontInfo(9))
+		.Justify(EHorizontalAlignment::HAlign_Left)
+		.TextColor(FColor::White)
+		.TextTips(FText::FromString(DisplayAssetPath))
+		.OnItemToFText(this,&SManagerSlateTab::OnAssetDataToText)
+		.OnItemCommit(this,&SManagerSlateTab::OnItemDataCommitted);
 
 	return AssetNameBox.ToSharedRef();
 }
 
-void SManagerSlateTab::OnEditableAssetNameRowBoxCommitted(
-	const FText& NewText, 
-	ETextCommit::Type CommitType,
-	TSharedPtr<FAssetData>& AssetDataToDisplay)
+FText SManagerSlateTab::OnAssetDataToText(
+	const TSharedPtr<FAssetData> AssetDataToDisplay)
 {
-	if(CommitType==ETextCommit::OnEnter)
-	{
-		NtfyMsg("CheckCheck");
-	}
+	const FString DisplayAssetName = AssetDataToDisplay->AssetName.ToString();
+	return FText::FromString(DisplayAssetName);
+}
+
+bool SManagerSlateTab::OnItemDataCommitted(
+	const FText& TextIn,
+	ETextCommit::Type CommitType,
+	TSharedPtr<FAssetData> AssetDataToDisplay)
+{
+	if (CommitType != ETextCommit::OnEnter) return false;
+
+	const FString NewName = TextIn.ToString();
+
+	return UAssetsChecker::ERenameAsset(AssetDataToDisplay, NewName);
 }
 
 TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetNameRowBox(
