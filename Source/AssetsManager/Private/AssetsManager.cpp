@@ -33,7 +33,7 @@ void FAssetsManagerModule::ShutdownModule()
 
 #pragma region ContentBrowserMenuExtend
 
-// Third bind. The actual function to excute.
+// Third bind. The actual function to execute.
 void FAssetsManagerModule::OnDeleteUnusedAssetButtonClicked()
 {
 	UAssetsChecker::ERemoveUnusedAssets(SelectedContentFolderPaths);
@@ -58,13 +58,6 @@ void FAssetsManagerModule::OnMaterialCreatButtonClicked()
 void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 {
 	// Third bind. 
-	/*MenuBuilder.AddMenuEntry
-	(
-		FText::FromString(TEXT("Delete Unused Assets")),
-		FText::FromString(TEXT("Safely delete assets never used or referenced.")),
-		FSlateIcon(),
-		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnDeleteUnusedAssetButtonClicked)
-	);*/
 
 	MenuBuilder.AddMenuEntry
 	(
@@ -81,15 +74,6 @@ void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 		FSlateIcon(FAssetsMangerStyle::GetStyleName(),"ContentBrowser.AssetsManager"),
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerButtonClicked)
 	);
-
-	MenuBuilder.AddMenuEntry
-	(
-		FText::FromString(TEXT(CONTENTFOLDERMATERIALCREATORTABNAME)),
-		FText::FromString(TEXT("A tab window to test material tab inside the seleted folder.")),
-		FSlateIcon(FAssetsMangerStyle::GetStyleName(), "ContentBrowser.MaterialCreator"),
-		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnMaterialCreatButtonClicked)
-	);
-
 }
 
 // First bind. Define the position for inserting menu entry.
@@ -138,22 +122,16 @@ void FAssetsManagerModule::InitCBMenuExtension()
 void FAssetsManagerModule::RegisterCustomEditorTab()
 {
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
-		// tag
 		FName(CONTENTFOLDERMANAGERTABNAME),
 		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnManagerSlateTab))
 		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDERMANAGERTABNAME)))
 		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleName(),"ContentBrowser.AssetsManager"));
-
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
-		// tag
-		FName(CONTENTFOLDERMATERIALCREATORTABNAME),
-		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnMaterialCreatorSlateTab))
-		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDERMATERIALCREATORTABNAME)))
-		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleName(), "ContentBrowser.MaterialCreator"));
 }
 
 TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs)
 {
+	TArray<TSharedPtr<FAssetData>> assets = UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(SelectedContentFolderPaths);
+
 	return
 	SNew(SDockTab).TabRole(ETabRole::NomadTab)
 		[
@@ -161,7 +139,7 @@ TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnManagerSlateTab(const FSpawnTa
 				//.TitleText(CONTENTFOLDERMANAGERTABNAME)
 				.TitleText("Assets Manager")
 				.SelectedFolderPaths(SelectedContentFolderPaths)
-				.StoredAssetsData(UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(SelectedContentFolderPaths))
+				.StoredAssetsData(&assets)
 		];
 }
 

@@ -608,9 +608,14 @@ bool UAssetsChecker::ESetTextureSRGBSettings(
 
 void UAssetsChecker::EListUnusedAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode) 
+	{
+		OutList.Empty();
+	}
+	
 
 	for (const TSharedPtr<FAssetData> & DataSPTR: FindInList)
 	{
@@ -625,9 +630,13 @@ void UAssetsChecker::EListUnusedAssetsForAssetList(
 
 void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode)
+	{
+		OutList.Empty();
+	}
 
 	for(TSharedPtr<FAssetData> AssetD : FindInList)
 	{
@@ -647,9 +656,13 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 
 void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode)
+	{
+		OutList.Empty();
+	}
 
 	TMultiMap<FString, TSharedPtr<FAssetData>> AssetsMultiInfoMap;
 
@@ -678,9 +691,13 @@ void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
 
 void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode)
+	{
+		OutList.Empty();
+	}
 
 	for (TSharedPtr<FAssetData> AssetD : FindInList)
 	{
@@ -698,9 +715,13 @@ void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
 
 void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode)
+	{
+		OutList.Empty();
+	}
 
 	for (TSharedPtr<FAssetData> AssetD : FindInList)
 	{
@@ -718,9 +739,13 @@ void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 
 void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode)
+	{
+		OutList.Empty();
+	}
 
 	for (const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
@@ -749,9 +774,13 @@ void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
 
 void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
-	TArray<TSharedPtr<FAssetData>>& OutList)
+	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool isAdditiveMode)
 {
-	OutList.Empty();
+	if (!isAdditiveMode)
+	{
+		OutList.Empty();
+	}
 
 	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
@@ -1028,12 +1057,15 @@ TArray<TSharedPtr<FAssetData>>
 UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(
 	const TArray<FString>& FolderPathSelected)
 {
+	TArray<TSharedPtr<FAssetData>> AssetsDataArray;
+
+	AssetsDataArray.Empty();
+
+
 	if (FolderPathSelected.Num() <= 0)
 	{
-		return TArray<TSharedPtr<FAssetData>>();
+		return AssetsDataArray;
 	}
-
-	TArray<TSharedPtr<FAssetData>> AssetsDataArray;
 
 	for (const FString FolderPath : FolderPathSelected) 
 	{
@@ -1086,6 +1118,33 @@ int UAssetsChecker::EReplaceName(
 	}
 
 	return Counter;
+}
+
+bool UAssetsChecker::ERenameAsset(
+	TSharedPtr<FAssetData> & AssetData, 
+	FString NewName)
+{
+	if (!AssetData.IsValid() || !AssetData->IsValid())
+	{
+		return false;
+	}
+
+	FString OldName = AssetData->AssetName.ToString();
+
+	if (OldName == NewName)
+	{
+		return false;
+	}
+
+	UEditorUtilityLibrary::RenameAsset(AssetData->GetAsset(), NewName);
+
+	FString OldPath = AssetData->PackagePath.ToString();
+	FString NewNameObject = NewName + "." + NewName;
+	FString NewPath = FPaths::Combine(OldPath,NewNameObject);
+
+	*AssetData.Get() = UEditorAssetLibrary::FindAssetData(NewPath);
+
+	return true;
 }
 
 TSharedPtr<FString> UAssetsChecker::EGetAssetNameSubfix(const FAssetData& AssetSelected)
@@ -1177,12 +1236,12 @@ void UAssetsChecker::EFixUpRedirectors(
 }
 
 void UAssetsChecker::ECopyAssetsPtrList(
-	const TArray<TSharedPtr<FAssetData>>& ListToCopy, 
+	TArray<TSharedPtr<FAssetData>>& ListToCopy, 
 	TArray<TSharedPtr<FAssetData>>& ListToOutput)
 {
 	ListToOutput.Empty();
 
-	for(TSharedPtr<FAssetData> AssetD : ListToCopy)
+	for(TSharedPtr<FAssetData>& AssetD : ListToCopy)
 	{
 		ListToOutput.Add(AssetD);
 	}

@@ -5,19 +5,6 @@
 #include "CoreMinimal.h"
 #include "AssetActionUtility.h"
 
-#include "Materials/Material.h"
-#include "Materials/MaterialinstanceConstant.h"
-#include "Particles/ParticleSystem.h"
-#include "Sound/SoundCue.h"
-#include "Sound/SoundWave.h"
-#include "Engine/Texture.h"
-#include "Engine/Texture2DArray.h"
-#include "Blueprint/Userwidget.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "NiagaraSystem.h"
-#include "NiagaraEmitter.h"
-#include "PhysicsEngine/PhysicsAsset.h"
-
 #include "AssetsManagerConfig.h"
 
 #include "AssetsChecker.generated.h"
@@ -39,7 +26,9 @@ public:
 	static bool bIsPowerOfTwo(const double num);
 	static bool bIsPowerOfTwo(const float num);
 
-	static void ECopyAssetsPtrList(const TArray<TSharedPtr<FAssetData>>& ListToCopy, TArray<TSharedPtr<FAssetData>>& ListToOutput);
+	static void ECopyAssetsPtrList(
+		TArray<TSharedPtr<FAssetData>>& ListToCopy, 
+		TArray<TSharedPtr<FAssetData>>& ListToOutput);
 
 #pragma endregion
 
@@ -124,6 +113,8 @@ public:
 #pragma region HandleAssetsName
 	int EReplaceName(const TArray<UObject*>& AssetsSelected, const FString& OriginStr, const FString& ReplaceStr);
 	
+	static bool ERenameAsset(TSharedPtr<FAssetData> & AssetData, FString NewName);
+
 	TSharedPtr<FString> EGetAssetNameSubfix(const FAssetData & AssetSelected);
 
 #pragma endregion
@@ -137,31 +128,38 @@ public:
 
 	static void EListUnusedAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 	static void EListPrefixErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 	static void EListSameNameErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 	static void EListMaxInGameSizeErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 	static void EListSourceSizeErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 	static void EListTextureSubfixErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 	static void EListTextureSettingsErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList,
-		TArray<TSharedPtr<FAssetData>>& OutList);
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
 
 #pragma endregion
 

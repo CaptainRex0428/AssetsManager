@@ -16,12 +16,30 @@ FSlateFontInfo SCommonSlate::GetFontInfo(
 TSharedRef<STextBlock> SCommonSlate::ConstructNormalTextBlock(
 	const FString& StringToDisplay, 
 	const FSlateFontInfo& FontInfo, 
+	const ETextJustify::Type Alignment,
 	const FColor& FontColor, 
 	const FString& ToolTip)
 {
 	TSharedRef<STextBlock> TextBlock
 		= SNew(STextBlock).Text(FText::FromString(StringToDisplay))
-		.Justification(ETextJustify::Left)
+		.Justification(Alignment)
+		.ColorAndOpacity(FontColor)
+		.Font(FontInfo)
+		.ToolTipText(FText::FromString(ToolTip));
+
+	return TextBlock;
+}
+
+TSharedRef<STextBlock> SCommonSlate::ConstructTitleTextBlock(
+	const FString& StringToDisplay, 
+	const FSlateFontInfo& FontInfo, 
+	const ETextJustify::Type Alignment,
+	const FColor& FontColor, 
+	const FString& ToolTip)
+{
+	TSharedRef<STextBlock> TextBlock
+		= SNew(STextBlock).Text(FText::FromString(StringToDisplay))
+		.Justification(Alignment)
 		.ColorAndOpacity(FontColor)
 		.Font(FontInfo)
 		.ToolTipText(FText::FromString(ToolTip));
@@ -60,4 +78,31 @@ TSharedRef<STextBlock> SCommonSlate::ConstructTextForButtons(
 		.Justification(ETextJustify::Center);
 
 	return ContentBlock;
+}
+
+TSharedRef<SOverlay> SCommonSlate::ConstructOverlayOpaque(
+	TSharedPtr<SWidget> DisplayWidget, 
+	int DisplayLayer)
+{
+	TSharedPtr<SOverlay> Overlay = SNew(SOverlay);
+
+	for (int32 LayerIndex = 0; LayerIndex < DisplayLayer -2; ++ LayerIndex)
+	{
+		Overlay->AddSlot()
+			[
+				SNew(SHorizontalBox)
+			];
+	}
+
+	Overlay->AddSlot()
+		[
+			SNew(SHeaderRow)
+		];
+
+	Overlay->AddSlot()
+		[
+			DisplayWidget.ToSharedRef()
+		];
+
+	return Overlay.ToSharedRef();
 }
