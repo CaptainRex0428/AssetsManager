@@ -124,6 +124,8 @@ public:
 #pragma region HandleAssetsName
 	int EReplaceName(const TArray<UObject*>& AssetsSelected, const FString& OriginStr, const FString& ReplaceStr);
 	
+	static bool ERenameAsset(const TSharedPtr<FAssetData>& AssetData, const FString& NewName);
+
 	TSharedPtr<FString> EGetAssetNameSubfix(const FAssetData & AssetSelected);
 
 #pragma endregion

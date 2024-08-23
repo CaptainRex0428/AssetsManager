@@ -1117,6 +1117,30 @@ int UAssetsChecker::EReplaceName(
 	return Counter;
 }
 
+bool UAssetsChecker::ERenameAsset(
+	const TSharedPtr<FAssetData>& AssetData, 
+	const FString& NewName)
+{
+	if (!AssetData.IsValid())
+	{
+		return false;
+	}
+
+	StandardAsset SAsset(*AssetData);
+
+	const FString OldName = SAsset.AssetName.ToString();
+
+	if (OldName == NewName)
+	{
+		return false;
+	}
+
+	UEditorUtilityLibrary::RenameAsset(AssetData->GetAsset(), NewName);
+	UEditorAssetLibrary::SaveAsset(AssetData->GetObjectPathString(), false);
+	
+	return true;
+}
+
 TSharedPtr<FString> UAssetsChecker::EGetAssetNameSubfix(const FAssetData& AssetSelected)
 {
 	StandardAsset AssetS(AssetSelected);
