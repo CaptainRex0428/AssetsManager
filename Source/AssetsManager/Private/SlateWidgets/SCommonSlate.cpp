@@ -1,8 +1,6 @@
 
 #include "SlateWidgets/SCommonSlate.h"
 
-#include "ManagerLogger.h"
-
 FSlateFontInfo SCommonSlate::GetFontInfo(
 	float FontSize, 
 	const FString& FontName)
@@ -18,12 +16,13 @@ FSlateFontInfo SCommonSlate::GetFontInfo(
 TSharedRef<STextBlock> SCommonSlate::ConstructNormalTextBlock(
 	const FString& StringToDisplay, 
 	const FSlateFontInfo& FontInfo, 
+	const ETextJustify::Type Alignment,
 	const FColor& FontColor, 
 	const FString& ToolTip)
 {
 	TSharedRef<STextBlock> TextBlock
 		= SNew(STextBlock).Text(FText::FromString(StringToDisplay))
-		.Justification(ETextJustify::Left)
+		.Justification(Alignment)
 		.ColorAndOpacity(FontColor)
 		.Font(FontInfo)
 		.ToolTipText(FText::FromString(ToolTip));
@@ -62,56 +61,29 @@ TSharedRef<STextBlock> SCommonSlate::ConstructTextForButtons(
 	return ContentBlock;
 }
 
-TSharedRef<SSplitter> SCommonSlate::ConstructCommonSpliterRow(
-	int SubComponentCount,
-	TArray<TSharedRef<SWidget>>Blocks,
-	TArray<float> BlocksSize,
-	float MinSize,
-	EOrientation Orient)
+TSharedRef<SOverlay> SCommonSlate::ConstructOverlayOpaque(
+	TSharedPtr<SWidget> DisplayWidget, 
+	int DisplayLayer)
 {
-	TSharedRef<SSplitter> Spliter =
-		SNew(SSplitter)
-		.Orientation(Orient)
-		.OnSplitterFinishedResizing(this, &SCommonSlate::OnCheck);
+	TSharedPtr<SOverlay> Overlay = SNew(SOverlay);
 
-	for (int i = 0; i<SubComponentCount; i++)
+	for (int32 LayerIndex = 0; LayerIndex < DisplayLayer -2; ++ LayerIndex)
 	{
-		float size = 0.2f;
-
-		if (i < BlocksSize.Num())
-		{
-			size = BlocksSize[i];
-		}
-
-		if (i < Blocks.Num()) 
-		{
-			Spliter
-			->AddSlot(i)
-			.MinSize(MinSize)
-			.Value(size)
-			[Blocks[i]];
-			continue;
-		}
-
-		Spliter
-		->AddSlot(i)
-		.MinSize(MinSize)
-		.Value(size)
-		[
-			SNew(SHorizontalBox)
-			+SHorizontalBox::Slot()
+		Overlay->AddSlot()
 			[
-				SNew(STextBlock)
-				.Text(FText::FromString(TEXT("Unknown")))
-				.Font(GetFontInfo(9))
-			]
-		];
+				SNew(SHorizontalBox)
+			];
 	}
 
-	return Spliter;
-}
+	Overlay->AddSlot()
+		[
+			SNew(SHeaderRow)
+		];
 
-void SCommonSlate::OnCheck()
-{
-	NtfyMsg("Handle");
+	Overlay->AddSlot()
+		[
+			DisplayWidget.ToSharedRef()
+		];
+
+	return Overlay.ToSharedRef();
 }

@@ -5,6 +5,8 @@
 #define CONTENTFOLDERMANAGERTABNAME "AssetsManager"
 
 #include "SlateWidgets/SCommonSlate.h"
+#include "SlateWidgets/SCustomTable.h"
+#include "SlateWidgets/SCustomEditableText.h"
 
 class ASSETSMANAGER_API SManagerSlateTab: public SCommonSlate
 {
@@ -25,8 +27,8 @@ private:
 	TArray<TSharedPtr<FAssetData>> SListViewClassFilterAssetData;
 	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
 
-	TArray<TSharedRef<SCheckBox>>  CheckBoxesArray;
-	TArray<TSharedPtr<FAssetData>> AssetsDataSelected;
+	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
+	TArray<float> SManagerCustomTableTitleRowColumnsInitWidth;
 
 	enum ClassCheckState
 	{
@@ -52,88 +54,26 @@ private:
 
 	void SListViewRemoveAssetData(TSharedPtr<FAssetData> AssetData);
 
-
-#pragma region SComboListFilter
-
-	TSharedRef<SHorizontalBox> ConstructDropDownMenuBox();
-
-	//------> ClassFilter
-	TArray<TSharedPtr<FString>> ClassFilterComboSourceItems;
-	TSharedPtr<STextBlock> ClassFilterComboDisplayText;
-	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructClassFilterButton();
-	TSharedRef<SWidget> OnGenerateClassFilterButton(TSharedPtr<FString> SourceItem);
-	void ConstuctClassFilterList(TSharedPtr<FString> SelectedOption);
-	void OnClassFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
-
-	TSharedPtr<FString> ClassFilterCurrent;
-	TSharedPtr<FString> ClassFilterDefault;
-
-	TSharedPtr<SComboBox<TSharedPtr<FString>>> ClassFilterComboBox;
-
-	//------> UsageFilter
-	TArray<TSharedPtr<FString>> UsageFilterComboSourceItems;
-	TSharedPtr<STextBlock> UsageFilterComboDisplayText;
-	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructUsageFilterButton();
-	TSharedRef<SWidget> OnGenerateUsageFilterButton(TSharedPtr<FString> SourceItem);
-	void OnUsageFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
-
-	TSharedPtr<SComboBox<TSharedPtr<FString>>> UsageFilterComboBox;
-
-	//------> UsageFilter DefaultStore
-	TSharedPtr<FString> UsageSelectedDefault;
-
-	// only for texture
-	TSharedPtr<FString> UsageSelectionMaxInGameSizeError;
-	TSharedPtr<FString> UsageSelectionSourceSizeError;
-	TSharedPtr<FString> UsageSelectionSubfixError;
-	TSharedPtr<FString> UsageSelectionTextureSettinsError;
-#pragma endregion
-
 #pragma region OnGenerateRowForlist
-	// construct / refresh list view
-	TSharedRef<SListView<TSharedPtr<FAssetData>>> ConstructAssetsListView();
-	TSharedPtr<SListView<TSharedPtr<FAssetData>>> ConstructedAssetsListView;
+	
+	TSharedPtr<SCustomTable<TSharedPtr<FAssetData>>> CustomTableList;
 
-	void RefreshAssetsListView();
+	void ConstructHeaderRow();
 
-	TSharedRef<SHorizontalBox> ConstructTitleRow();
+	TArray<TSharedPtr<SWidget>> OnConstructTableRow(
+		TSharedPtr<FAssetData> AssetToDisplay);
 
-	void OnResizeFinished();
+	TSharedRef<SHorizontalBox> ConstructSingleDealPanel(
+		TSharedPtr<FAssetData> ClickedAssetData);
 
-	// For Assets List
-	TSharedRef<ITableRow> OnGenerateRowForlist(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
+	void OnTableCheckBoxStateChanged();
 
-	// For List item button clicked
 	void OnRowMouseButtonDoubleClicked(
 		TSharedPtr<FAssetData> AssetDataToDisplay);
 
-	// CheckState = Default
-	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateDefaultRowForList(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	// CheckState = Texture
-	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateTextureRowForList_MaxInGameSizeError(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateTextureRowForList_SourceSizeError(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateTextureRowForList_SettingsError(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
+	void RefreshAssetsListView();
 
 #pragma region ConstructAssetInfo
-
-	// Construct CheckBox
-	TSharedRef<SCheckBox> ConstructCheckBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	void OnCheckBoxStateChanged(ECheckBoxState NewState, TSharedPtr<FAssetData> AssetData);
-
-#pragma region ConstructCounterInfo
 	
 	// Construct Assets List info 
 	TSharedRef<SVerticalBox> ConstructInfoBox(
@@ -150,13 +90,20 @@ private:
 	TSharedPtr<STextBlock> ClassListViewCountBlock;
 	TSharedPtr<STextBlock> SelectedCountBlock;
 
-#pragma endregion
-
-#pragma region ConstructAssetInfo
 	// Construct Standard Name Box
+	TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> ConstructEditAssetNameRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
+	FText OnAssetDataToText(const TSharedPtr<FAssetData> AssetDataToDisplay);
+	bool OnItemDataCommitted(
+		const FText& TextIn,
+		ETextCommit::Type CommitType,
+		TSharedPtr<FAssetData> AssetDataToDisplay);
+
 	TSharedRef<STextBlock> ConstructAssetNameRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
-		const FSlateFontInfo & FontInfo);
+		const FSlateFontInfo& FontInfo);
 
 	// Construct Standard Class Box
 	TSharedRef<STextBlock> ConstructAssetClassRowBox(
@@ -177,7 +124,6 @@ private:
 		const FSlateFontInfo& FontInfo);
 
 #pragma endregion
-
 
 #pragma region ConstructSingleButton
 	// Construct Delete Button
@@ -218,36 +164,83 @@ private:
 
 #pragma region GenerateHandleAllButton
 
-	TSharedRef<SVerticalBox> ConstructHandleAllButtons();
+	TSharedPtr<SVerticalBox> HandleAllBox;
+	TSharedRef<SVerticalBox> ConstructHandleAllBox();
+
+	TSharedPtr<SHorizontalBox> DynamicHandleAllBox;
+	TSharedRef<SHorizontalBox> ConstructDynamicHandleAllBox();
 
 #pragma endregion
 
 #pragma region DeleteAllSelectedButton
+	TSharedPtr<SButton> DeleteAllSelectedButton;
 	TSharedRef<SButton> ConstructDeleteAllSelectedButton();
 	FReply OnDeleteAllSelectedButtonClicked();
 #pragma endregion
 
 #pragma region De/SelectAllButton
+	TSharedPtr<SButton> SelectAllButton;
 	TSharedRef<SButton> ConstructSelectAllButton();
 	FReply OnSelectAllButtonClicked();
 
+	TSharedPtr<SButton> UnselectAllButton;
 	TSharedRef<SButton> ConstructDeselectAllButton();
 	FReply OnDeselectAllButtonClicked();
 #pragma endregion
 	
 #pragma region FixAllSelectedButton
+	TSharedPtr<SButton> FixSelectedButton;
 	TSharedRef<SButton> ConstructFixSelectedButton();
 	FReply OnSelectFixSelectedClicked();
 #pragma endregion
 
 #pragma region FixRedirectorsButton
+	TSharedPtr<SButton> FixUpRedirectorButton;
 	TSharedRef<SButton> ConstructFixUpRedirectorButton();
 	FReply OnFixUpRedirectorButtonClicked();
 #pragma endregion
 
 #pragma region OutputViewListInfo
+	TSharedPtr<SButton> OutputViewListInfoButton;
 	TSharedRef<SButton> ConstructOutputViewListInfoButton();
 	FReply OnOutputViewListInfoButtonClicked();
+#pragma endregion
+
+#pragma region SComboListFilter
+
+	TSharedRef<SHorizontalBox> ConstructDropDownMenuBox();
+
+	//------> ClassFilter
+	TArray<TSharedPtr<FString>> ClassFilterComboSourceItems;
+	TSharedPtr<STextBlock> ClassFilterComboDisplayText;
+	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructClassFilterButton();
+	TSharedRef<SWidget> OnGenerateClassFilterButton(TSharedPtr<FString> SourceItem);
+	void ConstuctClassFilterList(TSharedPtr<FString> SelectedOption);
+	void OnClassFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
+	
+	TSharedPtr<FString> ClassFilterCurrent;
+	TSharedPtr<FString> ClassFilterDefault;
+
+	TSharedPtr<SComboBox<TSharedPtr<FString>>> ClassFilterComboBox;
+
+	//------> UsageFilter
+	TArray<TSharedPtr<FString>> UsageFilterComboSourceItems;
+	TSharedPtr<STextBlock> UsageFilterComboDisplayText;
+	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructUsageFilterButton();
+	TSharedRef<SWidget> OnGenerateUsageFilterButton(TSharedPtr<FString> SourceItem);
+	void OnUsageFilterButtonChanged(TSharedPtr<FString> SelectedOption, ESelectInfo::Type InSelectInfo);
+	
+	TSharedPtr<SComboBox<TSharedPtr<FString>>> UsageFilterComboBox;
+	
+	//------> UsageFilter DefaultStore
+	TSharedPtr<FString> UsageSelectedDefault;
+	
+	// only for texture
+	TSharedPtr<FString> UsageSelectionMaxInGameSizeError;
+	TSharedPtr<FString> UsageSelectionSourceSizeError;
+	TSharedPtr<FString> UsageSelectionSubfixError;
+	TSharedPtr<FString> UsageSelectionTextureSettinsError;
+	
 #pragma endregion
 
 };

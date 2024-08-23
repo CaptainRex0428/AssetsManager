@@ -20,7 +20,8 @@ public class AssetsManager : ModuleRules
                 System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "/Source/Editor/Blutility/Private",
                 System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "/Source/Editor/UnrealEd/Private",
                 System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "/Source/Runtime/AssetRegistry/Private",
-                System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "/Source/Developer/AssetTools/Private"
+                System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "/Source/Developer/AssetTools/Private",
+                System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "/Source/Runtime/Slate/Private",
             }
 			);
 			
