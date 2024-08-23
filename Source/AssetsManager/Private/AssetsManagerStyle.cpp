@@ -53,5 +53,9 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
 		"ContentBrowser.DeleteUnusedFolders",
 		new FSlateImageBrush(IconDirectory / "LOGO_RED_256.png", Icon64x64));
 
+	CustomStyleSet->Set(
+		"ContentBrowser.MaterialCreator",
+		new FSlateImageBrush(IconDirectory / "LOGO_GREY_256.png", Icon64x64));
+
 	return CustomStyleSet;
 }

@@ -4,18 +4,22 @@
 
 #define CONTENTFOLDERMANAGERTABNAME "AssetsManager"
 
-#include "Widgets/SCompoundWidget.h"
+#include "SlateWidgets/SCommonSlate.h"
+#include "SlateWidgets/SCustomTable.h"
+#include "SlateWidgets/SCustomEditableText.h"
 
-class SAssetsCheckerTab: public SCompoundWidget
+class ASSETSMANAGER_API SManagerSlateTab: public SCommonSlate
 {
-	SLATE_BEGIN_ARGS(SAssetsCheckerTab){}
+	SLATE_BEGIN_ARGS(SManagerSlateTab){}
 	SLATE_ARGUMENT(FString,TitleText)
 	SLATE_ARGUMENT(TArray<TSharedPtr<FAssetData>>, StoredAssetsData)
 	SLATE_ARGUMENT(TArray<FString>, SelectedFolderPaths)
 	SLATE_END_ARGS()
 
 public:
-	void Construct(const FArguments& InArgs);
+	virtual void Construct(const FArguments& InArgs);
+
+protected:
 
 private:
 	TArray<FString> StoredFolderPaths;
@@ -23,8 +27,8 @@ private:
 	TArray<TSharedPtr<FAssetData>> SListViewClassFilterAssetData;
 	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
 
-	TArray<TSharedRef<SCheckBox>>  CheckBoxesArray;
-	TArray<TSharedPtr<FAssetData>> AssetsDataSelected;
+	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
+	TArray<float> SManagerCustomTableTitleRowColumnsInitWidth;
 
 	enum ClassCheckState
 	{
@@ -50,65 +54,24 @@ private:
 
 	void SListViewRemoveAssetData(TSharedPtr<FAssetData> AssetData);
 
-#pragma region FontSet
-	FSlateFontInfo GetFontInfo(float FontSize, 
-		const FString& FontName = "EmbossedText");
-#pragma endregion
-
-#pragma region CustructTextBlock
-	// ConstrucStandard Name String
-	TSharedRef<STextBlock> ConstructNormalTextBlock(
-		const FString& StringToDisplay,
-		const FSlateFontInfo& FontInfo,
-		const FColor& FontColor = FColor::White,
-		const FString& ToolTip = L"");
-#pragma endregion
-
-#pragma region ButtonTextCustruct
-	TSharedRef<STextBlock> ConstructTextForButtons(
-		const FString& TextContent);
-#pragma endregion
-
 #pragma region OnGenerateRowForlist
-	// construct / refresh list view
-	TSharedRef<SListView<TSharedPtr<FAssetData>>> ConstructAssetsListView();
-	TSharedPtr<SListView<TSharedPtr<FAssetData>>> ConstructedAssetsListView;
-	void RefreshAssetsListView();
+	
+	TSharedPtr<SCustomTable<TSharedPtr<FAssetData>>> CustomTableList;
 
-	// For Assets List
-	TSharedRef<ITableRow> OnGenerateRowForlist(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
+	void ConstructHeaderRow();
 
-	// For List item button clicked
+	TArray<TSharedPtr<SWidget>> OnConstructTableRow(
+		TSharedPtr<FAssetData> AssetToDisplay);
+
+	TSharedRef<SHorizontalBox> ConstructSingleDealPanel(
+		TSharedPtr<FAssetData> ClickedAssetData);
+
+	void OnTableCheckBoxStateChanged();
+
 	void OnRowMouseButtonDoubleClicked(
 		TSharedPtr<FAssetData> AssetDataToDisplay);
 
-	// CheckState = Default
-	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateDefaultRowForList(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	// CheckState = Texture
-	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateTextureRowForList_MaxInGameSizeError(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateTextureRowForList_SourceSizeError(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	TSharedRef<STableRow<TSharedPtr<FAssetData>>> GenerateTextureRowForList_SettingsError(
-		TSharedPtr<FAssetData> AssetDataToDisplay,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-#pragma region ConstructAssetInfo
-
-	// Construct CheckBox
-	TSharedRef<SCheckBox> ConstructCheckBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	void OnCheckBoxStateChanged(ECheckBoxState NewState, TSharedPtr<FAssetData> AssetData);
-
-#pragma endregion
+	void RefreshAssetsListView();
 
 #pragma region ConstructAssetInfo
 	
@@ -128,9 +91,19 @@ private:
 	TSharedPtr<STextBlock> SelectedCountBlock;
 
 	// Construct Standard Name Box
+	TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> ConstructEditAssetNameRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
+	FText OnAssetDataToText(const TSharedPtr<FAssetData> AssetDataToDisplay);
+	bool OnItemDataCommitted(
+		const FText& TextIn,
+		ETextCommit::Type CommitType,
+		TSharedPtr<FAssetData> AssetDataToDisplay);
+
 	TSharedRef<STextBlock> ConstructAssetNameRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
-		const FSlateFontInfo & FontInfo);
+		const FSlateFontInfo& FontInfo);
 
 	// Construct Standard Class Box
 	TSharedRef<STextBlock> ConstructAssetClassRowBox(
@@ -191,39 +164,51 @@ private:
 
 #pragma region GenerateHandleAllButton
 
-	TSharedRef<SVerticalBox> ConstructHandleAllButtons();
+	TSharedPtr<SVerticalBox> HandleAllBox;
+	TSharedRef<SVerticalBox> ConstructHandleAllBox();
+
+	TSharedPtr<SHorizontalBox> DynamicHandleAllBox;
+	TSharedRef<SHorizontalBox> ConstructDynamicHandleAllBox();
 
 #pragma endregion
 
 #pragma region DeleteAllSelectedButton
+	TSharedPtr<SButton> DeleteAllSelectedButton;
 	TSharedRef<SButton> ConstructDeleteAllSelectedButton();
 	FReply OnDeleteAllSelectedButtonClicked();
 #pragma endregion
 
 #pragma region De/SelectAllButton
+	TSharedPtr<SButton> SelectAllButton;
 	TSharedRef<SButton> ConstructSelectAllButton();
 	FReply OnSelectAllButtonClicked();
 
+	TSharedPtr<SButton> UnselectAllButton;
 	TSharedRef<SButton> ConstructDeselectAllButton();
 	FReply OnDeselectAllButtonClicked();
 #pragma endregion
 	
 #pragma region FixAllSelectedButton
+	TSharedPtr<SButton> FixSelectedButton;
 	TSharedRef<SButton> ConstructFixSelectedButton();
 	FReply OnSelectFixSelectedClicked();
 #pragma endregion
 
 #pragma region FixRedirectorsButton
+	TSharedPtr<SButton> FixUpRedirectorButton;
 	TSharedRef<SButton> ConstructFixUpRedirectorButton();
 	FReply OnFixUpRedirectorButtonClicked();
 #pragma endregion
 
 #pragma region OutputViewListInfo
+	TSharedPtr<SButton> OutputViewListInfoButton;
 	TSharedRef<SButton> ConstructOutputViewListInfoButton();
 	FReply OnOutputViewListInfoButtonClicked();
 #pragma endregion
 
 #pragma region SComboListFilter
+
+	TSharedRef<SHorizontalBox> ConstructDropDownMenuBox();
 
 	//------> ClassFilter
 	TArray<TSharedPtr<FString>> ClassFilterComboSourceItems;
