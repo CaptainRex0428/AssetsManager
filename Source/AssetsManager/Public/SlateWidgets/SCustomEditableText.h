@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -154,7 +154,7 @@ inline void SCustomEditableText<ItemType>::OnEditableTextBlockCommitted(
 			this->TextTips = this->OnItemToTipText.Execute(this->SourceItem);
 
 #ifdef ZH_CN
-			NtfyMsgLog(TEXT("³É¹¦ÃüÃû×Ê²úÎª") + this->TextToDisplay.ToString());
+			NtfyMsgLog(TEXT("æˆåŠŸå‘½åèµ„äº§ä¸º") + this->TextToDisplay.ToString());
 #else
 			NtfyMsgLog(TEXT("Successfully renamed the asset to ") + this->TextToDisplay);
 #endif
