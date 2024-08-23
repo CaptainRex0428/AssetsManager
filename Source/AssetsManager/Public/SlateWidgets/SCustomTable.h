@@ -300,14 +300,18 @@ inline TSharedRef<SListView<ItemType>> SCustomTable<ItemType>::ConstructTableLis
 		.OnGenerateRow(this, &SCustomTable<ItemType>::OnTableGenerateRowForlist)
 		.OnMouseButtonDoubleClick(this, &SCustomTable<ItemType>::OnRowMouseButtonDoubleClicked);
 
-		MainTable->AddSlot().VAlign(VAlign_Fill)
-			[
-				SNew(SScrollBox)
-				+SScrollBox::Slot()
-				[
-					TableListView.ToSharedRef()
-				]
-			];
+	TSharedPtr<SScrollBox> ScrollBoxSlate =
+		SNew(SScrollBox)
+		+ SScrollBox::Slot()
+		[
+			TableListView.ToSharedRef()
+		];
+
+	MainTable->AddSlot().VAlign(VAlign_Fill)
+		[
+			ConstructOverlayOpaque(ScrollBoxSlate,3)
+
+		];
 
 	return TableListView.ToSharedRef();
 }
