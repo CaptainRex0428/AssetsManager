@@ -154,7 +154,7 @@ inline void SCustomEditableText<ItemType>::OnEditableTextBlockCommitted(
 			this->TextTips = this->OnItemToTipText.Execute(this->SourceItem);
 
 #ifdef ZH_CN
-			NtfyMsgLog(TEXT("成功命名资产为") + this->TextToDisplay);
+			NtfyMsgLog(TEXT("成功命名资产为") + this->TextToDisplay.ToString());
 #else
 			NtfyMsgLog(TEXT("Successfully renamed the asset to ") + this->TextToDisplay);
 #endif
