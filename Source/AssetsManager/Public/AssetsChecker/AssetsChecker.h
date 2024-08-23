@@ -39,7 +39,9 @@ public:
 	static bool bIsPowerOfTwo(const double num);
 	static bool bIsPowerOfTwo(const float num);
 
-	static void ECopyAssetsPtrList(const TArray<TSharedPtr<FAssetData>>& ListToCopy, TArray<TSharedPtr<FAssetData>>& ListToOutput);
+	static void ECopyAssetsPtrList(
+		TArray<TSharedPtr<FAssetData>>& ListToCopy, 
+		TArray<TSharedPtr<FAssetData>>& ListToOutput);
 
 #pragma endregion
 
@@ -124,7 +126,7 @@ public:
 #pragma region HandleAssetsName
 	int EReplaceName(const TArray<UObject*>& AssetsSelected, const FString& OriginStr, const FString& ReplaceStr);
 	
-	static bool ERenameAsset(const TSharedPtr<FAssetData>& AssetData, const FString& NewName);
+	static bool ERenameAsset(TSharedPtr<FAssetData> & AssetData, FString NewName);
 
 	TSharedPtr<FString> EGetAssetNameSubfix(const FAssetData & AssetSelected);
 
