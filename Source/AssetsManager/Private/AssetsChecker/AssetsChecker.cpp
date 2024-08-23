@@ -1057,12 +1057,15 @@ TArray<TSharedPtr<FAssetData>>
 UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(
 	const TArray<FString>& FolderPathSelected)
 {
+	TArray<TSharedPtr<FAssetData>> AssetsDataArray;
+
+	AssetsDataArray.Empty();
+
+
 	if (FolderPathSelected.Num() <= 0)
 	{
-		return TArray<TSharedPtr<FAssetData>>();
+		return AssetsDataArray;
 	}
-
-	TArray<TSharedPtr<FAssetData>> AssetsDataArray;
 
 	for (const FString FolderPath : FolderPathSelected) 
 	{
@@ -1118,17 +1121,15 @@ int UAssetsChecker::EReplaceName(
 }
 
 bool UAssetsChecker::ERenameAsset(
-	const TSharedPtr<FAssetData>& AssetData, 
-	const FString& NewName)
+	TSharedPtr<FAssetData> & AssetData, 
+	FString NewName)
 {
-	if (!AssetData.IsValid())
+	if (!AssetData.IsValid() || !AssetData->IsValid())
 	{
 		return false;
 	}
 
-	StandardAsset SAsset(*AssetData);
-
-	const FString OldName = SAsset.AssetName.ToString();
+	FString OldName = AssetData->AssetName.ToString();
 
 	if (OldName == NewName)
 	{
@@ -1136,8 +1137,13 @@ bool UAssetsChecker::ERenameAsset(
 	}
 
 	UEditorUtilityLibrary::RenameAsset(AssetData->GetAsset(), NewName);
-	UEditorAssetLibrary::SaveAsset(AssetData->GetObjectPathString(), false);
-	
+
+	FString OldPath = AssetData->PackagePath.ToString();
+	FString NewNameObject = NewName + "." + NewName;
+	FString NewPath = FPaths::Combine(OldPath,NewNameObject);
+
+	*AssetData.Get() = UEditorAssetLibrary::FindAssetData(NewPath);
+
 	return true;
 }
 
@@ -1230,12 +1236,12 @@ void UAssetsChecker::EFixUpRedirectors(
 }
 
 void UAssetsChecker::ECopyAssetsPtrList(
-	const TArray<TSharedPtr<FAssetData>>& ListToCopy, 
+	TArray<TSharedPtr<FAssetData>>& ListToCopy, 
 	TArray<TSharedPtr<FAssetData>>& ListToOutput)
 {
 	ListToOutput.Empty();
 
-	for(TSharedPtr<FAssetData> AssetD : ListToCopy)
+	for(TSharedPtr<FAssetData>& AssetD : ListToCopy)
 	{
 		ListToOutput.Add(AssetD);
 	}

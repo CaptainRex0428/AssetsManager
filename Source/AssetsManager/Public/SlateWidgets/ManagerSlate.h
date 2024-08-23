@@ -12,7 +12,7 @@ class ASSETSMANAGER_API SManagerSlateTab: public SCommonSlate
 {
 	SLATE_BEGIN_ARGS(SManagerSlateTab){}
 	SLATE_ARGUMENT(FString,TitleText)
-	SLATE_ARGUMENT(TArray<TSharedPtr<FAssetData>>, StoredAssetsData)
+	SLATE_ARGUMENT(TArray<TSharedPtr<FAssetData>>*, StoredAssetsData)
 	SLATE_ARGUMENT(TArray<FString>, SelectedFolderPaths)
 	SLATE_END_ARGS()
 
@@ -61,15 +61,15 @@ private:
 	void ConstructHeaderRow();
 
 	TArray<TSharedPtr<SWidget>> OnConstructTableRow(
-		TSharedPtr<FAssetData> AssetToDisplay);
+		TSharedPtr<FAssetData>& AssetToDisplay);
 
 	TSharedRef<SHorizontalBox> ConstructSingleDealPanel(
-		TSharedPtr<FAssetData> ClickedAssetData);
+		const TSharedPtr<FAssetData> & ClickedAssetData);
 
 	void OnTableCheckBoxStateChanged();
 
 	void OnRowMouseButtonDoubleClicked(
-		TSharedPtr<FAssetData> AssetDataToDisplay);
+		TSharedPtr<FAssetData> & AssetDataToDisplay);
 
 	void RefreshAssetsListView();
 
@@ -92,14 +92,17 @@ private:
 
 	// Construct Standard Name Box
 	TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> ConstructEditAssetNameRowBox(
-		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
-	FText OnAssetDataToText(const TSharedPtr<FAssetData> AssetDataToDisplay);
+	FText OnAssetDataToText(TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FText OnAssetDataToTipText(TSharedPtr<FAssetData>& AssetDataToDisplay);
+
 	bool OnItemDataCommitted(
 		const FText& TextIn,
 		ETextCommit::Type CommitType,
-		TSharedPtr<FAssetData> AssetDataToDisplay);
+		TSharedPtr<FAssetData>& AssetDataToDisplay);
+
 
 	TSharedRef<STextBlock> ConstructAssetNameRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,

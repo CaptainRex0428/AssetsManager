@@ -95,7 +95,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	FSlateFontInfo TitleTextFont = GetFontInfo(25);
 
 	StoredFolderPaths = InArgs._SelectedFolderPaths;
-	StoredAssetsData = InArgs._StoredAssetsData;
+	StoredAssetsData = *InArgs._StoredAssetsData;
 	
 	UAssetsChecker::ECopyAssetsPtrList(StoredAssetsData, SListViewAssetData);
 	UAssetsChecker::ECopyAssetsPtrList(SListViewAssetData, SListViewClassFilterAssetData);
@@ -261,7 +261,7 @@ void SManagerSlateTab::SListViewRemoveAssetData(
 #pragma region OnGenerateRowForlist
 
 void SManagerSlateTab::OnRowMouseButtonDoubleClicked(
-	TSharedPtr<FAssetData> AssetDataToDisplay)
+	TSharedPtr<FAssetData> & AssetDataToDisplay)
 {
 	TArray<FAssetData> AssetDataArray;
 	AssetDataArray.Add(*AssetDataToDisplay);
@@ -318,7 +318,7 @@ void SManagerSlateTab::ConstructHeaderRow()
 }
 
 TArray<TSharedPtr<SWidget>> SManagerSlateTab::OnConstructTableRow(
-	TSharedPtr<FAssetData> AssetToDisplay)
+	TSharedPtr<FAssetData>& AssetToDisplay)
 {
 	TArray<TSharedPtr<SWidget>> WidgetArray;
 	WidgetArray.Empty();
@@ -369,7 +369,7 @@ TArray<TSharedPtr<SWidget>> SManagerSlateTab::OnConstructTableRow(
 }
 
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(
-	TSharedPtr<FAssetData> ClickedAssetData)
+	const TSharedPtr<FAssetData> & ClickedAssetData)
 {
 	TSharedPtr<SHorizontalBox> DealPanel = SNew(SHorizontalBox);
 
@@ -619,42 +619,48 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructListAssetsCountInfo(
 }
 
 TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> SManagerSlateTab::ConstructEditAssetNameRowBox(
-	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
-	
-	const FString DisplayAssetPath = AssetDataToDisplay->GetSoftObjectPath().ToString();
-	
 	TSharedPtr<SCustomEditableText<TSharedPtr<FAssetData>>> AssetNameBox =
 		SNew(SCustomEditableText<TSharedPtr<FAssetData>>)
-		.SourceItem(MakeShared<FAssetData>(*AssetDataToDisplay))
+		.SourceItem(&AssetDataToDisplay)
 		.Font(GetFontInfo(9))
 		.Justify(EHorizontalAlignment::HAlign_Left)
 		.TextColor(FColor::White)
-		.TextTips(FText::FromString(DisplayAssetPath))
-		.OnItemToFText(this,&SManagerSlateTab::OnAssetDataToText)
+		.OnItemToDisplayText(this,&SManagerSlateTab::OnAssetDataToText)
+		.OnItemToTipText(this,&SManagerSlateTab::OnAssetDataToTipText)
 		.OnItemCommit(this,&SManagerSlateTab::OnItemDataCommitted);
 
 	return AssetNameBox.ToSharedRef();
 }
 
 FText SManagerSlateTab::OnAssetDataToText(
-	const TSharedPtr<FAssetData> AssetDataToDisplay)
+	TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
-	const FString DisplayAssetName = AssetDataToDisplay->AssetName.ToString();
+	FString DisplayAssetName = AssetDataToDisplay->AssetName.ToString();
 	return FText::FromString(DisplayAssetName);
+}
+
+FText SManagerSlateTab::OnAssetDataToTipText(
+	TSharedPtr<FAssetData>& AssetDataToDisplay)
+{
+	FString DisplayAssetPath = AssetDataToDisplay->GetSoftObjectPath().ToString();
+	return FText::FromString(DisplayAssetPath);
 }
 
 bool SManagerSlateTab::OnItemDataCommitted(
 	const FText& TextIn,
 	ETextCommit::Type CommitType,
-	TSharedPtr<FAssetData> AssetDataToDisplay)
+	TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
 	if (CommitType != ETextCommit::OnEnter) return false;
 
 	const FString NewName = TextIn.ToString();
+	
+	UAssetsChecker::ERenameAsset(AssetDataToDisplay, NewName);
 
-	return UAssetsChecker::ERenameAsset(AssetDataToDisplay, NewName);
+	return true;
 }
 
 TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetNameRowBox(
