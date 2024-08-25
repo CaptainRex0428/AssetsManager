@@ -658,9 +658,9 @@ bool SManagerSlateTab::OnItemDataCommitted(
 
 	const FString NewName = TextIn.ToString();
 	
-	UAssetsChecker::ERenameAsset(AssetDataToDisplay, NewName);
+	bool result = UAssetsChecker::ERenameAsset(AssetDataToDisplay, NewName);
 
-	return true;
+	return result;
 }
 
 TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetNameRowBox(
