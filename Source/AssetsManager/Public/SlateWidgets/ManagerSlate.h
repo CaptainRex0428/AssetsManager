@@ -19,8 +19,6 @@ class ASSETSMANAGER_API SManagerSlateTab: public SCommonSlate
 public:
 	virtual void Construct(const FArguments& InArgs);
 
-protected:
-
 private:
 	TArray<FString> StoredFolderPaths;
 	TArray<TSharedPtr<FAssetData>> StoredAssetsData;
@@ -28,6 +26,7 @@ private:
 	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
 
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
+	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsCanGenerateType;
 	TArray<float> SManagerCustomTableTitleRowColumnsInitWidth;
 
 	enum ClassCheckState
@@ -57,10 +56,15 @@ private:
 #pragma region OnGenerateRowForlist
 	
 	TSharedPtr<SCustomTable<TSharedPtr<FAssetData>>> CustomTableList;
+	TSharedPtr<SListView<TSharedPtr<FAssetData>>> CustomTableListView;
 
 	void ConstructHeaderRow();
 
 	TArray<TSharedPtr<SWidget>> OnConstructTableRow(
+		TSharedPtr<FAssetData>& AssetToDisplay);
+
+	TSharedRef<SWidget> OnTableGenerateListColumn(
+		const FName& ColumnName,
 		TSharedPtr<FAssetData>& AssetToDisplay);
 
 	TSharedRef<SHorizontalBox> ConstructSingleDealPanel(
