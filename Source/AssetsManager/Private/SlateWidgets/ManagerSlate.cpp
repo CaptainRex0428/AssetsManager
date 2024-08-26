@@ -1557,8 +1557,28 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 
 	Output += L"Files:\n";
 	
-	for (TSharedPtr<FAssetData> asset: SListViewAssetData)
+	TArray<TSharedPtr<FAssetData>> OutputData;
+	OutputData.Empty();
+
+	if (this->CustomTableList->GetSelectedItems().Num() > 0)
 	{
+		OutputData = this->CustomTableList->GetSelectedItems();
+	}
+	else
+	{
+		OutputData = SListViewAssetData;
+	}
+
+	float TargetNum = OutputData.Num();
+
+	FSlowTask WritingTask(TargetNum, FText::FromString("Writing Data ..."));
+	WritingTask.Initialize();
+	WritingTask.MakeDialog();
+
+	for (TSharedPtr<FAssetData> asset: OutputData)
+	{
+		WritingTask.EnterProgressFrame(.9f);
+
 		FString AssetName = asset->AssetName.ToString();
 		FString AssetPath = asset->GetObjectPathString();
 		FString AssetClass = asset->GetClass()->GetName();
@@ -1586,6 +1606,8 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 		}
 	}
 
+	
+
 	// Output
 
 	// DlgMsg(EAppMsgType::Ok, Output);
@@ -1612,6 +1634,9 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 		&IFileManager::Get(),
 		EFileWrite::FILEWRITE_Append))
 	{
+		WritingTask.EnterProgressFrame(.1f * TargetNum);
+		WritingTask.Destroy();
+
 #ifdef ZH_CN
 		NtfyMsgLog(TEXT("成功输出文件到") + FilePath);
 #else
@@ -1619,6 +1644,9 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 #endif
 		return FReply::Handled();
 	};
+
+	WritingTask.EnterProgressFrame(.1f * TargetNum);
+	WritingTask.Destroy();
 
 #ifdef ZH_CN
 	NtfyMsgLog(TEXT("输出文件到") + FilePath + TEXT("失败"));
