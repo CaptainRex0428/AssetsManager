@@ -21,6 +21,13 @@ public:
 
 protected:
 
+	TSharedRef<ITableRow> OnTableGenerateRowForlist(
+		TSharedPtr<FAssetData> ItemIn,
+		const TSharedRef<STableViewBase>& OwnerTable);
+
+	void OnRowMouseButtonDoubleClickedListView(
+		TSharedPtr<FAssetData> ItemIn);
+
 private:
 	TArray<FString> StoredFolderPaths;
 	TArray<TSharedPtr<FAssetData>> StoredAssetsData;
@@ -57,6 +64,7 @@ private:
 #pragma region OnGenerateRowForlist
 	
 	TSharedPtr<SCustomTable<TSharedPtr<FAssetData>>> CustomTableList;
+	TSharedPtr<SListView<TSharedPtr<FAssetData>>> CustomTableListView;
 
 	void ConstructHeaderRow();
 
