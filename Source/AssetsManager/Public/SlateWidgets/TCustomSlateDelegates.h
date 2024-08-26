@@ -10,9 +10,12 @@ class TCustomSlateDelegates : public TSlateDelegates<ArgumentType>
 {
 public:
 	// for custom table
-	typedef TDelegate<TArray<TSharedPtr<SWidget>>(ArgumentType&)> FOnConstructRowWidgets;
 	typedef TDelegate<void()> FOnTableCheckBoxStateChanged;
 	typedef TDelegate<void(ArgumentType&)> FOnTableRowMouseButtonDoubleClicked;
+
+	// for custom table row
+
+	typedef TDelegate<TSharedRef<SWidget>(const FName&,ArgumentType&)> FOnGenerateTableRowColumn;
 
 	// for custom text
 	typedef TDelegate<FText(ArgumentType&)> FOnItemToFText;
