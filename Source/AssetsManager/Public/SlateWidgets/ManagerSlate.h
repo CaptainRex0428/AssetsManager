@@ -19,15 +19,6 @@ class ASSETSMANAGER_API SManagerSlateTab: public SCommonSlate
 public:
 	virtual void Construct(const FArguments& InArgs);
 
-protected:
-
-	TSharedRef<ITableRow> OnTableGenerateRowForlist(
-		TSharedPtr<FAssetData> ItemIn,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	void OnRowMouseButtonDoubleClickedListView(
-		TSharedPtr<FAssetData> ItemIn);
-
 private:
 	TArray<FString> StoredFolderPaths;
 	TArray<TSharedPtr<FAssetData>> StoredAssetsData;
@@ -35,6 +26,7 @@ private:
 	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
 
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
+	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsCanGenerateType;
 	TArray<float> SManagerCustomTableTitleRowColumnsInitWidth;
 
 	enum ClassCheckState

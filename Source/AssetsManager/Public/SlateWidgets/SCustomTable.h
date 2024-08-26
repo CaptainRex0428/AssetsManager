@@ -6,6 +6,7 @@
 #include "SlateWidgets/SCommonSlate.h"
 #include "SlateWidgets/TCustomSlateDelegates.h"
 #include "SlateWidgets/SCustomTableRow.h"
+#include "SlateWidgets/SCustomListView.h"
 
 /**
  * 
@@ -25,6 +26,7 @@ public:
 	SLATE_BEGIN_ARGS(SCustomTable) {}
 	
 	SLATE_ARGUMENT(TArray<SCommonSlate::CustomTableColumnType>*,ColumnsType)
+	SLATE_ARGUMENT(TArray<SCommonSlate::CustomTableColumnType>*,CanGenerateColumnsType)
 	SLATE_ARGUMENT(TArray<ItemType>*,SourceItems)
 
 	SLATE_EVENT(FOnTableCheckBoxStateChanged, OnTableCheckBoxStateChanged)
@@ -53,12 +55,13 @@ private:
 
 	TArray<ItemType>* SourceItems;
 	TArray<SCommonSlate::CustomTableColumnType>* ColumnsType;
+	TArray<SCommonSlate::CustomTableColumnType>* CanGenerateColumnsType;
 	TArray<float>* ColumnsInitWidth;
 
 private:
 
-	TSharedRef<SListView<ItemType>> ConstructTableListView();
-	TSharedRef<SHeaderRow> ConstructTableHeaderRow();
+	TSharedRef<SCustomListView<ItemType>> ConstructTableListView();
+	TSharedRef<SHeaderRow> ConstructTableHeaderRow(bool bIsGenerateHeader = false);
 
 	TSharedRef<ITableRow> OnTableGenerateRowForlist(
 		ItemType ItemIn,
@@ -82,7 +85,7 @@ private:
 
 private:
 
-	TSharedPtr<SListView<ItemType>> MainTable;
+	TSharedPtr<SCustomListView<ItemType>> MainTable;
 	TSharedPtr<SHeaderRow> TableHeaderRow;
 
 	TArray<TSharedPtr<SCheckBox>> CheckBoxArray;
@@ -97,6 +100,7 @@ inline void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArg
 	bCanSupportFocus = true;
 
 	this->ColumnsType = InArgs._ColumnsType;
+	this->CanGenerateColumnsType = InArgs._CanGenerateColumnsType;
 	this->SourceItems = InArgs._SourceItems;
 
 	this->OnTableCheckBoxStateChanged = InArgs._OnTableCheckBoxStateChanged;
@@ -127,12 +131,12 @@ inline void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArg
 }
 
 template<typename ItemType>
-inline TSharedRef<SListView<ItemType>> SCustomTable<ItemType>::ConstructTableListView()
+inline TSharedRef<SCustomListView<ItemType>> SCustomTable<ItemType>::ConstructTableListView()
 {
-	ConstructTableHeaderRow();
+	ConstructTableHeaderRow(true);
 
 	this->MainTable =
-		SNew(SListView<ItemType>)
+		SNew(SCustomListView<ItemType>)
 		.HeaderRow(this->TableHeaderRow)
 		.ItemHeight(36.f)
 		.ListItemsSource(SourceItems)
@@ -143,25 +147,35 @@ inline TSharedRef<SListView<ItemType>> SCustomTable<ItemType>::ConstructTableLis
 }
 
 template<typename ItemType>
-inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow()
+inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(bool bIsGenerateHeader)
 {
-	this->TableHeaderRow = SNew(SHeaderRow);
+	if (bIsGenerateHeader) 
+	{
+		this->TableHeaderRow = SNew(SHeaderRow);
+	}
+	else
+	{
+		this->TableHeaderRow->ClearColumns();
+	}
+	
 
 	SHeaderRow::FColumn::FArguments CheckBoxArgs;
 	CheckBoxArgs.DefaultLabel(FText::FromString(""));
 	CheckBoxArgs.ColumnId("CheckBox");
-	CheckBoxArgs.FixedWidth(25.f);
+	CheckBoxArgs.FixedWidth(36.f);
+	CheckBoxArgs.ShouldGenerateWidget(true);
 
 	TableHeaderRow->AddColumn(CheckBoxArgs);
 
-	for(SCommonSlate::CustomTableColumnType ColumnIn: * ColumnsType)
+	for(SCommonSlate::CustomTableColumnType ColumnIn: * this->ColumnsType)
 	{
 		SHeaderRow::FColumn::FArguments ColumnBoxArgs;
 
 		const FString * ColumnNamePtr = CustomTableColumnTypeToString.Find(ColumnIn);
 
 		ColumnBoxArgs.DefaultLabel(FText::FromString("[Undefined Column]"));
-		ColumnBoxArgs.ColumnId("[Undefined Column]");
+		ColumnBoxArgs.ColumnId("[Undefined]");
+		CheckBoxArgs.ShouldGenerateWidget(true);
 
 		if (ColumnNamePtr)
 		{
@@ -327,9 +341,9 @@ template<typename ItemType>
 inline void SCustomTable<ItemType>::RefreshTable()
 {
 	CheckBoxArray.Empty();
-	CheckBoxSelected.Empty();;
+	CheckBoxSelected.Empty();
 
-	ConstructTableHeaderRow();
+	ConstructTableHeaderRow(false);
 
 	if (this->MainTable.IsValid())
 	{

@@ -101,6 +101,15 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	UAssetsChecker::ECopyAssetsPtrList(StoredAssetsData, SListViewAssetData);
 	UAssetsChecker::ECopyAssetsPtrList(SListViewAssetData, SListViewClassFilterAssetData);
 
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Empty();
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_UClass);
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_AssetName);
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_TextureMaxInGameSize);
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_TextureSourceSize);
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_TextureCompressionSettings);
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_TextureSRGB);
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_PerAssetHandle);
+
 	ClassFilterDefault = MakeShared<FString>(CLASS_LISTALL);
 	ClassFilterCurrent = ClassFilterDefault;
 	
@@ -193,6 +202,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	this->CustomTableList = SNew(SCustomTable<TSharedPtr<FAssetData>>)
 		.SourceItems(&SListViewAssetData)
 		.ColumnsType(&SManagerCustomTableTitleRowColumnsType)
+		.CanGenerateColumnsType(&SManagerCustomTableTitleRowColumnsCanGenerateType)
 		.OnTableCheckBoxStateChanged(this, &SManagerSlateTab::OnTableCheckBoxStateChanged)
 		.OnTableRowMouseButtonDoubleClicked(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked)
 		.OnGenerateTableRowColumn(this,&SManagerSlateTab::OnTableGenerateListColumn);

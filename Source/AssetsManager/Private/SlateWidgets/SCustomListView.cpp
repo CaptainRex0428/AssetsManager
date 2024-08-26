@@ -2,11 +2,3 @@
 
 
 #include "SlateWidgets/SCustomListView.h"
-
-SCustomListView::SCustomListView()
-{
-}
-
-SCustomListView::~SCustomListView()
-{
-}
