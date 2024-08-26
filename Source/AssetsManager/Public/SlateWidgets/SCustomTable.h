@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "SlateWidgets/SCommonSlate.h"
 #include "SlateWidgets/TCustomSlateDelegates.h"
+#include "SlateWidgets/SCustomTableRow.h"
+#include "SlateWidgets/SCustomListView.h"
 
 /**
  * 
@@ -13,9 +15,10 @@ template <typename ItemType>
 class ASSETSMANAGER_API SCustomTable : public SCommonSlate
 {	
 public:
-	using FOnConstructRowWidgets = TCustomSlateDelegates<ItemType>::FOnConstructRowWidgets;
 	using FOnTableCheckBoxStateChanged = TCustomSlateDelegates<ItemType>::FOnTableCheckBoxStateChanged;
 	using FOnTableRowMouseButtonDoubleClicked = TCustomSlateDelegates<ItemType>::FOnTableRowMouseButtonDoubleClicked;
+
+	using FOnGenerateTableRowColumn = TCustomSlateDelegates<ItemType>::FOnGenerateTableRowColumn;
 
 public:
 	
@@ -23,13 +26,14 @@ public:
 	SLATE_BEGIN_ARGS(SCustomTable) {}
 	
 	SLATE_ARGUMENT(TArray<SCommonSlate::CustomTableColumnType>*,ColumnsType)
-	SLATE_ARGUMENT(TArray<float>*, ColumnsInitWidth)
+	SLATE_ARGUMENT(TArray<SCommonSlate::CustomTableColumnType>*,CanGenerateColumnsType)
 	SLATE_ARGUMENT(TArray<ItemType>*,SourceItems)
 
-	SLATE_EVENT(FOnConstructRowWidgets,OnConstructRowWidgets)
 	SLATE_EVENT(FOnTableCheckBoxStateChanged, OnTableCheckBoxStateChanged)
 	SLATE_EVENT(FOnTableRowMouseButtonDoubleClicked, OnTableRowMouseButtonDoubleClicked)
 	
+	SLATE_EVENT(FOnGenerateTableRowColumn, OnGenerateTableRowColumn)
+
 	SLATE_END_ARGS()
 
 public:
@@ -44,28 +48,32 @@ public:
 
 private:
 
-	FOnConstructRowWidgets OnConstructRowWidgets;
 	FOnTableCheckBoxStateChanged OnTableCheckBoxStateChanged;
 	FOnTableRowMouseButtonDoubleClicked  OnTableRowMouseButtonDoubleClicked;
 
-	TArray<SCommonSlate::CustomTableColumnType>* ColumnsType;
-	TArray<float>* ColumnsInitWidth;
+	FOnGenerateTableRowColumn OnGenerateTableRowColumn;
+
 	TArray<ItemType>* SourceItems;
-	uint32 ColumnsCount;
+	TArray<SCommonSlate::CustomTableColumnType>* ColumnsType;
+	TArray<SCommonSlate::CustomTableColumnType>* CanGenerateColumnsType;
+	TArray<float>* ColumnsInitWidth;
 
 private:
 
-	TSharedPtr<SVerticalBox> MainTable;
-	TSharedPtr<SSplitter> TableHeader;
-	TSharedPtr<SHorizontalBox> TableHeaderRow;
-	TSharedRef<SHorizontalBox> ConstructTableHeaderRow();
+	TSharedRef<SCustomListView<ItemType>> ConstructTableListView();
+	TSharedRef<SHeaderRow> ConstructTableHeaderRow(bool bIsGenerateHeader = false);
 
-	TSharedPtr<SListView<ItemType>> TableListView;
-	TSharedRef<SListView<ItemType>> ConstructTableListView();
+	TSharedRef<ITableRow> OnTableGenerateRowForlist(
+		ItemType ItemIn,
+		const TSharedRef<STableViewBase>& OwnerTable);
 
-	TArray<TSharedPtr<SCheckBox>> CheckBoxArray;
-	TArray<ItemType> CheckBoxSelected;
-	
+	void OnRowMouseButtonDoubleClicked(
+		ItemType ItemIn);
+
+	TSharedRef<SWidget> OnTableGenerateListColumn(
+		const FName& ColumnName,
+		ItemType& ItemShow);
+
 	TSharedRef<SCheckBox> ConstructRowCheckBox(
 		const ItemType ItemIn);
 	
@@ -73,22 +81,17 @@ private:
 		ECheckBoxState NewState,
 		const ItemType ItemIn);
 
-	TSharedRef<ITableRow> OnTableGenerateRowForlist(
-		ItemType ItemIn,
-		const TSharedRef<STableViewBase>& OwnerTable);
+	FReply OnTestButtonClicked();
 
-	TArray<TSharedPtr<SSplitter>> RowsAsSplitter;
+private:
 
-	void OnRowMouseButtonDoubleClicked(ItemType ItemIn);
-	
-	void OnTableColumnResized(
-		float size, 
-		uint32 index);
+	TSharedPtr<SCustomListView<ItemType>> MainTable;
+	TSharedPtr<SHeaderRow> TableHeaderRow;
 
-	FReply OnTitleColumnClicked(uint32 ColumnIndex);
+	TArray<TSharedPtr<SCheckBox>> CheckBoxArray;
+	TArray<ItemType> CheckBoxSelected;
 
 	TSharedPtr<SButton> TestButton;
-	FReply OnTestButtonClicked();
 };
 
 template<typename ItemType>
@@ -97,21 +100,18 @@ inline void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArg
 	bCanSupportFocus = true;
 
 	this->ColumnsType = InArgs._ColumnsType;
-	this->ColumnsInitWidth = InArgs._ColumnsInitWidth;
+	this->CanGenerateColumnsType = InArgs._CanGenerateColumnsType;
 	this->SourceItems = InArgs._SourceItems;
 
-	this->OnConstructRowWidgets = InArgs._OnConstructRowWidgets;
 	this->OnTableCheckBoxStateChanged = InArgs._OnTableCheckBoxStateChanged;
 	this->OnTableRowMouseButtonDoubleClicked = InArgs._OnTableRowMouseButtonDoubleClicked;
+
+	this->OnGenerateTableRowColumn = InArgs._OnGenerateTableRowColumn;
 
 	this->CheckBoxArray.Empty();
 	this->CheckBoxSelected.Empty();
 
-	MainTable = SNew(SVerticalBox);
-
-	ConstructTableHeaderRow();
-
-	ConstructTableListView();
+	this->MainTable = ConstructTableListView();
 
 #pragma region TestButton
 	/*TestButton =
@@ -129,6 +129,167 @@ inline void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArg
 		MainTable.ToSharedRef()
 	];
 }
+
+template<typename ItemType>
+inline TSharedRef<SCustomListView<ItemType>> SCustomTable<ItemType>::ConstructTableListView()
+{
+	ConstructTableHeaderRow(true);
+
+	this->MainTable =
+		SNew(SCustomListView<ItemType>)
+		.HeaderRow(this->TableHeaderRow)
+		.ItemHeight(36.f)
+		.ListItemsSource(SourceItems)
+		.OnGenerateRow(this, &SCustomTable<ItemType>::OnTableGenerateRowForlist)
+		.OnMouseButtonDoubleClick(this, &SCustomTable<ItemType>::OnRowMouseButtonDoubleClicked);
+
+	return this->MainTable.ToSharedRef();
+}
+
+template<typename ItemType>
+inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(bool bIsGenerateHeader)
+{
+	if (bIsGenerateHeader) 
+	{
+		this->TableHeaderRow = SNew(SHeaderRow);
+	}
+	else
+	{
+		this->TableHeaderRow->ClearColumns();
+	}
+	
+
+	SHeaderRow::FColumn::FArguments CheckBoxArgs;
+	CheckBoxArgs.DefaultLabel(FText::FromString(""));
+	CheckBoxArgs.ColumnId("CheckBox");
+	CheckBoxArgs.FixedWidth(36.f);
+	CheckBoxArgs.ShouldGenerateWidget(true);
+
+	TableHeaderRow->AddColumn(CheckBoxArgs);
+
+	for(SCommonSlate::CustomTableColumnType ColumnIn: * this->ColumnsType)
+	{
+		SHeaderRow::FColumn::FArguments ColumnBoxArgs;
+
+		const FString * ColumnNamePtr = CustomTableColumnTypeToString.Find(ColumnIn);
+
+		ColumnBoxArgs.DefaultLabel(FText::FromString("[Undefined Column]"));
+		ColumnBoxArgs.ColumnId("[Undefined]");
+		CheckBoxArgs.ShouldGenerateWidget(true);
+
+		if (ColumnNamePtr)
+		{
+			ColumnBoxArgs.DefaultLabel(FText::FromString(*ColumnNamePtr));
+			ColumnBoxArgs.ColumnId(FName(*ColumnNamePtr));
+		}
+
+		TableHeaderRow->AddColumn(ColumnBoxArgs);
+	}
+
+	NtfyMsg(FString::FromInt(TableHeaderRow->GetColumns().Num()));
+
+	return TableHeaderRow.ToSharedRef();
+}
+
+template<typename ItemType>
+inline TSharedRef<ITableRow> SCustomTable<ItemType>::OnTableGenerateRowForlist(
+	ItemType ItemIn,
+	const TSharedRef<STableViewBase>& OwnerTable)
+{
+	return SNew(SCustomTableRow<ItemType>, OwnerTable)
+		.Padding(6.f)
+		.ItemShow(ItemIn)
+		.OnGenerateTableRowColumn(
+			this,
+			&SCustomTable<ItemType>::OnTableGenerateListColumn);
+}
+
+template<typename ItemType>
+inline void SCustomTable<ItemType>::OnRowMouseButtonDoubleClicked(ItemType ItemIn)
+{
+	this->OnTableRowMouseButtonDoubleClicked.Execute(ItemIn);
+}
+
+template<typename ItemType>
+inline TSharedRef<SWidget> SCustomTable<ItemType>::OnTableGenerateListColumn(
+	const FName& ColumnName, 
+	ItemType& ItemShow)
+{
+	if(ColumnName.ToString() == "CheckBox")
+	{
+		return ConstructRowCheckBox(ItemShow);
+	}
+	
+	return this->OnGenerateTableRowColumn.Execute(ColumnName, ItemShow);
+}
+
+#pragma region CheckBox
+
+template<typename ItemType>
+inline TSharedRef<SCheckBox> SCustomTable<ItemType>::ConstructRowCheckBox(
+	const ItemType ItemIn)
+{
+	TSharedPtr<SCheckBox> CheckBox =
+		SNew(SCheckBox)
+		.Type(ESlateCheckBoxType::CheckBox)
+		.Padding(FMargin(3.f))
+		.HAlign(HAlign_Center)
+		.IsChecked(ECheckBoxState::Unchecked)
+		.Visibility(EVisibility::Visible)
+		.OnCheckStateChanged(this, &SCustomTable<ItemType>::OnCheckBoxStateChanged, ItemIn);
+
+	CheckBoxArray.Add(CheckBox);
+
+	return CheckBox.ToSharedRef();
+}
+
+template<typename ItemType>
+inline void SCustomTable<ItemType>::OnCheckBoxStateChanged(
+	ECheckBoxState NewState,
+	const ItemType ItemIn)
+{
+	switch (NewState)
+	{
+	case ECheckBoxState::Unchecked:
+		if (CheckBoxSelected.Contains(ItemIn))
+		{
+			CheckBoxSelected.Remove(ItemIn);
+		}
+
+		this->OnTableCheckBoxStateChanged.Execute();
+
+		break;
+
+	case ECheckBoxState::Checked:
+		CheckBoxSelected.AddUnique(ItemIn);
+
+		this->OnTableCheckBoxStateChanged.Execute();
+
+		break;
+
+	case ECheckBoxState::Undetermined:
+		break;
+
+	default:
+		break;
+	}
+}
+
+#pragma endregion
+
+template<typename ItemType>
+inline FReply SCustomTable<ItemType>::OnTestButtonClicked()
+{
+	NtfyMsg("Test");
+
+	NtfyMsg(FString::FromInt(CheckBoxArray.Num()));
+	NtfyMsg(FString::FromInt(CheckBoxSelected.Num()));
+
+	return FReply::Handled();
+}
+
+
+#pragma region ReadTable
 
 template<typename ItemType>
 inline const TArray<ItemType>& SCustomTable<ItemType>::GetSelectedItems()
@@ -181,284 +342,13 @@ inline void SCustomTable<ItemType>::RefreshTable()
 {
 	CheckBoxArray.Empty();
 	CheckBoxSelected.Empty();
-	RowsAsSplitter.Empty();
 
-	ConstructTableHeaderRow();
+	ConstructTableHeaderRow(false);
 
-	if (TableListView.IsValid()) 
+	if (this->MainTable.IsValid())
 	{
-		TableListView->RebuildList();
+		this->MainTable->RebuildList();
 	}
 }
 
-template<typename ItemType>
-inline TSharedRef<SHorizontalBox> SCustomTable<ItemType>::ConstructTableHeaderRow()
-{
-	if (MainTable->IsValidSlotIndex(0) 
-		&& MainTable->GetSlot(0).GetWidget() == TableHeaderRow.ToSharedRef())
-	{
-		MainTable->RemoveSlot(TableHeaderRow.ToSharedRef());
-	}
-	
-	if (RowsAsSplitter.Contains(TableHeader))
-	{
-		RowsAsSplitter.Remove(TableHeader);
-	}
-
-	TableHeader = SNew(SSplitter)
-		.Orientation(Orient_Horizontal)
-		.HitDetectionSplitterHandleSize(5.f);
-
-	TableHeaderRow = SNew(SHorizontalBox);
-
-	MainTable->InsertSlot(0)
-		.AutoHeight()
-		[
-			TableHeaderRow.ToSharedRef()
-		];
-
-	if(!RowsAsSplitter.Contains(TableHeader))
-	{
-		RowsAsSplitter.Insert(TableHeader,0);
-	}
-
-	this->ColumnsCount = ColumnsType->Num() + 1;
-
-	for(uint32 columnIndex = 0; columnIndex <this->ColumnsCount; columnIndex ++)
-	{
-		float widthInit = 0.2f;
-
-		TSharedPtr<SButton> ColumnButton =
-			SNew(SButton)
-			.HAlign(HAlign_Fill)
-			.VAlign(VAlign_Fill)
-			.OnClicked(this, &SCustomTable<ItemType>::OnTitleColumnClicked, columnIndex);
-
-		if(columnIndex == 0)
-		{
-			ColumnButton->SetContent(ConstructTitleTextBlock("*", GetFontInfo(9)));
-			widthInit = 0.02f;
-		}
-		else 
-		{
-			if ((columnIndex - 1) < (uint32)(ColumnsInitWidth->Num()))
-			{
-				widthInit = (*ColumnsInitWidth)[columnIndex - 1];
-			}
-
-			CustomTableColumnType type = (*ColumnsType)[columnIndex - 1];
-
-			TSharedPtr<FString> ColumnName = GetCustomTableColumnTypeToString(type);
-
-			if (!ColumnName.IsValid())
-			{
-				ColumnName = MakeShared<FString>(TEXT("[Undefined]"));
-			}
-
-			ColumnButton->SetContent(ConstructTitleTextBlock(*ColumnName, GetFontInfo(13)));
-		}
-
-		TableHeader->AddSlot(columnIndex)
-			.Value(widthInit)
-			.MinSize(20.f)
-			.Resizable(columnIndex ? true : false)
-			.OnSlotResized(this, &SCustomTable<ItemType>::OnTableColumnResized, columnIndex)
-			[
-				ConstructOverlayOpaque(ColumnButton,3)
-			];
-			
-	}
-
-	TableHeaderRow->AddSlot()
-		.FillWidth(.985f)
-		.VAlign(VAlign_Fill)
-		[
-			TableHeader.ToSharedRef()
-		];
-
-	TableHeaderRow->AddSlot()
-		.FillWidth(.015f)
-		.VAlign(VAlign_Fill)
-		[
-			SNew(SSpacer).Size(FVector2D(.1f,.2f))
-		];
-
-	return TableHeaderRow.ToSharedRef();
-}
-
-template<typename ItemType>
-inline TSharedRef<SListView<ItemType>> SCustomTable<ItemType>::ConstructTableListView()
-{
-	FScrollBarStyle scrollbarStyle;
-	scrollbarStyle.SetThickness(30);
-
-	TableListView =
-		SNew(SListView<ItemType>)
-		.ItemHeight(36.f)
-		.ScrollBarStyle(&scrollbarStyle)
-		.ListItemsSource(SourceItems)
-		.OnGenerateRow(this, &SCustomTable<ItemType>::OnTableGenerateRowForlist)
-		.OnMouseButtonDoubleClick(this, &SCustomTable<ItemType>::OnRowMouseButtonDoubleClicked);
-
-	TSharedPtr<SScrollBox> ScrollBoxSlate =
-		SNew(SScrollBox)
-		+ SScrollBox::Slot()
-		[
-			TableListView.ToSharedRef()
-		];
-
-	MainTable->AddSlot().VAlign(VAlign_Fill)
-		[
-			ConstructOverlayOpaque(ScrollBoxSlate,3)
-
-		];
-
-	return TableListView.ToSharedRef();
-}
-
-template<typename ItemType>
-inline TSharedRef<SCheckBox> SCustomTable<ItemType>::ConstructRowCheckBox(
-	const ItemType ItemIn)
-{
-	TSharedPtr<SCheckBox> CheckBox =
-		SNew(SCheckBox)
-		.Type(ESlateCheckBoxType::CheckBox)
-		.Padding(FMargin(3.f))
-		.HAlign(HAlign_Center)
-		.IsChecked(ECheckBoxState::Unchecked)
-		.Visibility(EVisibility::Visible)
-		.OnCheckStateChanged(this,&SCustomTable<ItemType>::OnCheckBoxStateChanged,ItemIn);
-
-	CheckBoxArray.Add(CheckBox);
-
-	return CheckBox.ToSharedRef();
-}
-
-template<typename ItemType>
-inline void SCustomTable<ItemType>::OnCheckBoxStateChanged(
-	ECheckBoxState NewState,
-	const ItemType ItemIn)
-{
-	switch (NewState)
-	{
-	case ECheckBoxState::Unchecked:
-		if (CheckBoxSelected.Contains(ItemIn))
-		{
-			CheckBoxSelected.Remove(ItemIn);
-		}
-
-		this->OnTableCheckBoxStateChanged.Execute();
-
-		break;
-
-	case ECheckBoxState::Checked:
-		CheckBoxSelected.AddUnique(ItemIn);
-		
-		this->OnTableCheckBoxStateChanged.Execute();
-		
-		break;
-
-	case ECheckBoxState::Undetermined:
-		break;
-
-	default:
-		break;
-	}
-}
-
-template<typename ItemType>
-inline TSharedRef<ITableRow> SCustomTable<ItemType>::OnTableGenerateRowForlist(
-	ItemType ItemIn,
-	const TSharedRef<STableViewBase>& OwnerTable)
-{
-	TArray<TSharedPtr<SWidget>> WidgetList = this->OnConstructRowWidgets.Execute(ItemIn);
-	
-	TSharedPtr<SSplitter> WidgetRow = SNew(SSplitter);
-	RowsAsSplitter.Add(WidgetRow);
-
-	for(uint32 ColumnIndex = 0 ; ColumnIndex < ColumnsCount; ++ColumnIndex)
-	{
-		
-		TSharedRef<SWidget> RowWidget = ConstructNormalTextBlock(TEXT("[No Info]"),GetFontInfo(9),ETextJustify::Center);
-
-		if (ColumnIndex == (uint32)0)
-		{
-			RowWidget = SNew(SHorizontalBox)
-				+SHorizontalBox::Slot().HAlign(HAlign_Center)
-				[ConstructRowCheckBox(ItemIn)];
-		}
-		else
-		{
-			if (ColumnIndex - 1 < (uint32)WidgetList.Num())
-			{
-				RowWidget = WidgetList[ColumnIndex - 1].ToSharedRef();
-			}
-		}
-
-		WidgetRow->AddSlot(ColumnIndex)
-			.OnSlotResized(this, &SCustomTable<ItemType>::OnTableColumnResized, ColumnIndex)
-			.Resizable(TableHeader->SlotAt(ColumnIndex).CanBeResized())
-			.Value(TableHeader->SlotAt(ColumnIndex).GetSizeValue())
-			[
-				RowWidget
-			];
-		
-	}
-
-	TSharedRef<STableRow<TSharedPtr<FAssetData>>> ListViewRowWidget
-		= SNew(STableRow<TSharedPtr<FAssetData>>, OwnerTable)
-		.Padding(FMargin(6.f))
-		[
-			WidgetRow.ToSharedRef()
-		];
-
-	return ListViewRowWidget;
-}
-
-template<typename ItemType>
-inline void SCustomTable<ItemType>::OnRowMouseButtonDoubleClicked(ItemType ItemIn)
-{
-	OnTableRowMouseButtonDoubleClicked.Execute(ItemIn);
-}
-
-template<typename ItemType>
-inline void SCustomTable<ItemType>::OnTableColumnResized(
-	float size, 
-	uint32 index)
-{
-	for (TSharedPtr<SSplitter> splitter : RowsAsSplitter)
-	{
-		splitter->SlotAt(index).SetSizeValue(size);
-	}
-}
-
-template<typename ItemType>
-inline FReply SCustomTable<ItemType>::OnTitleColumnClicked(uint32 ColumnIndex)
-{
-	if (ColumnIndex == 0)
-	{
-		if(CheckBoxArray.Num() != CheckBoxSelected.Num())
-		{
-			this->SelectAll();
-			return FReply::Handled();
-		}
-
-		this->UnselectAll();
-		return FReply::Handled();
-	}
-
-	NtfyMsg(FString::FromInt(ColumnIndex));
-
-	return FReply::Handled();
-}
-
-template<typename ItemType>
-inline FReply SCustomTable<ItemType>::OnTestButtonClicked()
-{
-	NtfyMsg("Test");
-
-	NtfyMsg(FString::FromInt(CheckBoxArray.Num()));
-	NtfyMsg(FString::FromInt(CheckBoxSelected.Num()));
-
-	return FReply::Handled();
-}
+#pragma endregion

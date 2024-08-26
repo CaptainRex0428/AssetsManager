@@ -616,16 +616,23 @@ void UAssetsChecker::EListUnusedAssetsForAssetList(
 		OutList.Empty();
 	}
 	
+	FSlowTask FindingProgress(FindInList.Num(), FText::FromString(TEXT("Checking References...")));
+	FindingProgress.Initialize();
+	FindingProgress.MakeDialog();
 
 	for (const TSharedPtr<FAssetData> & DataSPTR: FindInList)
 	{
 		TArray<FString> AssetReference = EGetAssetReferencesPath(DataSPTR);
+
+		FindingProgress.EnterProgressFrame();
 
 		if(AssetReference.Num() == 0)
 		{
 			OutList.Add(DataSPTR);
 		}
 	}
+
+	FindingProgress.Destroy();
 }
 
 void UAssetsChecker::EListPrefixErrorAssetsForAssetList(

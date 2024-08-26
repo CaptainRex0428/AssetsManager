@@ -1,6 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SlateWidgets/ManagerSlate.h"
+#include "SlateWidgets/SCustomTableRow.h"
 
 
 #include "AssetsManager.h"
@@ -100,6 +101,15 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	UAssetsChecker::ECopyAssetsPtrList(StoredAssetsData, SListViewAssetData);
 	UAssetsChecker::ECopyAssetsPtrList(SListViewAssetData, SListViewClassFilterAssetData);
 
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Empty();
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_UClass);
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_AssetName);
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_TextureMaxInGameSize);
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_TextureSourceSize);
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_TextureCompressionSettings);
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_TextureSRGB);
+	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_PerAssetHandle);
+
 	ClassFilterDefault = MakeShared<FString>(CLASS_LISTALL);
 	ClassFilterCurrent = ClassFilterDefault;
 	
@@ -189,13 +199,13 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	ConstructHeaderRow();
 
-	CustomTableList = SNew(SCustomTable<TSharedPtr<FAssetData>>)
+	this->CustomTableList = SNew(SCustomTable<TSharedPtr<FAssetData>>)
 		.SourceItems(&SListViewAssetData)
 		.ColumnsType(&SManagerCustomTableTitleRowColumnsType)
-		.ColumnsInitWidth(&SManagerCustomTableTitleRowColumnsInitWidth)
-		.OnConstructRowWidgets(this, &SManagerSlateTab::OnConstructTableRow)
+		.CanGenerateColumnsType(&SManagerCustomTableTitleRowColumnsCanGenerateType)
 		.OnTableCheckBoxStateChanged(this, &SManagerSlateTab::OnTableCheckBoxStateChanged)
-		.OnTableRowMouseButtonDoubleClicked(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked);
+		.OnTableRowMouseButtonDoubleClicked(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked)
+		.OnGenerateTableRowColumn(this,&SManagerSlateTab::OnTableGenerateListColumn);
 
 	TSharedPtr<SVerticalBox> HandleButton = ConstructHandleAllBox();
 
@@ -211,7 +221,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	HandleBox->AddSlot()
 		.VAlign(VAlign_Fill)
 		[
-			CustomTableList.ToSharedRef()				
+			this->CustomTableList.ToSharedRef()
 		];
 #pragma endregion
 
@@ -366,6 +376,93 @@ TArray<TSharedPtr<SWidget>> SManagerSlateTab::OnConstructTableRow(
 	WidgetArray.Add(DealWidget);
 
 	return WidgetArray;
+}
+
+TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
+	const FName& ColumnName, 
+	TSharedPtr<FAssetData>& AssetToDisplay)
+{
+	const SCommonSlate::CustomTableColumnType * KeyFound = 
+		CustomTableColumnTypeToString.FindKey(ColumnName.ToString());
+
+	if (KeyFound)
+	{
+		switch (*KeyFound)
+		{
+
+		case Column_UClass:
+		{
+			TSharedPtr<STextBlock> ClassWidget = ConstructAssetClassRowBox(AssetToDisplay, GetFontInfo(9));
+			ClassWidget->SetAutoWrapText(true);
+			ClassWidget->SetJustification(ETextJustify::Center);
+			ClassWidget->SetMargin(FMargin(3.f));
+
+			return ClassWidget.ToSharedRef();
+		}
+
+		case Column_AssetName:
+		{
+			TSharedPtr<SCustomEditableText<TSharedPtr<FAssetData>>> NameWidget =
+				ConstructEditAssetNameRowBox(AssetToDisplay, GetFontInfo(9));
+
+			return NameWidget.ToSharedRef();
+		}
+
+		case Column_AssetPath:
+
+
+		case Column_TextureMaxInGameSize:
+		{
+			TSharedPtr<STextBlock> TextureSizeWidget = ConstructAssetTextureSizeRowBox(AssetToDisplay, GetFontInfo(9));
+			TextureSizeWidget->SetAutoWrapText(true);
+			TextureSizeWidget->SetJustification(ETextJustify::Center);
+			TextureSizeWidget->SetMargin(FMargin(3.f));
+
+			return TextureSizeWidget.ToSharedRef();
+		}
+
+		case Column_TextureSourceSize:
+		{
+			TSharedPtr<STextBlock> TextureSizeWidget = ConstructAssetTextureSizeRowBox(AssetToDisplay, GetFontInfo(9));
+			TextureSizeWidget->SetAutoWrapText(true);
+			TextureSizeWidget->SetJustification(ETextJustify::Center);
+			TextureSizeWidget->SetMargin(FMargin(3.f));
+
+			return TextureSizeWidget.ToSharedRef();
+		}
+
+		case Column_TextureCompressionSettings:
+		{
+			TSharedPtr<STextBlock> TextureCompressionSettingsWidget = ConstructAssetTextureCompressionSettingsRowBox(AssetToDisplay, GetFontInfo(9));
+			TextureCompressionSettingsWidget->SetAutoWrapText(true);
+			TextureCompressionSettingsWidget->SetJustification(ETextJustify::Center);
+			TextureCompressionSettingsWidget->SetMargin(FMargin(3.f));
+
+			return TextureCompressionSettingsWidget.ToSharedRef();
+		}
+
+		case Column_TextureSRGB:
+		{
+			TSharedPtr<STextBlock> TextureSRGBSettingsWidget = ConstructAssetTextureSRGBRowBox(AssetToDisplay, GetFontInfo(9));
+			TextureSRGBSettingsWidget->SetAutoWrapText(true);
+			TextureSRGBSettingsWidget->SetJustification(ETextJustify::Center);
+			TextureSRGBSettingsWidget->SetMargin(FMargin(3.f));
+
+			return TextureSRGBSettingsWidget.ToSharedRef();
+		}
+
+		case Column_TextureGroup:
+
+		case Column_PerAssetHandle:
+			return ConstructSingleDealPanel(AssetToDisplay);
+
+		default:
+			return ConstructNormalTextBlock("[Undefined Info]", GetFontInfo(9));
+		}
+	};
+
+
+	return ConstructNormalTextBlock("[Undefined Info]", GetFontInfo(9));
 }
 
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(
@@ -658,9 +755,9 @@ bool SManagerSlateTab::OnItemDataCommitted(
 
 	const FString NewName = TextIn.ToString();
 	
-	UAssetsChecker::ERenameAsset(AssetDataToDisplay, NewName);
+	bool result = UAssetsChecker::ERenameAsset(AssetDataToDisplay, NewName);
 
-	return true;
+	return result;
 }
 
 TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetNameRowBox(
