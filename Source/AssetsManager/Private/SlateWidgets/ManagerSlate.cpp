@@ -1,7 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SlateWidgets/ManagerSlate.h"
-#include "SlateWidgets/SCustomTableRow.h"
 
 
 #include "AssetsManager.h"
@@ -190,34 +189,13 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	ConstructHeaderRow();
 
-	this->CustomTableList = SNew(SCustomTable<TSharedPtr<FAssetData>>)
+	CustomTableList = SNew(SCustomTable<TSharedPtr<FAssetData>>)
 		.SourceItems(&SListViewAssetData)
 		.ColumnsType(&SManagerCustomTableTitleRowColumnsType)
 		.ColumnsInitWidth(&SManagerCustomTableTitleRowColumnsInitWidth)
 		.OnConstructRowWidgets(this, &SManagerSlateTab::OnConstructTableRow)
 		.OnTableCheckBoxStateChanged(this, &SManagerSlateTab::OnTableCheckBoxStateChanged)
 		.OnTableRowMouseButtonDoubleClicked(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked);
-
-	this->CustomTableListView = SNew(SListView<TSharedPtr<FAssetData>>)
-		.ListItemsSource(&SListViewAssetData)
-		.ItemHeight(36.f)
-		.OnGenerateRow(this, &SManagerSlateTab::OnTableGenerateRowForlist)
-		.OnMouseButtonDoubleClick(this, &SManagerSlateTab::OnRowMouseButtonDoubleClickedListView)
-		.HeaderRow
-		(
-			SNew(SHeaderRow)
-			+ SHeaderRow::Column("Type")
-			[
-				SNew(SBorder)
-					.Padding(5)
-					[
-						SNew(STextBlock)
-							.Text(FText::FromString(TEXT("Type")))
-					]
-			]
-			+ SHeaderRow::Column("Size")
-			.DefaultLabel(FText::FromString(TEXT("Size")))
-		);
 
 	TSharedPtr<SVerticalBox> HandleButton = ConstructHandleAllBox();
 
@@ -233,7 +211,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	HandleBox->AddSlot()
 		.VAlign(VAlign_Fill)
 		[
-			CustomTableListView.ToSharedRef()				
+			CustomTableList.ToSharedRef()				
 		];
 #pragma endregion
 
@@ -259,20 +237,6 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	];
 
-}
-
-TSharedRef<ITableRow> SManagerSlateTab::OnTableGenerateRowForlist(
-	TSharedPtr<FAssetData> ItemIn, 
-	const TSharedRef<STableViewBase>& OwnerTable)
-{
-	return SNew(SCustomTableRow<TSharedPtr<FAssetData>>, OwnerTable)
-		.Padding(6.f)
-		.ItemShow(ItemIn);
-}
-
-void SManagerSlateTab::OnRowMouseButtonDoubleClickedListView(
-	TSharedPtr<FAssetData> ItemIn)
-{
 }
 
 void SManagerSlateTab::SListViewRemoveAssetData(
