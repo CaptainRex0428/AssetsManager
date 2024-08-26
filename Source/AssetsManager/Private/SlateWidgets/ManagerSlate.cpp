@@ -193,31 +193,9 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	this->CustomTableList = SNew(SCustomTable<TSharedPtr<FAssetData>>)
 		.SourceItems(&SListViewAssetData)
 		.ColumnsType(&SManagerCustomTableTitleRowColumnsType)
-		.ColumnsInitWidth(&SManagerCustomTableTitleRowColumnsInitWidth)
-		.OnConstructRowWidgets(this, &SManagerSlateTab::OnConstructTableRow)
 		.OnTableCheckBoxStateChanged(this, &SManagerSlateTab::OnTableCheckBoxStateChanged)
-		.OnTableRowMouseButtonDoubleClicked(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked);
-
-	this->CustomTableListView = SNew(SListView<TSharedPtr<FAssetData>>)
-		.ListItemsSource(&SListViewAssetData)
-		.ItemHeight(36.f)
-		.OnGenerateRow(this, &SManagerSlateTab::OnTableGenerateRowForlist)
-		.OnMouseButtonDoubleClick(this, &SManagerSlateTab::OnRowMouseButtonDoubleClickedListView)
-		.HeaderRow
-		(
-			SNew(SHeaderRow)
-			+ SHeaderRow::Column("Type")
-			[
-				SNew(SBorder)
-					.Padding(5)
-					[
-						SNew(STextBlock)
-							.Text(FText::FromString(TEXT("Type")))
-					]
-			]
-			+ SHeaderRow::Column("Size")
-			.DefaultLabel(FText::FromString(TEXT("Size")))
-		);
+		.OnTableRowMouseButtonDoubleClicked(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked)
+		.OnGenerateTableRowColumn(this,&SManagerSlateTab::OnTableGenerateListColumn);
 
 	TSharedPtr<SVerticalBox> HandleButton = ConstructHandleAllBox();
 
@@ -233,7 +211,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	HandleBox->AddSlot()
 		.VAlign(VAlign_Fill)
 		[
-			CustomTableListView.ToSharedRef()				
+			this->CustomTableList.ToSharedRef()
 		];
 #pragma endregion
 
@@ -259,20 +237,6 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	];
 
-}
-
-TSharedRef<ITableRow> SManagerSlateTab::OnTableGenerateRowForlist(
-	TSharedPtr<FAssetData> ItemIn, 
-	const TSharedRef<STableViewBase>& OwnerTable)
-{
-	return SNew(SCustomTableRow<TSharedPtr<FAssetData>>, OwnerTable)
-		.Padding(6.f)
-		.ItemShow(ItemIn);
-}
-
-void SManagerSlateTab::OnRowMouseButtonDoubleClickedListView(
-	TSharedPtr<FAssetData> ItemIn)
-{
 }
 
 void SManagerSlateTab::SListViewRemoveAssetData(
@@ -402,6 +366,93 @@ TArray<TSharedPtr<SWidget>> SManagerSlateTab::OnConstructTableRow(
 	WidgetArray.Add(DealWidget);
 
 	return WidgetArray;
+}
+
+TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
+	const FName& ColumnName, 
+	TSharedPtr<FAssetData>& AssetToDisplay)
+{
+	const SCommonSlate::CustomTableColumnType * KeyFound = 
+		CustomTableColumnTypeToString.FindKey(ColumnName.ToString());
+
+	if (KeyFound)
+	{
+		switch (*KeyFound)
+		{
+
+		case Column_UClass:
+		{
+			TSharedPtr<STextBlock> ClassWidget = ConstructAssetClassRowBox(AssetToDisplay, GetFontInfo(9));
+			ClassWidget->SetAutoWrapText(true);
+			ClassWidget->SetJustification(ETextJustify::Center);
+			ClassWidget->SetMargin(FMargin(3.f));
+
+			return ClassWidget.ToSharedRef();
+		}
+
+		case Column_AssetName:
+		{
+			TSharedPtr<SCustomEditableText<TSharedPtr<FAssetData>>> NameWidget =
+				ConstructEditAssetNameRowBox(AssetToDisplay, GetFontInfo(9));
+
+			return NameWidget.ToSharedRef();
+		}
+
+		case Column_AssetPath:
+
+
+		case Column_TextureMaxInGameSize:
+		{
+			TSharedPtr<STextBlock> TextureSizeWidget = ConstructAssetTextureSizeRowBox(AssetToDisplay, GetFontInfo(9));
+			TextureSizeWidget->SetAutoWrapText(true);
+			TextureSizeWidget->SetJustification(ETextJustify::Center);
+			TextureSizeWidget->SetMargin(FMargin(3.f));
+
+			return TextureSizeWidget.ToSharedRef();
+		}
+
+		case Column_TextureSourceSize:
+		{
+			TSharedPtr<STextBlock> TextureSizeWidget = ConstructAssetTextureSizeRowBox(AssetToDisplay, GetFontInfo(9));
+			TextureSizeWidget->SetAutoWrapText(true);
+			TextureSizeWidget->SetJustification(ETextJustify::Center);
+			TextureSizeWidget->SetMargin(FMargin(3.f));
+
+			return TextureSizeWidget.ToSharedRef();
+		}
+
+		case Column_TextureCompressionSettings:
+		{
+			TSharedPtr<STextBlock> TextureCompressionSettingsWidget = ConstructAssetTextureCompressionSettingsRowBox(AssetToDisplay, GetFontInfo(9));
+			TextureCompressionSettingsWidget->SetAutoWrapText(true);
+			TextureCompressionSettingsWidget->SetJustification(ETextJustify::Center);
+			TextureCompressionSettingsWidget->SetMargin(FMargin(3.f));
+
+			return TextureCompressionSettingsWidget.ToSharedRef();
+		}
+
+		case Column_TextureSRGB:
+		{
+			TSharedPtr<STextBlock> TextureSRGBSettingsWidget = ConstructAssetTextureSRGBRowBox(AssetToDisplay, GetFontInfo(9));
+			TextureSRGBSettingsWidget->SetAutoWrapText(true);
+			TextureSRGBSettingsWidget->SetJustification(ETextJustify::Center);
+			TextureSRGBSettingsWidget->SetMargin(FMargin(3.f));
+
+			return TextureSRGBSettingsWidget.ToSharedRef();
+		}
+
+		case Column_TextureGroup:
+
+		case Column_PerAssetHandle:
+			return ConstructSingleDealPanel(AssetToDisplay);
+
+		default:
+			return ConstructNormalTextBlock("[Undefined Info]", GetFontInfo(9));
+		}
+	};
+
+
+	return ConstructNormalTextBlock("[Undefined Info]", GetFontInfo(9));
 }
 
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(

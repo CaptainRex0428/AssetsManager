@@ -71,6 +71,10 @@ private:
 	TArray<TSharedPtr<SWidget>> OnConstructTableRow(
 		TSharedPtr<FAssetData>& AssetToDisplay);
 
+	TSharedRef<SWidget> OnTableGenerateListColumn(
+		const FName& ColumnName,
+		TSharedPtr<FAssetData>& AssetToDisplay);
+
 	TSharedRef<SHorizontalBox> ConstructSingleDealPanel(
 		const TSharedPtr<FAssetData> & ClickedAssetData);
 

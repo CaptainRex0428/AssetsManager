@@ -4,28 +4,39 @@
 
 #include "CoreMinimal.h"
 #include "SlateWidgets/ScommonSlate.h"
+#include "SlateWidgets/TCustomSlateDelegates.h"
 /**
  * 
  */
 template <typename ItemType>
 class ASSETSMANAGER_API SCustomTableRow : public SMultiColumnTableRow<ItemType>
 {
+public:
+
+	using FOnGenerateTableRowColumn = TCustomSlateDelegates<ItemType>::FOnGenerateTableRowColumn;
+
+	typedef SMultiColumnTableRow<ItemType> FSuperRowType;
+
+public:
+
 	SLATE_BEGIN_ARGS(SCustomTableRow<ItemType>) :
 		_ItemShow()
 		{}
 
 	SLATE_ARGUMENT(ItemType, ItemShow)
 	SLATE_ARGUMENT(float, Padding)
+
+	SLATE_EVENT(FOnGenerateTableRowColumn, OnGenerateTableRowColumn)
+
 	SLATE_END_ARGS()
 
-public:
-	typedef SMultiColumnTableRow< ItemType > FSuperRowType;
+
 
 public:
 	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTableView)
 	{
-		ItemShow = InArgs._ItemShow;
-
+		this->ItemShow = InArgs._ItemShow;
+		this->OnGenerateTableRowColumn = InArgs._OnGenerateTableRowColumn;
 
 		FSuperRowType::Construct(
 			FSuperRowType::FArguments().Padding(InArgs._Padding),
@@ -34,18 +45,12 @@ public:
 
 	virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override
 	{
-		if (ColumnName == TEXT("Type"))
-		{
-			return SNew(STextBlock)
-				.Text(FText::FromString("TypeTest"));
-		}
-		else
-		{
-			return SNew(STextBlock)
-				.Text(FText::FromString("Test"));
-		}
+
+		 return this->OnGenerateTableRowColumn.Execute(ColumnName,this->ItemShow);		
 	}
 
 private:
 	ItemType ItemShow;
+
+	FOnGenerateTableRowColumn OnGenerateTableRowColumn;
 };
