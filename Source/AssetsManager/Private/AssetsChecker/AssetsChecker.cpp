@@ -387,8 +387,7 @@ TArray<FString> UAssetsChecker::EGetAssetReferencesPath(
 FVector2D UAssetsChecker::EGetTextureAssetSourceSize(
 	const FAssetData& AssetData)
 {
-	FVector2D size(0,0);
-
+	FVector2D size(0, 0);
 
 	UObject* AssetOBJ = AssetData.GetAsset();
 
@@ -493,6 +492,30 @@ TSharedPtr<TextureCompressionSettings> UAssetsChecker::EGetTextureAssetCompressi
 	if(AssetT)
 	{
 		return MakeShared<TextureCompressionSettings>(AssetT->CompressionSettings);
+	}
+
+	return nullptr;
+}
+
+TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureAssetTextureGroup(const FAssetData& AssetData)
+{
+	UObject* AssetOBJ = AssetData.GetAsset();
+
+	if (!AssetOBJ)
+	{
+		return nullptr;
+	}
+
+	if (!AssetOBJ->IsA<UTexture>())
+	{
+		return nullptr;
+	}
+
+	UTexture2D* AssetT = Cast<UTexture2D>(AssetOBJ);
+
+	if (AssetT)
+	{
+		return MakeShared<TextureGroup>(AssetT->LODGroup);
 	}
 
 	return nullptr;
@@ -830,6 +853,22 @@ void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
 
 		OutList.Add(AssetDPtr);
 		
+	}
+}
+
+void UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(
+	const TArray<TSharedPtr<FAssetData>>& FindInList, 
+	TArray<TSharedPtr<FAssetData>>& OutList, 
+	bool isAdditiveMode)
+{
+	if (!isAdditiveMode)
+	{
+		OutList.Empty();
+	}
+
+	for (const TSharedPtr<FAssetData>& AssetToJudge : FindInList)
+	{
+		OutList.Add(AssetToJudge);
 	}
 }
 

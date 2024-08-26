@@ -1,3 +1,0 @@
-
-#include "SlateWidgets/SCustomTable.h"
-

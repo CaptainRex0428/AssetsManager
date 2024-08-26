@@ -72,6 +72,9 @@ public:
 	static TSharedPtr<TextureCompressionSettings> EGetTextureAssetCompressionSettings(
 		const FAssetData& AssetData);
 
+	static TSharedPtr<TextureGroup> EGetTextureAssetTextureGroup(
+		const FAssetData& AssetData);
+
 	static bool ESetTextureAssetCompressionSettings(
 		const FAssetData& AssetData,
 		const TEnumAsByte<TextureCompressionSettings> & CompressionSetting);
@@ -157,6 +160,11 @@ public:
 		bool isAdditiveMode = false);
 
 	static void EListTextureSettingsErrorAssetsForAssetList(
+		const TArray<TSharedPtr<FAssetData>>& FindInList,
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
+
+	static void EListTextureLODGroupErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList,
 		TArray<TSharedPtr<FAssetData>>& OutList,
 		bool isAdditiveMode = false);
