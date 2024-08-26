@@ -27,12 +27,14 @@ private:
 
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsCanGenerateType;
-	TArray<float> SManagerCustomTableTitleRowColumnsInitWidth;
 
 	enum ClassCheckState
 	{
 		DefaultClassCheckState = 0,
-		Texture
+		Texture,
+		Material,
+		MaterialConst,
+		SkeletalMesh
 	};
 
 	ClassCheckState m_ClassCheckState;
@@ -42,7 +44,8 @@ private:
 		DefaultUsageCheckState = 0,
 		Unused,
 		// for texture,
-		MaxInGameSizeError, SourceSizeError,SubfixError,TextureSettingsError,
+		MaxInGameSizeError, SourceSizeError,
+		SubfixError,TextureSettingsError,TextureGroupError,
 		// for prefix
 		PrefixError,
 		//for same name asset,
@@ -59,9 +62,6 @@ private:
 	TSharedPtr<SListView<TSharedPtr<FAssetData>>> CustomTableListView;
 
 	void ConstructHeaderRow();
-
-	TArray<TSharedPtr<SWidget>> OnConstructTableRow(
-		TSharedPtr<FAssetData>& AssetToDisplay);
 
 	TSharedRef<SWidget> OnTableGenerateListColumn(
 		const FName& ColumnName,
@@ -127,6 +127,10 @@ private:
 		const FSlateFontInfo& FontInfo);
 
 	TSharedRef<STextBlock> ConstructAssetTextureSRGBRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
+	TSharedRef<STextBlock> ConstructAssetTextureLODGroupRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
@@ -245,8 +249,9 @@ private:
 	// only for texture
 	TSharedPtr<FString> UsageSelectionMaxInGameSizeError;
 	TSharedPtr<FString> UsageSelectionSourceSizeError;
-	TSharedPtr<FString> UsageSelectionSubfixError;
+	TSharedPtr<FString> UsageSelectionTextureSubfixError;
 	TSharedPtr<FString> UsageSelectionTextureSettinsError;
+	TSharedPtr<FString> UsageSelectionTextureLODGroupError;
 	
 #pragma endregion
 

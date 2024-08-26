@@ -95,7 +95,8 @@ private:
 };
 
 template<typename ItemType>
-inline void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArguments& InArgs)
+inline void SCustomTable<ItemType>::Construct(
+	const SCustomTable<ItemType>::FArguments& InArgs)
 {
 	bCanSupportFocus = true;
 
@@ -113,20 +114,9 @@ inline void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArg
 
 	this->MainTable = ConstructTableListView();
 
-#pragma region TestButton
-	/*TestButton =
-		SNew(SButton)
-		.OnClicked(this, &SCustomTable<ItemType>::OnTestButtonClicked)
-		.ContentPadding(FMargin(5.f));
-	TestButton->SetContent(ConstructTextForButtons(TEXT("测试")));
-
-	MainTable->AddSlot()
-		.AutoHeight()[TestButton.ToSharedRef()];*/
-#pragma endregion
-
 	ChildSlot
 	[
-		MainTable.ToSharedRef()
+		SCommonSlate::ConstructOverlayOpaque(MainTable,3)
 	];
 }
 
@@ -147,7 +137,8 @@ inline TSharedRef<SCustomListView<ItemType>> SCustomTable<ItemType>::ConstructTa
 }
 
 template<typename ItemType>
-inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(bool bIsGenerateHeader)
+inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(
+	bool bIsGenerateHeader)
 {
 	if (bIsGenerateHeader) 
 	{
@@ -162,8 +153,9 @@ inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(bo
 	SHeaderRow::FColumn::FArguments CheckBoxArgs;
 	CheckBoxArgs.DefaultLabel(FText::FromString(""));
 	CheckBoxArgs.ColumnId("CheckBox");
-	CheckBoxArgs.FixedWidth(36.f);
+	CheckBoxArgs.FixedWidth(32.f);
 	CheckBoxArgs.ShouldGenerateWidget(true);
+	CheckBoxArgs.HAlignHeader(HAlign_Center);
 
 	TableHeaderRow->AddColumn(CheckBoxArgs);
 
@@ -171,11 +163,56 @@ inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(bo
 	{
 		SHeaderRow::FColumn::FArguments ColumnBoxArgs;
 
-		const FString * ColumnNamePtr = CustomTableColumnTypeToString.Find(ColumnIn);
-
 		ColumnBoxArgs.DefaultLabel(FText::FromString("[Undefined Column]"));
 		ColumnBoxArgs.ColumnId("[Undefined]");
-		CheckBoxArgs.ShouldGenerateWidget(true);
+		ColumnBoxArgs.ShouldGenerateWidget(true);
+		ColumnBoxArgs.HAlignHeader(HAlign_Center);
+
+		switch (ColumnIn)
+		{
+		case Column_UClass:
+			ColumnBoxArgs.FillWidth(0.07f);
+			break;
+
+		case Column_AssetName:
+			ColumnBoxArgs.FillWidth(0.3f);
+			break;
+
+		case Column_AssetPath:
+			ColumnBoxArgs.FillWidth(0.5f);
+			break;
+			
+		case Column_PerAssetHandle:
+			ColumnBoxArgs.FillWidth(0.25f);
+			break;
+
+		case Column_TextureMaxInGameSize:
+			ColumnBoxArgs.FillWidth(0.07f);
+			break;
+
+		case Column_TextureSourceSize:
+			ColumnBoxArgs.FillWidth(0.07f);
+			break;
+
+		case Column_TextureCompressionSettings:
+			ColumnBoxArgs.FillWidth(0.2f);
+			break;
+
+		case Column_TextureSRGB:
+			ColumnBoxArgs.FillWidth(0.05f);
+			break;
+				
+		case Column_TextureGroup:
+			ColumnBoxArgs.FillWidth(0.2f);
+			break;
+
+		default:
+			ColumnBoxArgs.FillWidth(0.1f);
+			break;
+		}
+		
+		
+		const FString* ColumnNamePtr = CustomTableColumnTypeToString.Find(ColumnIn);
 
 		if (ColumnNamePtr)
 		{
@@ -185,8 +222,6 @@ inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(bo
 
 		TableHeaderRow->AddColumn(ColumnBoxArgs);
 	}
-
-	NtfyMsg(FString::FromInt(TableHeaderRow->GetColumns().Num()));
 
 	return TableHeaderRow.ToSharedRef();
 }
@@ -205,7 +240,8 @@ inline TSharedRef<ITableRow> SCustomTable<ItemType>::OnTableGenerateRowForlist(
 }
 
 template<typename ItemType>
-inline void SCustomTable<ItemType>::OnRowMouseButtonDoubleClicked(ItemType ItemIn)
+inline void SCustomTable<ItemType>::OnRowMouseButtonDoubleClicked(
+	ItemType ItemIn)
 {
 	this->OnTableRowMouseButtonDoubleClicked.Execute(ItemIn);
 }
