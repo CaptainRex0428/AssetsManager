@@ -555,10 +555,10 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructListPathsInfo(
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructListAssetsCountInfo(
 	const FSlateFontInfo& FontInfo)
 {
+	ClassListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewClassFilterAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Yellow);
 	ListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Green);
 	SelectedCountBlock = ConstructNormalTextBlock(FString::FromInt(CustomTableList->GetSelectedItems().Num()), FontInfo, ETextJustify::Left, FColor::Emerald);
-	ClassListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewClassFilterAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Yellow);
-
+	
 	TSharedRef<SHorizontalBox> ListAssetsCountInfo =
 
 		SNew(SHorizontalBox)
@@ -1402,6 +1402,10 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSelectAllButton()
 FReply SManagerSlateTab::OnSelectAllButtonClicked()
 {
 	CustomTableList->SelectAll();
+
+	NtfyMsg("List:" + FString::FromInt(CustomTableList->GetListItems().Num()));
+	NtfyMsg("Selected:" + FString::FromInt(CustomTableList->GetSelectedItems().Num()));
+
 	return FReply::Handled();
 }
 
@@ -1802,7 +1806,7 @@ void SManagerSlateTab::ConstuctClassFilterList(
 	{
 		TArray<TSharedPtr<FAssetData>> NewAssetViewList;
 
-		for (TSharedPtr<FAssetData> AssetD : StoredAssetsData)
+		for (TSharedPtr<FAssetData>& AssetD : StoredAssetsData)
 		{
 			FString assetName = AssetD->GetClass()->GetName();
 
@@ -1811,7 +1815,7 @@ void SManagerSlateTab::ConstuctClassFilterList(
 
 			if (assetName == selectName)
 			{
-				NewAssetViewList.Add(AssetD);
+				NewAssetViewList.AddUnique(AssetD);
 			}
 
 		}
