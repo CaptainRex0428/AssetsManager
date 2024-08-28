@@ -13,6 +13,8 @@
 #include "NiagaraEmitter.h"
 #include "PhysicsEngine/PhysicsAsset.h"
 
+#include "StandardAsset/FCustomStandardAssetData.h"
+
 #define ModuleLanguage_ZH 1
 
 #if ModuleLanguage_ZH
@@ -109,4 +111,59 @@ const TMap<FString, bool> TextureSubfixSRGBSettingsMap =
 	{"Attr",false},
 	{"Detail",false},
 	{"AO",false}
+};
+
+const TMap<FString, FCustomStandardAssetData::Category> AssetCategoryMap =
+{
+	// Character
+	{"Character", FCustomStandardAssetData::Character},
+	{"Player", FCustomStandardAssetData::Character},
+	{"Weapon", FCustomStandardAssetData::Character},
+	{"WeaponL", FCustomStandardAssetData::Character},
+	{"WeaponR", FCustomStandardAssetData::Character},
+	{"WeaponBullet", FCustomStandardAssetData::Character},
+	{"Parasite", FCustomStandardAssetData::Character},
+	{"ParasiteA", FCustomStandardAssetData::Character},
+	{"ParasiteB", FCustomStandardAssetData::Character},
+	{"Face", FCustomStandardAssetData::Character},
+
+	// Hair
+	{"Hair", FCustomStandardAssetData::Hair},
+	{"Groom", FCustomStandardAssetData::Hair},
+	
+	//Effect
+	{"Effect", FCustomStandardAssetData::Effect},
+	{"VFX", FCustomStandardAssetData::Effect},
+
+	//Scene
+	{"Scene", FCustomStandardAssetData::Scene},
+	{"Prop", FCustomStandardAssetData::Scene},
+	{"Level", FCustomStandardAssetData::Scene},
+	
+
+	//
+	{"UI", FCustomStandardAssetData::UI},
+	{"Hero", FCustomStandardAssetData::UI}
+};
+
+const TMap<FCustomStandardAssetData::Category, TextureGroup> TextureLODGroupForCategroyDefault =
+{
+	{FCustomStandardAssetData::Undefined, TEXTUREGROUP_World},
+	{FCustomStandardAssetData::Character, TEXTUREGROUP_Character},
+	{FCustomStandardAssetData::Hair, TEXTUREGROUP_Project03},
+	{FCustomStandardAssetData::Effect, TEXTUREGROUP_Effects},
+	{FCustomStandardAssetData::Scene, TEXTUREGROUP_World},
+	{FCustomStandardAssetData::UI, TEXTUREGROUP_UI}
+
+};
+
+const TMap<FString, TextureGroup> TextureLODGroupForCharacterBySubfix =
+{
+	{"D",TEXTUREGROUP_Character},
+	{"E",TEXTUREGROUP_Project02},
+	{"ARMS",TEXTUREGROUP_CharacterSpecular},
+	{"N",TEXTUREGROUP_CharacterNormalMap},
+	{"Attr",TEXTUREGROUP_Project01},
+	{"Detail",TEXTUREGROUP_Project01},
+	{"AO",TEXTUREGROUP_Project03}
 };

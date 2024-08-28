@@ -75,7 +75,8 @@ private:
 	void OnRowMouseButtonDoubleClicked(
 		TSharedPtr<FAssetData> & AssetDataToDisplay);
 
-	void RefreshAssetsListView();
+	void RefreshAssetsListView(
+		bool bRefreshTableHeader = true);
 
 #pragma region ConstructAssetInfo
 	
@@ -138,36 +139,58 @@ private:
 
 #pragma region ConstructSingleButton
 	// Construct Delete Button
-	TSharedRef<SButton> ConstructSingleAssetDeleteButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleAssetDeleteButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	TSharedRef<SButton> ConstructSingleAssetDeleteButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleAssetDeleteButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 	
 	// Construct Debug Button
-	TSharedRef<SButton> ConstructSingleAssetDebugButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleAssetDebugButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	TSharedRef<SButton> ConstructSingleAssetDebugButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleAssetDebugButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 	
 	//Construct Fix Button
-	TSharedRef<SButton> ConstructSingleAssetReimportButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleAssetReimportButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	TSharedRef<SButton> ConstructSingleAssetReimportButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleAssetReimportButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 
 	//Construct Texture 2K restrict Button
-	TSharedRef<SButton> ConstructSingleTextureAsset2KButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleTextureAsset2KButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	TSharedRef<SButton> ConstructSingleTextureAsset2KButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureAsset2KButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 
 	//Construct Texture 1K restrict Button
-	TSharedRef<SButton> ConstructSingleTextureAsset1KButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleTextureAsset1KButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	TSharedRef<SButton> ConstructSingleTextureAsset1KButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureAsset1KButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 
 	//Construct Texture 512 restrict Button
-	TSharedRef<SButton> ConstructSingleTextureAsset512ButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleTextureAsset512ButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	TSharedRef<SButton> ConstructSingleTextureAsset512ButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureAsset512ButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 	
-	//Construct Texture Reset Button
-	TSharedRef<SButton> ConstructSingleTextureAssetResetButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleTextureAssetResetButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	//Construct Texture MaxInGameSize Reset Button
+	TSharedRef<SButton> ConstructSingleTextureAssetResetButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureAssetResetButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 
-	//Construct Texture Reset Button
-	TSharedRef<SButton> ConstructSingleTextureAssetSettingsFixButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleTextureAssetSettingsFixButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	//Construct Texture Settings Fix Button
+	TSharedRef<SButton> ConstructSingleTextureAssetSettingsFixButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureAssetSettingsFixButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
+
+	//Construct Texture LOD Group Fix Button
+	TSharedRef<SButton> ConstructSingleTextureLODGroupStandardFixButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureLODGroupStandardFixButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 
 #pragma endregion
 
