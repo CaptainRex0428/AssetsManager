@@ -410,8 +410,6 @@ TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureLODStandardGroup(
 
 	if (STexture) {
 		FCustomStandardAssetData SAsset(AssetData);
-
-		TextureGroup StandardLODGroup = TEXTUREGROUP_World;
 		
 		FCustomStandardAssetData::Category AssetStrictCategory = SAsset.GetCommonAssetCategory();
 
@@ -420,31 +418,32 @@ TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureLODStandardGroup(
 			AssetStrictCategory = SAsset.GetStrictAssetCategory();
 		}
 	
-
 		if (AssetStrictCategory == FCustomStandardAssetData::Category::Character)
 		{
 			const TSharedPtr<FString> subfixCurrent = SAsset.GetAssetSubfix();
 
 			if (!subfixCurrent.IsValid() || !TextureLODGroupForCharacterBySubfix.Find(*subfixCurrent))
 			{
-				StandardLODGroup = *TextureLODGroupForCategroyDefault.Find(AssetStrictCategory);
+				return MakeShared<TextureGroup>(*TextureLODGroupForCategroyDefault.Find(AssetStrictCategory));
 			}
 
-			StandardLODGroup = *TextureLODGroupForCharacterBySubfix.Find(*subfixCurrent);
+			return MakeShared<TextureGroup>(*TextureLODGroupForCharacterBySubfix.Find(*subfixCurrent));
 		}
 		else if (AssetStrictCategory == FCustomStandardAssetData::Category::Undefined)
 		{
 			if (STexture->CompressionSettings == TextureCompressionSettings::TC_Normalmap)
 			{
-				StandardLODGroup = TEXTUREGROUP_WorldNormalMap;
+				return MakeShared<TextureGroup>(TEXTUREGROUP_WorldNormalMap);
 			}
+
+			return MakeShared<TextureGroup>(TEXTUREGROUP_World);
 		}
 		else
 		{
-			StandardLODGroup = *TextureLODGroupForCategroyDefault.Find(AssetStrictCategory);
+			return MakeShared<TextureGroup>(*TextureLODGroupForCategroyDefault.Find(AssetStrictCategory));
 		}
 
-		return MakeShared<TextureGroup>(StandardLODGroup);
+		return MakeShared<TextureGroup>(TEXTUREGROUP_World);
 	}
 
 	return nullptr;

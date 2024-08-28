@@ -121,9 +121,10 @@ const TMap<FString, FCustomStandardAssetData::Category> AssetCategoryMap =
 	{"Weapon", FCustomStandardAssetData::Character},
 	{"WeaponL", FCustomStandardAssetData::Character},
 	{"WeaponR", FCustomStandardAssetData::Character},
+	{"WeaponBullet", FCustomStandardAssetData::Character},
 	{"Parasite", FCustomStandardAssetData::Character},
-	{"Parasite01", FCustomStandardAssetData::Character},
-	{"Parasite02", FCustomStandardAssetData::Character},
+	{"ParasiteA", FCustomStandardAssetData::Character},
+	{"ParasiteB", FCustomStandardAssetData::Character},
 	{"Face", FCustomStandardAssetData::Character},
 
 	// Hair
@@ -141,7 +142,8 @@ const TMap<FString, FCustomStandardAssetData::Category> AssetCategoryMap =
 	
 
 	//
-	{"UI", FCustomStandardAssetData::UI}
+	{"UI", FCustomStandardAssetData::UI},
+	{"Hero", FCustomStandardAssetData::UI}
 };
 
 const TMap<FCustomStandardAssetData::Category, TextureGroup> TextureLODGroupForCategroyDefault =

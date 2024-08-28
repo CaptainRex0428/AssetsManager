@@ -1216,7 +1216,7 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleTextureLODGroupStandardFixB
 FReply SManagerSlateTab::OnSingleTextureLODGroupStandardFixButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	TSharedPtr<TextureGroup> STLODGroup = UAssetsChecker::EGetTextureLODStandardGroup(*ClickedAssetData,true);
+	TSharedPtr<TextureGroup> STLODGroup = UAssetsChecker::EGetTextureLODStandardGroup(*ClickedAssetData,false);
 
 	if (STLODGroup)
 	{
@@ -1316,6 +1316,8 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDynamicHandleAllBox()
 		m_UsageCheckState == PrefixError ||
 		m_UsageCheckState == TextureGroupError)
 	{
+		this->DynamicHandleAllBox->RemoveSlot(this->FixSelectedButton.ToSharedRef());
+
 		this->DynamicHandleAllBox->InsertSlot(0)
 			.Padding(5.f)
 			[
@@ -1504,7 +1506,7 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 		for (TSharedPtr<FAssetData> AssetData : AssetsList)
 		{
 			TSharedPtr<TextureGroup> STLODGroup = 
-				UAssetsChecker::EGetTextureLODStandardGroup(*AssetData, true);
+				UAssetsChecker::EGetTextureLODStandardGroup(*AssetData, false);
 
 			if (STLODGroup)
 			{
