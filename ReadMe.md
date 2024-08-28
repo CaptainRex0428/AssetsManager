@@ -21,14 +21,14 @@ PublicDependencyModuleNames.AddRange
 	new string[]
 	{
 		"Core",
-    "Blutility",
+    	"Blutility",
 		"EditorScriptingUtilities",
 		"UMG",
 		"Niagara",
-    "UnrealEd",
-    "AssetRegistry",
-    "AssetTools",
-    "ContentBrowser",
+    	"UnrealEd",
+   	 	"AssetRegistry",
+    	"AssetTools",
+    	"ContentBrowser",
 		"InputCore",
 		"Projects"
 		
@@ -44,7 +44,6 @@ PrivateDependencyModuleNames.AddRange
 		"Engine",
 		"Slate",
 		"SlateCore"
-		
 	}
 );
 
