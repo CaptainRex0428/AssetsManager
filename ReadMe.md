@@ -88,7 +88,7 @@ PrivateDependencyModuleNames.AddRange
 5. 批量处理模块
 
 
-##目录结构描述
+## 目录结构描述
 |— [AssetsManager.uplugin](https://github.com/CaptainRex0428/AssetsManager/blob/master/AssetsManager.uplugin)
 
 |— [.gitignore](https://github.com/CaptainRex0428/AssetsManager/blob/master/.gitignore)
