@@ -4,7 +4,7 @@
 
 #include "AssetsChecker/AssetsChecker.h"
 #include "ManagerLogger.h"
-#include "StandardAsset/StandardAsset.h"
+#include "StandardAsset/FCustomStandardAssetData.h"
 
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
@@ -330,7 +330,7 @@ bool UAssetsChecker::ESetTextureSize(
 
 bool UAssetsChecker::ESetTextureStandardSettings(FAssetData& ClickedAssetData)
 {
-	StandardAsset SAsset(ClickedAssetData);
+	FCustomStandardAssetData SAsset(ClickedAssetData);
 
 	TSharedPtr<FString> subfix = SAsset.GetAssetSubfix();
 
@@ -366,6 +366,122 @@ bool UAssetsChecker::ESetTextureStandardSettings(FAssetData& ClickedAssetData)
 	return  StandardResult_Compression && StandardResult_sRGB;
 }
 
+TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureLODGroup(const FAssetData& AssetData)
+{
+	UObject* AssetOBJ = AssetData.GetAsset();
+
+	if (!AssetOBJ)
+	{
+		return nullptr;
+	}
+
+	if (!AssetOBJ->IsA<UTexture2D>())
+	{
+		return nullptr;
+	}
+
+	UTexture2D* STexture = Cast<UTexture2D>(AssetOBJ);
+
+	if (STexture)
+	{
+		return MakeShared<TextureGroup>(STexture->LODGroup);
+	}
+
+	return nullptr;
+}
+
+TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureLODStandardGroup(
+	const FAssetData& AssetData, 
+	bool bIsCategoryStrict)
+{
+	UObject* AssetOBJ = AssetData.GetAsset();
+
+	if (!AssetOBJ)
+	{
+		return nullptr;
+	}
+
+	if (!AssetOBJ->IsA<UTexture2D>())
+	{
+		return nullptr;
+	}
+
+	UTexture2D* STexture = Cast<UTexture2D>(AssetOBJ);
+
+	if (STexture) {
+		FCustomStandardAssetData SAsset(AssetData);
+
+		TextureGroup StandardLODGroup = TEXTUREGROUP_World;
+		
+		FCustomStandardAssetData::Category AssetStrictCategory = SAsset.GetCommonAssetCategory();
+
+		if( bIsCategoryStrict)
+		{
+			AssetStrictCategory = SAsset.GetStrictAssetCategory();
+		}
+	
+
+		if (AssetStrictCategory == FCustomStandardAssetData::Category::Character)
+		{
+			const TSharedPtr<FString> subfixCurrent = SAsset.GetAssetSubfix();
+
+			if (!subfixCurrent.IsValid() || !TextureLODGroupForCharacterBySubfix.Find(*subfixCurrent))
+			{
+				StandardLODGroup = *TextureLODGroupForCategroyDefault.Find(AssetStrictCategory);
+			}
+
+			StandardLODGroup = *TextureLODGroupForCharacterBySubfix.Find(*subfixCurrent);
+		}
+		else if (AssetStrictCategory == FCustomStandardAssetData::Category::Undefined)
+		{
+			if (STexture->CompressionSettings == TextureCompressionSettings::TC_Normalmap)
+			{
+				StandardLODGroup = TEXTUREGROUP_WorldNormalMap;
+			}
+		}
+		else
+		{
+			StandardLODGroup = *TextureLODGroupForCategroyDefault.Find(AssetStrictCategory);
+		}
+
+		return MakeShared<TextureGroup>(StandardLODGroup);
+	}
+
+	return nullptr;
+}
+
+bool UAssetsChecker::ESetTextureLODGroup(
+	FAssetData& AssetData, 
+	TextureGroup InTextureGroup)
+{
+	UObject* AssetOBJ = AssetData.GetAsset();
+
+	if (!AssetOBJ)
+	{
+		return false;
+	}
+
+	if (!AssetOBJ->IsA<UTexture2D>())
+	{
+		return false;
+	}
+
+	UTexture2D* STexture = Cast<UTexture2D>(AssetOBJ);
+
+	if (STexture)
+	{
+		if (STexture->LODGroup == InTextureGroup)
+		{
+			return false;
+		}
+
+		STexture->LODGroup = InTextureGroup;
+		return UEditorAssetLibrary::SaveAsset(AssetData.GetObjectPathString(), false);
+	}
+
+	return false;
+}
+
 TArray<FString> UAssetsChecker::EGetAssetReferencesPath(
 	const FString& AssetPath)
 {
@@ -391,7 +507,7 @@ FVector2D UAssetsChecker::EGetTextureAssetSourceSize(
 
 	UObject* AssetOBJ = AssetData.GetAsset();
 
-	if (!AssetOBJ->IsA<UTexture>())
+	if (!AssetOBJ->IsA<UTexture2D>())
 	{
 		return size;
 	}
@@ -419,7 +535,7 @@ FVector2D UAssetsChecker::EGetTextureAssetMaxInGameSize(
 		return size;
 	}
 
-	if (!AssetOBJ->IsA<UTexture>())
+	if (!AssetOBJ->IsA<UTexture2D>())
 	{
 		return size;
 	}
@@ -482,7 +598,7 @@ TSharedPtr<TextureCompressionSettings> UAssetsChecker::EGetTextureAssetCompressi
 		return nullptr;
 	}
 
-	if (!AssetOBJ->IsA<UTexture>())
+	if (!AssetOBJ->IsA<UTexture2D>())
 	{
 		return nullptr;
 	}
@@ -506,7 +622,7 @@ TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureAssetTextureGroup(const FAss
 		return nullptr;
 	}
 
-	if (!AssetOBJ->IsA<UTexture>())
+	if (!AssetOBJ->IsA<UTexture2D>())
 	{
 		return nullptr;
 	}
@@ -532,7 +648,7 @@ bool UAssetsChecker::ESetTextureAssetCompressionSettings(
 		return false;
 	}
 
-	if (!AssetOBJ->IsA<UTexture>())
+	if (!AssetOBJ->IsA<UTexture2D>())
 	{
 		return false;
 	}
@@ -572,7 +688,7 @@ TSharedPtr<bool> UAssetsChecker::EGetTextureAssetSRGBSettings(const FAssetData& 
 		return nullptr;
 	}
 
-	if (!AssetOBJ->IsA<UTexture>())
+	if (!AssetOBJ->IsA<UTexture2D>())
 	{
 		return nullptr;
 	}
@@ -598,7 +714,7 @@ bool UAssetsChecker::ESetTextureSRGBSettings(
 		return false;
 	}
 
-	if (!AssetOBJ->IsA<UTexture>())
+	if (!AssetOBJ->IsA<UTexture2D>())
 	{
 		return false;
 	}
@@ -643,15 +759,20 @@ void UAssetsChecker::EListUnusedAssetsForAssetList(
 	FindingProgress.Initialize();
 	FindingProgress.MakeDialog();
 
-	for (const TSharedPtr<FAssetData> & DataSPTR: FindInList)
+	for (const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
-		TArray<FString> AssetReference = EGetAssetReferencesPath(DataSPTR);
+		TArray<FString> AssetReference = EGetAssetReferencesPath(AssetDPtr);
 
 		FindingProgress.EnterProgressFrame();
 
 		if(AssetReference.Num() == 0)
 		{
-			OutList.Add(DataSPTR);
+			if (isAdditiveMode)
+			{
+				if (OutList.Contains(AssetDPtr)) continue;
+			}
+
+			OutList.Add(AssetDPtr);
 		}
 	}
 
@@ -668,18 +789,23 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 		OutList.Empty();
 	}
 
-	for(TSharedPtr<FAssetData> AssetD : FindInList)
+	for(const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
-		const FString* prefix = EGetPrefixMap().Find(AssetD->GetClass());
+		const FString* prefix = EGetPrefixMap().Find(AssetDPtr->GetClass());
 
 		if (!prefix || prefix->IsEmpty())
 		{
 			continue;
 		}
 
-		if (!AssetD->AssetName.ToString().StartsWith(*prefix))
+		if (!AssetDPtr->AssetName.ToString().StartsWith(*prefix))
 		{
-			OutList.Add(AssetD);
+			if (isAdditiveMode)
+			{
+				if (OutList.Contains(AssetDPtr)) continue;
+			}
+
+			OutList.Add(AssetDPtr);
 		};
 	}
 }
@@ -696,7 +822,7 @@ void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
 
 	TMultiMap<FString, TSharedPtr<FAssetData>> AssetsMultiInfoMap;
 
-	for (const TSharedPtr<FAssetData> DataSharedPtr : FindInList)
+	for (const TSharedPtr<FAssetData> & DataSharedPtr : FindInList)
 	{
 		AssetsMultiInfoMap.Emplace(DataSharedPtr->AssetName.ToString(), DataSharedPtr);
 	}
@@ -712,6 +838,13 @@ void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
 		{
 			if (SamaNameData.IsValid())
 			{
+
+				// may get error
+				if (isAdditiveMode)
+				{
+					if (OutList.Contains(SamaNameData)) continue;
+				}
+
 				OutList.AddUnique(SamaNameData);
 			}
 		}
@@ -729,16 +862,21 @@ void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
 		OutList.Empty();
 	}
 
-	for (TSharedPtr<FAssetData> AssetD : FindInList)
+	for (const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
-		FVector2D size = EGetTextureAssetMaxInGameSize(*AssetD);
+		FVector2D size = EGetTextureAssetMaxInGameSize(*AssetDPtr);
 
 		if (size.X >2048 || 
 			size.Y > 2048 || 
 			!bIsPowerOfTwo(size.X) || 
 			!bIsPowerOfTwo(size.Y))
 		{
-			OutList.Add(AssetD);
+			if (isAdditiveMode)
+			{
+				if (OutList.Contains(AssetDPtr)) continue;
+			}
+
+			OutList.Add(AssetDPtr);
 		}
 	}
 }
@@ -762,6 +900,11 @@ void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 			!bIsPowerOfTwo(size.X) ||
 			!bIsPowerOfTwo(size.Y))
 		{
+			if (isAdditiveMode)
+			{
+				if (OutList.Contains(AssetD)) continue;
+			}
+
 			OutList.Add(AssetD);
 		}
 	}
@@ -784,7 +927,7 @@ void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
 			continue;
 		}
 
-		StandardAsset Asset(*AssetDPtr);
+		FCustomStandardAssetData Asset(*AssetDPtr);
 
 		if (!Asset.GetAssetSubfix().IsValid())
 		{
@@ -797,6 +940,11 @@ void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
 
 		if (!result)
 		{
+			if (isAdditiveMode)
+			{
+				if (OutList.Contains(AssetDPtr)) continue;
+			}
+
 			OutList.Add(AssetDPtr);
 		}
 	}
@@ -825,7 +973,7 @@ void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
 		TSharedPtr<bool> SRGBS =
 			EGetTextureAssetSRGBSettings(*AssetDPtr);
 
-		StandardAsset Asset(*AssetDPtr);
+		FCustomStandardAssetData Asset(*AssetDPtr);
 
 		TSharedPtr<FString> subfix = Asset.GetAssetSubfix();
 
@@ -851,6 +999,11 @@ void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
 			continue;
 		}
 
+		if (isAdditiveMode)
+		{
+			if (OutList.Contains(AssetDPtr)) continue;
+		}
+
 		OutList.Add(AssetDPtr);
 		
 	}
@@ -866,9 +1019,32 @@ void UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(
 		OutList.Empty();
 	}
 
-	for (const TSharedPtr<FAssetData>& AssetToJudge : FindInList)
+	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
-		OutList.Add(AssetToJudge);
+		FCustomStandardAssetData SAsset(*AssetDPtr);
+
+		if (!SAsset.GetAsset()->IsA<UTexture2D>())
+		{
+			continue;
+		}
+		
+		UTexture2D* STexture = Cast<UTexture2D>(SAsset.GetAsset());
+		TextureGroup CurrentLODGroup = STexture->LODGroup;
+
+		TSharedPtr<TextureGroup> StandardLODGroup = EGetTextureLODStandardGroup(*AssetDPtr,false);
+
+		if(StandardLODGroup.IsValid())
+		{
+			if (CurrentLODGroup != *StandardLODGroup)
+			{
+				if (isAdditiveMode)
+				{
+					if (OutList.Contains(AssetDPtr)) continue;
+				}
+
+				OutList.Add(AssetDPtr);
+			}
+		}
 	}
 }
 
@@ -1195,7 +1371,7 @@ bool UAssetsChecker::ERenameAsset(
 
 TSharedPtr<FString> UAssetsChecker::EGetAssetNameSubfix(const FAssetData& AssetSelected)
 {
-	StandardAsset AssetS(AssetSelected);
+	FCustomStandardAssetData AssetS(AssetSelected);
 
 	return AssetS.GetAssetSubfix();
 }

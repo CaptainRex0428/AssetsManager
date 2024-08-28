@@ -98,6 +98,17 @@ public:
 	static bool ESetTextureStandardSettings(
 		FAssetData& ClickedAssetData);
 
+	static TSharedPtr<TextureGroup> EGetTextureLODGroup(
+		const FAssetData& AssetData);
+
+	static TSharedPtr<TextureGroup> EGetTextureLODStandardGroup(
+		const FAssetData& AssetData,
+		bool bIsCategoryStrict = false);
+
+	static bool ESetTextureLODGroup(
+		FAssetData& AssetData,
+		TextureGroup InTextureGroup);
+
 #pragma endregion
 
 #pragma region DeleteAssets

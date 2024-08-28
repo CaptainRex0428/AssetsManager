@@ -44,7 +44,7 @@ public:
 	virtual void SelectAll();
 	virtual void UnselectAll();
 
-	virtual void RefreshTable();
+	virtual void RefreshTable(bool bRefreshHeader = true);
 
 private:
 
@@ -374,12 +374,16 @@ inline void SCustomTable<ItemType>::UnselectAll()
 }
 
 template<typename ItemType>
-inline void SCustomTable<ItemType>::RefreshTable()
+inline void SCustomTable<ItemType>::RefreshTable(
+	bool bRefreshHeader)
 {
 	CheckBoxArray.Empty();
 	CheckBoxSelected.Empty();
-
-	ConstructTableHeaderRow(false);
+	
+	if(bRefreshHeader)
+	{
+		ConstructTableHeaderRow(false);
+	}
 
 	if (this->MainTable.IsValid())
 	{
