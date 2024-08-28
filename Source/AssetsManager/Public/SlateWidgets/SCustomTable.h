@@ -44,7 +44,7 @@ public:
 	virtual void SelectAll();
 	virtual void UnselectAll();
 
-	virtual void RefreshTable();
+	virtual void RefreshTable(bool bRefreshHeader = true);
 
 private:
 
@@ -75,7 +75,7 @@ private:
 		ItemType& ItemShow);
 
 	TSharedRef<SCheckBox> ConstructRowCheckBox(
-		const ItemType ItemIn);
+		const ItemType& ItemIn);
 	
 	void OnCheckBoxStateChanged(
 		ECheckBoxState NewState,
@@ -263,19 +263,26 @@ inline TSharedRef<SWidget> SCustomTable<ItemType>::OnTableGenerateListColumn(
 
 template<typename ItemType>
 inline TSharedRef<SCheckBox> SCustomTable<ItemType>::ConstructRowCheckBox(
-	const ItemType ItemIn)
+	const ItemType& ItemIn)
 {
+	bool state = false;
+
+	if(CheckBoxSelected.Contains(ItemIn))
+	{
+		state = true;
+	}
+
 	TSharedPtr<SCheckBox> CheckBox =
 		SNew(SCheckBox)
 		.Type(ESlateCheckBoxType::CheckBox)
 		.Padding(FMargin(3.f))
 		.HAlign(HAlign_Center)
-		.IsChecked(ECheckBoxState::Unchecked)
+		.IsChecked(state ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
 		.Visibility(EVisibility::Visible)
 		.OnCheckStateChanged(this, &SCustomTable<ItemType>::OnCheckBoxStateChanged, ItemIn);
-
-	CheckBoxArray.Add(CheckBox);
-
+	
+	CheckBoxArray.AddUnique(CheckBox);
+	
 	return CheckBox.ToSharedRef();
 }
 
@@ -374,12 +381,16 @@ inline void SCustomTable<ItemType>::UnselectAll()
 }
 
 template<typename ItemType>
-inline void SCustomTable<ItemType>::RefreshTable()
+inline void SCustomTable<ItemType>::RefreshTable(
+	bool bRefreshHeader)
 {
 	CheckBoxArray.Empty();
 	CheckBoxSelected.Empty();
-
-	ConstructTableHeaderRow(false);
+	
+	if(bRefreshHeader)
+	{
+		ConstructTableHeaderRow(false);
+	}
 
 	if (this->MainTable.IsValid())
 	{
