@@ -21,14 +21,14 @@ PublicDependencyModuleNames.AddRange
 	new string[]
 	{
 		"Core",
-    	"Blutility",
+		"Blutility",
 		"EditorScriptingUtilities",
 		"UMG",
 		"Niagara",
-    	"UnrealEd",
+    		"UnrealEd",
    	 	"AssetRegistry",
-    	"AssetTools",
-    	"ContentBrowser",
+    		"AssetTools",
+    		"ContentBrowser",
 		"InputCore",
 		"Projects"
 		
