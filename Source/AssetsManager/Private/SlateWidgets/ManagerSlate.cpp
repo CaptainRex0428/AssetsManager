@@ -1403,8 +1403,8 @@ FReply SManagerSlateTab::OnSelectAllButtonClicked()
 {
 	CustomTableList->SelectAll();
 
-	NtfyMsg("List:" + FString::FromInt(CustomTableList->GetListItems().Num()));
-	NtfyMsg("Selected:" + FString::FromInt(CustomTableList->GetSelectedItems().Num()));
+	// NtfyMsg("List:" + FString::FromInt(CustomTableList->GetListItems().Num()));
+	// NtfyMsg("Selected:" + FString::FromInt(CustomTableList->GetSelectedItems().Num()));
 
 	return FReply::Handled();
 }
