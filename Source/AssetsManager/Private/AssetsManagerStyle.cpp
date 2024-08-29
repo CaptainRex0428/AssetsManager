@@ -76,7 +76,7 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
 
 	CustomStyleSet->Set(
 		"ContentBrowser.AssetsManagerTitle",
-		new FSlateImageBrush(IconDirectory / "TitleBar.png", Icon64x64));
+		new FSlateImageBrush(IconDirectory / "TitleBar.png", FVector2D(5332.f,175.f)));
 
 	return CustomStyleSet;
 }

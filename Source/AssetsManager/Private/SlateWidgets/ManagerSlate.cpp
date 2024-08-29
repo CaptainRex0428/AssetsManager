@@ -168,7 +168,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 		[
 			ConstructCommonImageBox(
 				TitleImage,
-				FVector2D(FVector2D(5332.f, 326.f)),
+				FVector2D(FVector2D(5332.f, 175.f)),
 				EStretch::ScaleToFitX)
 
 			//ConstructTitleTextBlock(InArgs._TitleText, GetFontInfo(24))
