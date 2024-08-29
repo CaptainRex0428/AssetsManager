@@ -33,6 +33,11 @@ const FName & FAssetsMangerStyle::GetStyleName()
 	return StyleSetName;
 }
 
+const TSharedPtr<FSlateStyleSet>& FAssetsMangerStyle::GetStyleSet()
+{
+	return CreatedSlateStyleSet;
+}
+
 TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
 {
 	TSharedRef<FSlateStyleSet> CustomStyleSet = MakeShareable(new FSlateStyleSet(StyleSetName));
@@ -46,16 +51,32 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
 	const FVector2D Icon64x64(64.f, 64.f);
 
 	CustomStyleSet->Set(
+		"ContentBrowser.DeleteUnusedFolders",
+		new FSlateImageBrush(IconDirectory / "LOGO_ORANGE_256.png", Icon64x64));
+
+	CustomStyleSet->Set(
 		"ContentBrowser.AssetsManager",
 		new FSlateImageBrush(IconDirectory / "LOGO_GREY_256.png", Icon64x64));
 
 	CustomStyleSet->Set(
-		"ContentBrowser.DeleteUnusedFolders",
+		"ContentBrowser.MaterialManager",
+		new FSlateImageBrush(IconDirectory / "LOGO_GREEN_256.png", Icon64x64));
+
+	CustomStyleSet->Set(
+		"ContentBrowser.SkeletalMeshManager",
 		new FSlateImageBrush(IconDirectory / "LOGO_RED_256.png", Icon64x64));
 
 	CustomStyleSet->Set(
-		"ContentBrowser.MaterialCreator",
-		new FSlateImageBrush(IconDirectory / "LOGO_GREY_256.png", Icon64x64));
+		"ContentBrowser.StaticMeshManager",
+		new FSlateImageBrush(IconDirectory / "LOGO_BLUE_256.png", Icon64x64));
+
+	CustomStyleSet->Set(
+		"ContentBrowser.ViewportManager",
+		new FSlateImageBrush(IconDirectory / "LOGO_PURPLE_256.png", Icon64x64));
+
+	CustomStyleSet->Set(
+		"ContentBrowser.AssetsManagerTitle",
+		new FSlateImageBrush(IconDirectory / "TitleBar.png", Icon64x64));
 
 	return CustomStyleSet;
 }
