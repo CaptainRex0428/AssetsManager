@@ -4,8 +4,9 @@
 
 #include "Modules/ModuleManager.h"
 
+#include "AssetsManagerConfig.h"
 
-#define ASSETSMANAGER_LOGFOLDER FPaths::ProjectDir() + "/Saved/AssetsManager/"
+
 
 class FAssetsManagerModule : public IModuleInterface
 {

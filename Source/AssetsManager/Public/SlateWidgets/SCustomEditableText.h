@@ -42,10 +42,9 @@ private:
 	TSharedRef<SEditableTextBox> ConstructEditableTextBlockFromFText();
 	void OnEditableTextBlockCommitted(const FText& TextIn, ETextCommit::Type CommitType);
 
-public:
+private:
 	ItemType SourceItem;
 
-private:
 	FOnItemToDisplayText OnItemToDisplayText;
 	FOnItemToTipText OnItemToTipText;
 	FOnItemCommit OnItemCommit;

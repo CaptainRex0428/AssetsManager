@@ -888,7 +888,7 @@ FReply SManagerSlateTab::OnSingleAssetDeleteButtonClicked(
 
 		// update slist view
 		SListViewRemoveAssetData(ClickedAssetData);
-		RefreshAssetsListView();
+		RefreshAssetsListView(false);
 	};
 
 	return FReply::Handled();
@@ -1815,7 +1815,10 @@ void SManagerSlateTab::ConstuctClassFilterList(
 
 			if (assetName == selectName)
 			{
-				NewAssetViewList.AddUnique(AssetD);
+				if (!NewAssetViewList.Contains(AssetD))
+				{
+					NewAssetViewList.AddUnique(AssetD);
+				}
 			}
 
 		}
