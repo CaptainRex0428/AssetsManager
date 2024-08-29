@@ -1815,7 +1815,10 @@ void SManagerSlateTab::ConstuctClassFilterList(
 
 			if (assetName == selectName)
 			{
-				NewAssetViewList.AddUnique(AssetD);
+				if (!NewAssetViewList.Contains(AssetD))
+				{
+					NewAssetViewList.AddUnique(AssetD);
+				}
 			}
 
 		}

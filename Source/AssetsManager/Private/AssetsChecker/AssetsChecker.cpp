@@ -844,7 +844,10 @@ void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
 					if (OutList.Contains(SamaNameData)) continue;
 				}
 
-				OutList.AddUnique(SamaNameData);
+				if (!OutList.Contains(SamaNameData))
+				{
+					OutList.AddUnique(SamaNameData);
+				}
 			}
 		}
 	}
