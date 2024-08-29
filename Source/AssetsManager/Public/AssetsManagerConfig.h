@@ -23,6 +23,8 @@
 #define EN
 #endif
 
+#define ASSETSMANAGER_LOGFOLDER FPaths::ProjectDir() + "/Saved/AssetsManager/"
+#define ASSETSMANAGER_CONFIGFOLDER FPaths::ProjectDir() + "/Plugins/AssetsManager/Config/"
 
 const TMap<UClass*, FString> PrefixMap =
 {

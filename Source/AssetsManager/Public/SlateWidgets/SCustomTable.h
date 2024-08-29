@@ -56,7 +56,6 @@ private:
 	TArray<ItemType>* SourceItems;
 	TArray<SCommonSlate::CustomTableColumnType>* ColumnsType;
 	TArray<SCommonSlate::CustomTableColumnType>* CanGenerateColumnsType;
-	TArray<float>* ColumnsInitWidth;
 
 private:
 
@@ -91,6 +90,8 @@ private:
 	TArray<TSharedPtr<SCheckBox>> CheckBoxArray;
 	TArray<ItemType> CheckBoxSelected;
 
+	int TestCount;
+
 	TSharedPtr<SButton> TestButton;
 };
 
@@ -111,6 +112,7 @@ inline void SCustomTable<ItemType>::Construct(
 
 	this->CheckBoxArray.Empty();
 	this->CheckBoxSelected.Empty();
+	this->TestCount = 0;
 
 	this->MainTable = ConstructTableListView();
 
@@ -231,6 +233,8 @@ inline TSharedRef<ITableRow> SCustomTable<ItemType>::OnTableGenerateRowForlist(
 	ItemType ItemIn,
 	const TSharedRef<STableViewBase>& OwnerTable)
 {
+	++TestCount;
+
 	return SNew(SCustomTableRow<ItemType>, OwnerTable)
 		.Padding(6.f)
 		.ItemShow(ItemIn)
@@ -281,7 +285,10 @@ inline TSharedRef<SCheckBox> SCustomTable<ItemType>::ConstructRowCheckBox(
 		.Visibility(EVisibility::Visible)
 		.OnCheckStateChanged(this, &SCustomTable<ItemType>::OnCheckBoxStateChanged, ItemIn);
 	
-	CheckBoxArray.AddUnique(CheckBox);
+	if (!CheckBoxArray.Contains(CheckBox))
+	{
+		CheckBoxArray.AddUnique(CheckBox);
+	}
 	
 	return CheckBox.ToSharedRef();
 }
@@ -297,16 +304,17 @@ inline void SCustomTable<ItemType>::OnCheckBoxStateChanged(
 		if (CheckBoxSelected.Contains(ItemIn))
 		{
 			CheckBoxSelected.Remove(ItemIn);
+			this->OnTableCheckBoxStateChanged.Execute();
 		}
-
-		this->OnTableCheckBoxStateChanged.Execute();
 
 		break;
 
 	case ECheckBoxState::Checked:
-		CheckBoxSelected.AddUnique(ItemIn);
-
-		this->OnTableCheckBoxStateChanged.Execute();
+		if (!CheckBoxSelected.Contains(ItemIn)) 
+		{
+			CheckBoxSelected.AddUnique(ItemIn);
+			this->OnTableCheckBoxStateChanged.Execute();
+		};
 
 		break;
 
@@ -349,12 +357,15 @@ inline const TArray<ItemType>& SCustomTable<ItemType>::GetListItems()
 template<typename ItemType>
 inline void SCustomTable<ItemType>::SelectAll()
 {
+	/*NtfyMsg(FString::FromInt(CheckBoxArray.Num()));
+	NtfyMsg(FString::FromInt(this->TestCount));*/
+
 	if (CheckBoxArray.Num() == 0)
 	{
 		return;
 	}
 
-	for (const TSharedPtr<SCheckBox> CheckBox : CheckBoxArray)
+	for (const TSharedPtr<SCheckBox> & CheckBox : CheckBoxArray)
 	{
 		if (!CheckBox->IsChecked())
 		{
@@ -371,7 +382,7 @@ inline void SCustomTable<ItemType>::UnselectAll()
 		return;
 	}
 
-	for (const TSharedPtr<SCheckBox> CheckBox : CheckBoxArray)
+	for (const TSharedPtr<SCheckBox> & CheckBox : CheckBoxArray)
 	{
 		if (CheckBox->IsChecked())
 		{
@@ -384,13 +395,14 @@ template<typename ItemType>
 inline void SCustomTable<ItemType>::RefreshTable(
 	bool bRefreshHeader)
 {
-	CheckBoxArray.Empty();
-	CheckBoxSelected.Empty();
-	
 	if(bRefreshHeader)
 	{
 		ConstructTableHeaderRow(false);
 	}
+
+	this->CheckBoxArray.Empty();
+	this->CheckBoxSelected.Empty();
+	this->TestCount = 0;
 
 	if (this->MainTable.IsValid())
 	{

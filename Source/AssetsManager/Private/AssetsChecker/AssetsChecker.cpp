@@ -844,7 +844,10 @@ void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
 					if (OutList.Contains(SamaNameData)) continue;
 				}
 
-				OutList.AddUnique(SamaNameData);
+				if (!OutList.Contains(SamaNameData))
+				{
+					OutList.AddUnique(SamaNameData);
+				}
 			}
 		}
 	}
@@ -1166,6 +1169,11 @@ void UAssetsChecker::ERemoveEmptyFolder(
 	FString EmptyFolderPathNames;
 	TArray<FString> EmptyFolderPath;
 
+	int TaskCount = FolderPathSelected.Num();
+	FSlowTask RemoveUnusedFolderTask(TaskCount,FText::FromString(TEXT("Iterating Folders...")));
+	RemoveUnusedFolderTask.Initialize();
+	RemoveUnusedFolderTask.MakeDialog();
+
 	// loop to collect empty path
 	for (const FString FolderPathCheck : FolderPathSelected)
 	{
@@ -1185,20 +1193,28 @@ void UAssetsChecker::ERemoveEmptyFolder(
 
 		TArray<FString> FolderPathsArray = UEditorAssetLibrary::ListAssets(FolderPathCheck, true, true);
 
+		int subTaskCount = FolderPathsArray.Num();
+
 		for(const FString & FolderPath : FolderPathsArray)
 		{
+
 			PATHLOOPIGNORE(FolderPath);
 			DIRPATHNOTEXISTIGNORE(FolderPath);
 
 			if(UEditorAssetLibrary::ListAssets(FolderPath).Num() == 0)
 			{
+
 				EmptyFolderPathNames.Append(FolderPath);
 				EmptyFolderPathNames.Append("\n");
 
 				EmptyFolderPath.Add(FolderPath);
 			}
+
+			RemoveUnusedFolderTask.EnterProgressFrame((1/TaskCount)*(1/subTaskCount));
 		}
 	}
+
+	RemoveUnusedFolderTask.Destroy();
 
 	// no empty folder found.
 	if (EmptyFolderPath.Num() == 0)

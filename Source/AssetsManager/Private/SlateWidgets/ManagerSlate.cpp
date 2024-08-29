@@ -888,7 +888,7 @@ FReply SManagerSlateTab::OnSingleAssetDeleteButtonClicked(
 
 		// update slist view
 		SListViewRemoveAssetData(ClickedAssetData);
-		RefreshAssetsListView();
+		RefreshAssetsListView(false);
 	};
 
 	return FReply::Handled();
@@ -1403,8 +1403,8 @@ FReply SManagerSlateTab::OnSelectAllButtonClicked()
 {
 	CustomTableList->SelectAll();
 
-	NtfyMsg("List:" + FString::FromInt(CustomTableList->GetListItems().Num()));
-	NtfyMsg("Selected:" + FString::FromInt(CustomTableList->GetSelectedItems().Num()));
+	// NtfyMsg("List:" + FString::FromInt(CustomTableList->GetListItems().Num()));
+	// NtfyMsg("Selected:" + FString::FromInt(CustomTableList->GetSelectedItems().Num()));
 
 	return FReply::Handled();
 }
@@ -1815,7 +1815,10 @@ void SManagerSlateTab::ConstuctClassFilterList(
 
 			if (assetName == selectName)
 			{
-				NewAssetViewList.AddUnique(AssetD);
+				if (!NewAssetViewList.Contains(AssetD))
+				{
+					NewAssetViewList.AddUnique(AssetD);
+				}
 			}
 
 		}
