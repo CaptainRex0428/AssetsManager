@@ -1190,30 +1190,25 @@ void UAssetsChecker::ERemoveEmptyFolder(
 
 		TArray<FString> FolderPathsArray = UEditorAssetLibrary::ListAssets(FolderPathCheck, true, true);
 
-		int ChildTaskCount = FolderPathsArray.Num();
-		FSlowTask ChildRemoveUnusedFolderTask(ChildTaskCount, 
-			FText::FromString(TEXT("Iterating Folder(") + FolderPathCheck + TEXT(")...")));
-		ChildRemoveUnusedFolderTask.Initialize();
-		ChildRemoveUnusedFolderTask.MakeDialog();
+		int subTaskCount = FolderPathsArray.Num();
 
 		for(const FString & FolderPath : FolderPathsArray)
 		{
+
 			PATHLOOPIGNORE(FolderPath);
 			DIRPATHNOTEXISTIGNORE(FolderPath);
 
 			if(UEditorAssetLibrary::ListAssets(FolderPath).Num() == 0)
 			{
+
 				EmptyFolderPathNames.Append(FolderPath);
 				EmptyFolderPathNames.Append("\n");
 
 				EmptyFolderPath.Add(FolderPath);
 			}
-			ChildRemoveUnusedFolderTask.EnterProgressFrame();
-		}
-		
-		ChildRemoveUnusedFolderTask.Destroy();
 
-		RemoveUnusedFolderTask.EnterProgressFrame();
+			RemoveUnusedFolderTask.EnterProgressFrame((1/TaskCount)*(1/subTaskCount));
+		}
 	}
 
 	RemoveUnusedFolderTask.Destroy();
