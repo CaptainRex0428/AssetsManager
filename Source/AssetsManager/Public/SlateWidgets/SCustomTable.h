@@ -357,8 +357,8 @@ inline const TArray<ItemType>& SCustomTable<ItemType>::GetListItems()
 template<typename ItemType>
 inline void SCustomTable<ItemType>::SelectAll()
 {
-	NtfyMsg(FString::FromInt(CheckBoxArray.Num()));
-	NtfyMsg(FString::FromInt(this->TestCount));
+	/*NtfyMsg(FString::FromInt(CheckBoxArray.Num()));
+	NtfyMsg(FString::FromInt(this->TestCount));*/
 
 	if (CheckBoxArray.Num() == 0)
 	{
