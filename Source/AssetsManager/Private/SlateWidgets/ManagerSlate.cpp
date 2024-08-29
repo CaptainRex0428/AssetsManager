@@ -888,7 +888,7 @@ FReply SManagerSlateTab::OnSingleAssetDeleteButtonClicked(
 
 		// update slist view
 		SListViewRemoveAssetData(ClickedAssetData);
-		RefreshAssetsListView();
+		RefreshAssetsListView(false);
 	};
 
 	return FReply::Handled();
