@@ -2,6 +2,7 @@
 
 #include "SlateWidgets/ManagerSlate.h"
 #include "SlateWidgets/SCustomTableRow.h"
+#include "AssetsManagerStyle.h"
 
 
 #include "AssetsManager.h"
@@ -159,16 +160,25 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	TSharedPtr<SVerticalBox> MainUI = SNew(SVerticalBox);
 
 #pragma region title
+
+	const FSlateBrush* TitleImage = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.AssetsManagerTitle");
+
 	MainUI->AddSlot()
 		.AutoHeight()
 		[
-			ConstructTitleTextBlock(InArgs._TitleText, GetFontInfo(24))
+			ConstructCommonImageBox(
+				TitleImage,
+				FVector2D(FVector2D(5332.f, 326.f)),
+				EStretch::ScaleToFitX)
+
+			//ConstructTitleTextBlock(InArgs._TitleText, GetFontInfo(24))
 		];
 
 	MainUI->AddSlot()
 		.AutoHeight()
 		[
 			SNew(SBorder)
+			
 
 		];
 #pragma endregion
