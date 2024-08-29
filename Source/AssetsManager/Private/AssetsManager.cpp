@@ -6,7 +6,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetsChecker/AssetsChecker.h"
 #include "SlateWidgets/ManagerSlate.h"
-#include "SlateWidgets/MaterialCreatorSlate.h"
+#include "SlateWidgets/Material/MaterialCreatorSlate.h"
 #include "AssetsManagerStyle.h"
 
 #include "EditorAssetLibrary.h"
