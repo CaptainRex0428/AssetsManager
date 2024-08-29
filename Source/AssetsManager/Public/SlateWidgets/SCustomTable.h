@@ -44,7 +44,7 @@ public:
 	virtual void SelectAll();
 	virtual void UnselectAll();
 
-	virtual void RefreshTable();
+	virtual void RefreshTable(bool bRefreshHeader = true);
 
 private:
 
@@ -56,7 +56,6 @@ private:
 	TArray<ItemType>* SourceItems;
 	TArray<SCommonSlate::CustomTableColumnType>* ColumnsType;
 	TArray<SCommonSlate::CustomTableColumnType>* CanGenerateColumnsType;
-	TArray<float>* ColumnsInitWidth;
 
 private:
 
@@ -75,7 +74,7 @@ private:
 		ItemType& ItemShow);
 
 	TSharedRef<SCheckBox> ConstructRowCheckBox(
-		const ItemType ItemIn);
+		const ItemType& ItemIn);
 	
 	void OnCheckBoxStateChanged(
 		ECheckBoxState NewState,
@@ -91,11 +90,14 @@ private:
 	TArray<TSharedPtr<SCheckBox>> CheckBoxArray;
 	TArray<ItemType> CheckBoxSelected;
 
+	int TestCount;
+
 	TSharedPtr<SButton> TestButton;
 };
 
 template<typename ItemType>
-inline void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArguments& InArgs)
+inline void SCustomTable<ItemType>::Construct(
+	const SCustomTable<ItemType>::FArguments& InArgs)
 {
 	bCanSupportFocus = true;
 
@@ -110,23 +112,13 @@ inline void SCustomTable<ItemType>::Construct(const SCustomTable<ItemType>::FArg
 
 	this->CheckBoxArray.Empty();
 	this->CheckBoxSelected.Empty();
+	this->TestCount = 0;
 
 	this->MainTable = ConstructTableListView();
 
-#pragma region TestButton
-	/*TestButton =
-		SNew(SButton)
-		.OnClicked(this, &SCustomTable<ItemType>::OnTestButtonClicked)
-		.ContentPadding(FMargin(5.f));
-	TestButton->SetContent(ConstructTextForButtons(TEXT("测试")));
-
-	MainTable->AddSlot()
-		.AutoHeight()[TestButton.ToSharedRef()];*/
-#pragma endregion
-
 	ChildSlot
 	[
-		MainTable.ToSharedRef()
+		SCommonSlate::ConstructOverlayOpaque(MainTable,3)
 	];
 }
 
@@ -147,7 +139,8 @@ inline TSharedRef<SCustomListView<ItemType>> SCustomTable<ItemType>::ConstructTa
 }
 
 template<typename ItemType>
-inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(bool bIsGenerateHeader)
+inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(
+	bool bIsGenerateHeader)
 {
 	if (bIsGenerateHeader) 
 	{
@@ -162,8 +155,9 @@ inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(bo
 	SHeaderRow::FColumn::FArguments CheckBoxArgs;
 	CheckBoxArgs.DefaultLabel(FText::FromString(""));
 	CheckBoxArgs.ColumnId("CheckBox");
-	CheckBoxArgs.FixedWidth(36.f);
+	CheckBoxArgs.FixedWidth(32.f);
 	CheckBoxArgs.ShouldGenerateWidget(true);
+	CheckBoxArgs.HAlignHeader(HAlign_Center);
 
 	TableHeaderRow->AddColumn(CheckBoxArgs);
 
@@ -171,11 +165,56 @@ inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(bo
 	{
 		SHeaderRow::FColumn::FArguments ColumnBoxArgs;
 
-		const FString * ColumnNamePtr = CustomTableColumnTypeToString.Find(ColumnIn);
-
 		ColumnBoxArgs.DefaultLabel(FText::FromString("[Undefined Column]"));
 		ColumnBoxArgs.ColumnId("[Undefined]");
-		CheckBoxArgs.ShouldGenerateWidget(true);
+		ColumnBoxArgs.ShouldGenerateWidget(true);
+		ColumnBoxArgs.HAlignHeader(HAlign_Center);
+
+		switch (ColumnIn)
+		{
+		case Column_UClass:
+			ColumnBoxArgs.FillWidth(0.07f);
+			break;
+
+		case Column_AssetName:
+			ColumnBoxArgs.FillWidth(0.3f);
+			break;
+
+		case Column_AssetPath:
+			ColumnBoxArgs.FillWidth(0.5f);
+			break;
+			
+		case Column_PerAssetHandle:
+			ColumnBoxArgs.FillWidth(0.25f);
+			break;
+
+		case Column_TextureMaxInGameSize:
+			ColumnBoxArgs.FillWidth(0.07f);
+			break;
+
+		case Column_TextureSourceSize:
+			ColumnBoxArgs.FillWidth(0.07f);
+			break;
+
+		case Column_TextureCompressionSettings:
+			ColumnBoxArgs.FillWidth(0.2f);
+			break;
+
+		case Column_TextureSRGB:
+			ColumnBoxArgs.FillWidth(0.05f);
+			break;
+				
+		case Column_TextureGroup:
+			ColumnBoxArgs.FillWidth(0.2f);
+			break;
+
+		default:
+			ColumnBoxArgs.FillWidth(0.1f);
+			break;
+		}
+		
+		
+		const FString* ColumnNamePtr = CustomTableColumnTypeToString.Find(ColumnIn);
 
 		if (ColumnNamePtr)
 		{
@@ -186,8 +225,6 @@ inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(bo
 		TableHeaderRow->AddColumn(ColumnBoxArgs);
 	}
 
-	NtfyMsg(FString::FromInt(TableHeaderRow->GetColumns().Num()));
-
 	return TableHeaderRow.ToSharedRef();
 }
 
@@ -196,6 +233,8 @@ inline TSharedRef<ITableRow> SCustomTable<ItemType>::OnTableGenerateRowForlist(
 	ItemType ItemIn,
 	const TSharedRef<STableViewBase>& OwnerTable)
 {
+	++TestCount;
+
 	return SNew(SCustomTableRow<ItemType>, OwnerTable)
 		.Padding(6.f)
 		.ItemShow(ItemIn)
@@ -205,7 +244,8 @@ inline TSharedRef<ITableRow> SCustomTable<ItemType>::OnTableGenerateRowForlist(
 }
 
 template<typename ItemType>
-inline void SCustomTable<ItemType>::OnRowMouseButtonDoubleClicked(ItemType ItemIn)
+inline void SCustomTable<ItemType>::OnRowMouseButtonDoubleClicked(
+	ItemType ItemIn)
 {
 	this->OnTableRowMouseButtonDoubleClicked.Execute(ItemIn);
 }
@@ -227,19 +267,29 @@ inline TSharedRef<SWidget> SCustomTable<ItemType>::OnTableGenerateListColumn(
 
 template<typename ItemType>
 inline TSharedRef<SCheckBox> SCustomTable<ItemType>::ConstructRowCheckBox(
-	const ItemType ItemIn)
+	const ItemType& ItemIn)
 {
+	bool state = false;
+
+	if(CheckBoxSelected.Contains(ItemIn))
+	{
+		state = true;
+	}
+
 	TSharedPtr<SCheckBox> CheckBox =
 		SNew(SCheckBox)
 		.Type(ESlateCheckBoxType::CheckBox)
 		.Padding(FMargin(3.f))
 		.HAlign(HAlign_Center)
-		.IsChecked(ECheckBoxState::Unchecked)
+		.IsChecked(state ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
 		.Visibility(EVisibility::Visible)
 		.OnCheckStateChanged(this, &SCustomTable<ItemType>::OnCheckBoxStateChanged, ItemIn);
-
-	CheckBoxArray.Add(CheckBox);
-
+	
+	if (!CheckBoxArray.Contains(CheckBox))
+	{
+		CheckBoxArray.AddUnique(CheckBox);
+	}
+	
 	return CheckBox.ToSharedRef();
 }
 
@@ -254,16 +304,17 @@ inline void SCustomTable<ItemType>::OnCheckBoxStateChanged(
 		if (CheckBoxSelected.Contains(ItemIn))
 		{
 			CheckBoxSelected.Remove(ItemIn);
+			this->OnTableCheckBoxStateChanged.Execute();
 		}
-
-		this->OnTableCheckBoxStateChanged.Execute();
 
 		break;
 
 	case ECheckBoxState::Checked:
-		CheckBoxSelected.AddUnique(ItemIn);
-
-		this->OnTableCheckBoxStateChanged.Execute();
+		if (!CheckBoxSelected.Contains(ItemIn)) 
+		{
+			CheckBoxSelected.AddUnique(ItemIn);
+			this->OnTableCheckBoxStateChanged.Execute();
+		};
 
 		break;
 
@@ -306,12 +357,15 @@ inline const TArray<ItemType>& SCustomTable<ItemType>::GetListItems()
 template<typename ItemType>
 inline void SCustomTable<ItemType>::SelectAll()
 {
+	/*NtfyMsg(FString::FromInt(CheckBoxArray.Num()));
+	NtfyMsg(FString::FromInt(this->TestCount));*/
+
 	if (CheckBoxArray.Num() == 0)
 	{
 		return;
 	}
 
-	for (const TSharedPtr<SCheckBox> CheckBox : CheckBoxArray)
+	for (const TSharedPtr<SCheckBox> & CheckBox : CheckBoxArray)
 	{
 		if (!CheckBox->IsChecked())
 		{
@@ -328,7 +382,7 @@ inline void SCustomTable<ItemType>::UnselectAll()
 		return;
 	}
 
-	for (const TSharedPtr<SCheckBox> CheckBox : CheckBoxArray)
+	for (const TSharedPtr<SCheckBox> & CheckBox : CheckBoxArray)
 	{
 		if (CheckBox->IsChecked())
 		{
@@ -338,12 +392,17 @@ inline void SCustomTable<ItemType>::UnselectAll()
 }
 
 template<typename ItemType>
-inline void SCustomTable<ItemType>::RefreshTable()
+inline void SCustomTable<ItemType>::RefreshTable(
+	bool bRefreshHeader)
 {
-	CheckBoxArray.Empty();
-	CheckBoxSelected.Empty();
+	if(bRefreshHeader)
+	{
+		ConstructTableHeaderRow(false);
+	}
 
-	ConstructTableHeaderRow(false);
+	this->CheckBoxArray.Empty();
+	this->CheckBoxSelected.Empty();
+	this->TestCount = 0;
 
 	if (this->MainTable.IsValid())
 	{

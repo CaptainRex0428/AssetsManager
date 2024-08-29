@@ -72,6 +72,9 @@ public:
 	static TSharedPtr<TextureCompressionSettings> EGetTextureAssetCompressionSettings(
 		const FAssetData& AssetData);
 
+	static TSharedPtr<TextureGroup> EGetTextureAssetTextureGroup(
+		const FAssetData& AssetData);
+
 	static bool ESetTextureAssetCompressionSettings(
 		const FAssetData& AssetData,
 		const TEnumAsByte<TextureCompressionSettings> & CompressionSetting);
@@ -94,6 +97,17 @@ public:
 
 	static bool ESetTextureStandardSettings(
 		FAssetData& ClickedAssetData);
+
+	static TSharedPtr<TextureGroup> EGetTextureLODGroup(
+		const FAssetData& AssetData);
+
+	static TSharedPtr<TextureGroup> EGetTextureLODStandardGroup(
+		const FAssetData& AssetData,
+		bool bIsCategoryStrict = false);
+
+	static bool ESetTextureLODGroup(
+		FAssetData& AssetData,
+		TextureGroup InTextureGroup);
 
 #pragma endregion
 
@@ -157,6 +171,11 @@ public:
 		bool isAdditiveMode = false);
 
 	static void EListTextureSettingsErrorAssetsForAssetList(
+		const TArray<TSharedPtr<FAssetData>>& FindInList,
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool isAdditiveMode = false);
+
+	static void EListTextureLODGroupErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList,
 		TArray<TSharedPtr<FAssetData>>& OutList,
 		bool isAdditiveMode = false);

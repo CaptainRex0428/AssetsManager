@@ -27,12 +27,14 @@ private:
 
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsCanGenerateType;
-	TArray<float> SManagerCustomTableTitleRowColumnsInitWidth;
 
 	enum ClassCheckState
 	{
 		DefaultClassCheckState = 0,
-		Texture
+		Texture,
+		Material,
+		MaterialConst,
+		SkeletalMesh
 	};
 
 	ClassCheckState m_ClassCheckState;
@@ -42,7 +44,8 @@ private:
 		DefaultUsageCheckState = 0,
 		Unused,
 		// for texture,
-		MaxInGameSizeError, SourceSizeError,SubfixError,TextureSettingsError,
+		MaxInGameSizeError, SourceSizeError,
+		SubfixError,TextureSettingsError,TextureGroupError,
 		// for prefix
 		PrefixError,
 		//for same name asset,
@@ -60,9 +63,6 @@ private:
 
 	void ConstructHeaderRow();
 
-	TArray<TSharedPtr<SWidget>> OnConstructTableRow(
-		TSharedPtr<FAssetData>& AssetToDisplay);
-
 	TSharedRef<SWidget> OnTableGenerateListColumn(
 		const FName& ColumnName,
 		TSharedPtr<FAssetData>& AssetToDisplay);
@@ -75,7 +75,8 @@ private:
 	void OnRowMouseButtonDoubleClicked(
 		TSharedPtr<FAssetData> & AssetDataToDisplay);
 
-	void RefreshAssetsListView();
+	void RefreshAssetsListView(
+		bool bRefreshTableHeader = true);
 
 #pragma region ConstructAssetInfo
 	
@@ -130,40 +131,66 @@ private:
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
+	TSharedRef<STextBlock> ConstructAssetTextureLODGroupRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
 #pragma endregion
 
 #pragma region ConstructSingleButton
 	// Construct Delete Button
-	TSharedRef<SButton> ConstructSingleAssetDeleteButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleAssetDeleteButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	TSharedRef<SButton> ConstructSingleAssetDeleteButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleAssetDeleteButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 	
 	// Construct Debug Button
-	TSharedRef<SButton> ConstructSingleAssetDebugButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleAssetDebugButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	TSharedRef<SButton> ConstructSingleAssetDebugButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleAssetDebugButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 	
 	//Construct Fix Button
-	TSharedRef<SButton> ConstructSingleAssetReimportButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleAssetReimportButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	TSharedRef<SButton> ConstructSingleAssetReimportButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleAssetReimportButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 
 	//Construct Texture 2K restrict Button
-	TSharedRef<SButton> ConstructSingleTextureAsset2KButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleTextureAsset2KButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	TSharedRef<SButton> ConstructSingleTextureAsset2KButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureAsset2KButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 
 	//Construct Texture 1K restrict Button
-	TSharedRef<SButton> ConstructSingleTextureAsset1KButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleTextureAsset1KButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	TSharedRef<SButton> ConstructSingleTextureAsset1KButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureAsset1KButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 
 	//Construct Texture 512 restrict Button
-	TSharedRef<SButton> ConstructSingleTextureAsset512ButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleTextureAsset512ButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	TSharedRef<SButton> ConstructSingleTextureAsset512ButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureAsset512ButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 	
-	//Construct Texture Reset Button
-	TSharedRef<SButton> ConstructSingleTextureAssetResetButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleTextureAssetResetButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	//Construct Texture MaxInGameSize Reset Button
+	TSharedRef<SButton> ConstructSingleTextureAssetResetButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureAssetResetButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 
-	//Construct Texture Reset Button
-	TSharedRef<SButton> ConstructSingleTextureAssetSettingsFixButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay);
-	FReply OnSingleTextureAssetSettingsFixButtonClicked(TSharedPtr<FAssetData> ClickedAssetData);
+	//Construct Texture Settings Fix Button
+	TSharedRef<SButton> ConstructSingleTextureAssetSettingsFixButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureAssetSettingsFixButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
+
+	//Construct Texture LOD Group Fix Button
+	TSharedRef<SButton> ConstructSingleTextureLODGroupStandardFixButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleTextureLODGroupStandardFixButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
 
 #pragma endregion
 
@@ -245,8 +272,9 @@ private:
 	// only for texture
 	TSharedPtr<FString> UsageSelectionMaxInGameSizeError;
 	TSharedPtr<FString> UsageSelectionSourceSizeError;
-	TSharedPtr<FString> UsageSelectionSubfixError;
+	TSharedPtr<FString> UsageSelectionTextureSubfixError;
 	TSharedPtr<FString> UsageSelectionTextureSettinsError;
+	TSharedPtr<FString> UsageSelectionTextureLODGroupError;
 	
 #pragma endregion
 

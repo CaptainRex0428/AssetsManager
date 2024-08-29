@@ -13,7 +13,7 @@
 
 #include "AssetRegistry/AssetRegistryModule.h"
 
-#include "StandardAsset/StandardAsset.h"
+#include "StandardAsset/FCustomStandardAssetData.h"
 
 #include "EditorReimportHandler.h"
 
@@ -24,6 +24,7 @@
 
 #include "HAL/FileManager.h"
 
+#include "Engine/Texture.h"
 
 #pragma region Filter
 
@@ -70,17 +71,19 @@
 #define USAGE_SAMENAMEASSETERROR TEXT("多资产重复命名错误")
 #define USAGE_TEXTURESUBFIXERROR TEXT("贴图不规范后缀")
 #define USAGE_TEXTURESETTINGSERROR TEXT("贴图资产设定错误")
+#define USAGE_TEXTUREGROUPERROR TEXT("LOD纹理组设置错误")
 
 #else
 
 #define USAGE_NONE TEXT("None")
 #define USAGE_UNUSED TEXT("Unused")
-#define USAGE_MAXINGAMESIZEERROR TEXT("MaxInGameSizeError")
-#define USAGE_SOURCESIZEERROR TEXT("SourceSizeError")
-#define USAGE_PREFIXERROR TEXT("PrefixError")
-#define USAGE_SAMENAMEASSETERROR TEXT("SameNameError")
-#define USAGE_TEXTURESUBFIXERROR TEXT("SubfixError(Texture)")
-#define USAGE_TEXTURESETTINGSERROR TEXT("SettingsError(Texture)")
+#define USAGE_MAXINGAMESIZEERROR TEXT("Error-MaxInGameSize")
+#define USAGE_SOURCESIZEERROR TEXT("Error-SourceSize")
+#define USAGE_PREFIXERROR TEXT("Error-Prefix")
+#define USAGE_SAMENAMEASSETERROR TEXT("Error-RepeatedName")
+#define USAGE_TEXTURESUBFIXERROR TEXT("Error-Subfix(Texture)")
+#define USAGE_TEXTURESETTINGSERROR TEXT("Error-Settings(Texture)")
+#define USAGE_TEXTUREGROUPERROR TEXT("Error-TextureGroup(Texture LOD Group)")
 
 #endif
 
@@ -135,8 +138,9 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	UsageSelectedDefault = MakeShared<FString>(USAGE_NONE);
 	UsageSelectionMaxInGameSizeError = MakeShared<FString>(USAGE_MAXINGAMESIZEERROR);
 	UsageSelectionSourceSizeError = MakeShared<FString>(USAGE_SOURCESIZEERROR);
-	UsageSelectionSubfixError = MakeShared<FString>(USAGE_TEXTURESUBFIXERROR);
+	UsageSelectionTextureSubfixError = MakeShared<FString>(USAGE_TEXTURESUBFIXERROR);
 	UsageSelectionTextureSettinsError = MakeShared<FString>(USAGE_TEXTURESETTINGSERROR);
+	UsageSelectionTextureLODGroupError = MakeShared<FString>(USAGE_TEXTUREGROUPERROR);
 
 	UsageFilterComboSourceItems.Add(UsageSelectedDefault);
 	UsageFilterComboSourceItems.Add(MakeShared<FString>(USAGE_UNUSED));
@@ -279,13 +283,14 @@ void SManagerSlateTab::OnRowMouseButtonDoubleClicked(
 	GEditor->SyncBrowserToObjects(AssetDataArray);
 }
 
-void SManagerSlateTab::RefreshAssetsListView()
+void SManagerSlateTab::RefreshAssetsListView(
+	bool bRefreshTableHeader)
 {
-	ConstructHeaderRow();
+	if (bRefreshTableHeader) ConstructHeaderRow();
 
 	if (CustomTableList.IsValid())
 	{
-		CustomTableList->RefreshTable();
+		CustomTableList->RefreshTable(bRefreshTableHeader);
 	}
 
 	ListViewCountBlock->SetText(FText::FromString(FString::FromInt(CustomTableList->GetListItems().Num())));
@@ -296,86 +301,30 @@ void SManagerSlateTab::RefreshAssetsListView()
 void SManagerSlateTab::ConstructHeaderRow()
 {
 	SManagerCustomTableTitleRowColumnsType.Empty();
-	SManagerCustomTableTitleRowColumnsInitWidth.Empty();
 
 	SManagerCustomTableTitleRowColumnsType.Add(Column_UClass);
-	SManagerCustomTableTitleRowColumnsInitWidth.Add(0.04f);
-
 	SManagerCustomTableTitleRowColumnsType.Add(Column_AssetName);
-	SManagerCustomTableTitleRowColumnsInitWidth.Add(0.1f);
-
 	SManagerCustomTableTitleRowColumnsType.Add(Column_PerAssetHandle);
-	SManagerCustomTableTitleRowColumnsInitWidth.Add(0.1f);
 
 	if (m_ClassCheckState == Texture)
 	{
 		SManagerCustomTableTitleRowColumnsType.Insert(
 			m_UsageCheckState == SourceSizeError ? 
 			Column_TextureSourceSize :Column_TextureMaxInGameSize, 1);
-		SManagerCustomTableTitleRowColumnsInitWidth.Insert(0.1f, 1);
+
+		if (m_UsageCheckState == TextureGroupError)
+		{
+			SManagerCustomTableTitleRowColumnsType.Insert(Column_TextureGroup, 3);
+		}
 
 		if (m_UsageCheckState == TextureSettingsError)
 		{
 			SManagerCustomTableTitleRowColumnsType.Insert(Column_TextureSRGB,3);
-			SManagerCustomTableTitleRowColumnsInitWidth.Insert(0.04f, 3);
 			
 			SManagerCustomTableTitleRowColumnsType.Insert(Column_TextureCompressionSettings,3);
-			SManagerCustomTableTitleRowColumnsInitWidth.Insert(0.1f, 3);
 		}
-
 	}
 
-}
-
-TArray<TSharedPtr<SWidget>> SManagerSlateTab::OnConstructTableRow(
-	TSharedPtr<FAssetData>& AssetToDisplay)
-{
-	TArray<TSharedPtr<SWidget>> WidgetArray;
-	WidgetArray.Empty();
-
-	TSharedPtr<STextBlock> ClassWidget = ConstructAssetClassRowBox(AssetToDisplay, GetFontInfo(9));
-	ClassWidget->SetAutoWrapText(true);
-	ClassWidget->SetJustification(ETextJustify::Center);
-	ClassWidget->SetMargin(FMargin(3.f));
-
-	TSharedPtr<SCustomEditableText<TSharedPtr<FAssetData>>> NameWidget = ConstructEditAssetNameRowBox(AssetToDisplay,GetFontInfo(9));
-	//NameWidget->SetAutoWrapText(true);
-	//NameWidget->SetJustification(ETextJustify::Left);
-	//NameWidget->SetMargin(FMargin(3.f));
-
-	TSharedPtr<STextBlock> TextureSizeWidget = ConstructAssetTextureSizeRowBox(AssetToDisplay,GetFontInfo(9));
-	TextureSizeWidget->SetAutoWrapText(true);
-	TextureSizeWidget->SetJustification(ETextJustify::Center);
-	TextureSizeWidget->SetMargin(FMargin(3.f));
-
-	TSharedPtr<STextBlock> TextureCompressionSettingsWidget = ConstructAssetTextureCompressionSettingsRowBox(AssetToDisplay,GetFontInfo(9));
-	TextureCompressionSettingsWidget->SetAutoWrapText(true);
-	TextureCompressionSettingsWidget->SetJustification(ETextJustify::Center);
-	TextureCompressionSettingsWidget->SetMargin(FMargin(3.f));
-
-	TSharedPtr<STextBlock> TextureSRGBSettingsWidget = ConstructAssetTextureSRGBRowBox(AssetToDisplay,GetFontInfo(9));
-	TextureSRGBSettingsWidget->SetAutoWrapText(true);
-	TextureSRGBSettingsWidget->SetJustification(ETextJustify::Center);
-	TextureSRGBSettingsWidget->SetMargin(FMargin(3.f));
-
-	// to sync
-	TSharedPtr<SHorizontalBox> DealWidget = ConstructSingleDealPanel(AssetToDisplay);
-
-	WidgetArray.Add(ClassWidget);
-
-	if (m_ClassCheckState == Texture) WidgetArray.Add(TextureSizeWidget);
-
-	WidgetArray.Add(NameWidget);
-
-	if (m_UsageCheckState == TextureSettingsError)
-	{
-		WidgetArray.Add(TextureCompressionSettingsWidget);
-		WidgetArray.Add(TextureSRGBSettingsWidget);
-	}
-	
-	WidgetArray.Add(DealWidget);
-
-	return WidgetArray;
 }
 
 TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
@@ -409,7 +358,7 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 		}
 
 		case Column_AssetPath:
-
+		
 
 		case Column_TextureMaxInGameSize:
 		{
@@ -452,6 +401,14 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 		}
 
 		case Column_TextureGroup:
+		{
+			TSharedPtr<STextBlock> TextureLODGroup = ConstructAssetTextureLODGroupRowBox(AssetToDisplay, GetFontInfo(9));
+			TextureLODGroup->SetAutoWrapText(true);
+			TextureLODGroup->SetJustification(ETextJustify::Left);
+			TextureLODGroup->SetMargin(FMargin(3.f));
+
+			return TextureLODGroup.ToSharedRef();
+		}
 
 		case Column_PerAssetHandle:
 			return ConstructSingleDealPanel(AssetToDisplay);
@@ -514,6 +471,15 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(
 				.HAlign(HAlign_Fill)
 				[
 					ConstructSingleTextureAssetResetButtonBox(ClickedAssetData)
+				];
+		}
+
+		if (m_UsageCheckState == TextureGroupError)
+		{
+			DealPanel->AddSlot()
+				.HAlign(HAlign_Fill)
+				[
+					ConstructSingleTextureLODGroupStandardFixButtonBox(ClickedAssetData)
 				];
 		}
 	}
@@ -589,10 +555,10 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructListPathsInfo(
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructListAssetsCountInfo(
 	const FSlateFontInfo& FontInfo)
 {
+	ClassListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewClassFilterAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Yellow);
 	ListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Green);
 	SelectedCountBlock = ConstructNormalTextBlock(FString::FromInt(CustomTableList->GetSelectedItems().Num()), FontInfo, ETextJustify::Left, FColor::Emerald);
-	ClassListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewClassFilterAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Yellow);
-
+	
 	TSharedRef<SHorizontalBox> ListAssetsCountInfo =
 
 		SNew(SHorizontalBox)
@@ -846,6 +812,25 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureSRGBRowBox(
 	return TextureCompressionSettinsBox;
 }
 
+TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureLODGroupRowBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	const FSlateFontInfo& FontInfo)
+{
+	TSharedPtr<TextureGroup> TextureGroupResult
+		= UAssetsChecker::EGetTextureAssetTextureGroup(*AssetDataToDisplay);
+
+	if (TextureGroupResult.IsValid())
+	{
+		const FString ShowString = UTexture2D::GetTextureGroupString(*TextureGroupResult);
+		TSharedRef<STextBlock> TextureCompressionSettinsBox = ConstructNormalTextBlock(ShowString, FontInfo);
+		return TextureCompressionSettinsBox;
+	}
+
+	const FString ShowString = "[-]";
+	TSharedRef<STextBlock> TextureCompressionSettinsBox = ConstructNormalTextBlock(ShowString, FontInfo);
+	return TextureCompressionSettinsBox;
+}
+
 #pragma endregion
 
 #pragma region ConstructSingleButton
@@ -903,7 +888,7 @@ FReply SManagerSlateTab::OnSingleAssetDeleteButtonClicked(
 
 		// update slist view
 		SListViewRemoveAssetData(ClickedAssetData);
-		RefreshAssetsListView();
+		RefreshAssetsListView(false);
 	};
 
 	return FReply::Handled();
@@ -1209,6 +1194,40 @@ FReply SManagerSlateTab::OnSingleTextureAssetSettingsFixButtonClicked(
 	return FReply::Handled();
 }
 
+TSharedRef<SButton> SManagerSlateTab::ConstructSingleTextureLODGroupStandardFixButtonBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay)
+{
+	TSharedRef<SButton> SingleTextureFixButtonBox =
+		SNew(SButton)
+#ifdef ZH_CN
+		.Text(FText::FromString(TEXT("修复")))
+#else
+		.Text(FText::FromString(TEXT("Fix")))
+#endif
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
+		.OnClicked(this,
+			&SManagerSlateTab::OnSingleTextureLODGroupStandardFixButtonClicked,
+			AssetDataToDisplay);
+
+	return SingleTextureFixButtonBox;
+}
+
+FReply SManagerSlateTab::OnSingleTextureLODGroupStandardFixButtonClicked(
+	TSharedPtr<FAssetData> ClickedAssetData)
+{
+	TSharedPtr<TextureGroup> STLODGroup = UAssetsChecker::EGetTextureLODStandardGroup(*ClickedAssetData,false);
+
+	if (STLODGroup)
+	{
+		UAssetsChecker::ESetTextureLODGroup(*ClickedAssetData, *STLODGroup);
+
+		RefreshAssetsListView(false);
+	}
+
+	return FReply::Handled();
+}
+
 #pragma endregion
 
 #pragma endregion
@@ -1293,8 +1312,12 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDynamicHandleAllBox()
 		this->DynamicHandleAllBox = SNew(SHorizontalBox);
 	}
 
-	if(m_UsageCheckState == TextureSettingsError || m_UsageCheckState == PrefixError)
+	if(m_UsageCheckState == TextureSettingsError || 
+		m_UsageCheckState == PrefixError ||
+		m_UsageCheckState == TextureGroupError)
 	{
+		this->DynamicHandleAllBox->RemoveSlot(this->FixSelectedButton.ToSharedRef());
+
 		this->DynamicHandleAllBox->InsertSlot(0)
 			.Padding(5.f)
 			[
@@ -1379,6 +1402,10 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSelectAllButton()
 FReply SManagerSlateTab::OnSelectAllButtonClicked()
 {
 	CustomTableList->SelectAll();
+
+	// NtfyMsg("List:" + FString::FromInt(CustomTableList->GetListItems().Num()));
+	// NtfyMsg("Selected:" + FString::FromInt(CustomTableList->GetSelectedItems().Num()));
+
 	return FReply::Handled();
 }
 
@@ -1457,7 +1484,7 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 			ConstuctClassFilterList(ClassFilterCurrent);
 		}
 
-		RefreshAssetsListView();
+		RefreshAssetsListView(false);
 		return FReply::Handled();
 	}
 
@@ -1474,7 +1501,24 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 			}
 		}
 
-		RefreshAssetsListView();
+		RefreshAssetsListView(false);
+		return FReply::Handled();
+	}
+
+	if (m_UsageCheckState == TextureGroupError)
+	{
+		for (TSharedPtr<FAssetData> AssetData : AssetsList)
+		{
+			TSharedPtr<TextureGroup> STLODGroup = 
+				UAssetsChecker::EGetTextureLODStandardGroup(*AssetData, false);
+
+			if (STLODGroup)
+			{
+				UAssetsChecker::ESetTextureLODGroup(*AssetData, *STLODGroup);
+			}
+		}
+
+		RefreshAssetsListView(false);
 		return FReply::Handled();
 	}
 
@@ -1762,7 +1806,7 @@ void SManagerSlateTab::ConstuctClassFilterList(
 	{
 		TArray<TSharedPtr<FAssetData>> NewAssetViewList;
 
-		for (TSharedPtr<FAssetData> AssetD : StoredAssetsData)
+		for (TSharedPtr<FAssetData>& AssetD : StoredAssetsData)
 		{
 			FString assetName = AssetD->GetClass()->GetName();
 
@@ -1771,7 +1815,10 @@ void SManagerSlateTab::ConstuctClassFilterList(
 
 			if (assetName == selectName)
 			{
-				NewAssetViewList.Add(AssetD);
+				if (!NewAssetViewList.Contains(AssetD))
+				{
+					NewAssetViewList.AddUnique(AssetD);
+				}
 			}
 
 		}
@@ -1799,52 +1846,40 @@ void SManagerSlateTab::OnClassFilterButtonChanged(
 	// add option
 
 	m_ClassCheckState = DefaultClassCheckState;
-	
-	if(*SelectedOption.Get() == CLASS_TEXTURE ||
-		*SelectedOption.Get() == CLASS_TEXTUREARRAY)
+
+	// Construct Only Texture Selections
 	{
-		m_ClassCheckState = Texture;
+		TArray<TSharedPtr<FString>> OnlyTextureCollection =
+		{
+			UsageSelectionMaxInGameSizeError,
+			UsageSelectionSourceSizeError,
+			UsageSelectionTextureSubfixError,
+			UsageSelectionTextureSettinsError,
+			UsageSelectionTextureLODGroupError
+		};
 
-		if (!UsageFilterComboSourceItems.Contains(UsageSelectionMaxInGameSizeError))
+		if (*SelectedOption.Get() == CLASS_TEXTURE ||
+			*SelectedOption.Get() == CLASS_TEXTUREARRAY)
 		{
-			UsageFilterComboSourceItems.Add(UsageSelectionMaxInGameSizeError);
-		}
+			m_ClassCheckState = Texture;
 
-		if (!UsageFilterComboSourceItems.Contains(UsageSelectionSourceSizeError))
-		{
-			UsageFilterComboSourceItems.Add(UsageSelectionSourceSizeError);
+			for (TSharedPtr<FString>& TextureSelect : OnlyTextureCollection)
+			{
+				if (!UsageFilterComboSourceItems.Contains(TextureSelect))
+				{
+					UsageFilterComboSourceItems.Add(TextureSelect);
+				}
+			}
 		}
-
-		if (!UsageFilterComboSourceItems.Contains(UsageSelectionSubfixError))
+		else
 		{
-			UsageFilterComboSourceItems.Add(UsageSelectionSubfixError);
-		}
-
-		if (!UsageFilterComboSourceItems.Contains(UsageSelectionTextureSettinsError))
-		{
-			UsageFilterComboSourceItems.Add(UsageSelectionTextureSettinsError);
-		}
-	}
-	else
-	{
-		if (UsageFilterComboSourceItems.Contains(UsageSelectionMaxInGameSizeError))
-		{
-			UsageFilterComboSourceItems.Remove(UsageSelectionMaxInGameSizeError);
-		}
-
-		if (UsageFilterComboSourceItems.Contains(UsageSelectionSourceSizeError))
-		{
-			UsageFilterComboSourceItems.Remove(UsageSelectionSourceSizeError);
-		}
-
-		if (UsageFilterComboSourceItems.Contains(UsageSelectionSubfixError))
-		{
-			UsageFilterComboSourceItems.Remove(UsageSelectionSubfixError);
-		}
-
-		if (UsageFilterComboSourceItems.Contains(UsageSelectionTextureSettinsError))
-		{
-			UsageFilterComboSourceItems.Remove(UsageSelectionTextureSettinsError);
+			for (TSharedPtr<FString>& TextureSelect : OnlyTextureCollection)
+			{
+				if (UsageFilterComboSourceItems.Contains(TextureSelect))
+				{
+					UsageFilterComboSourceItems.Remove(TextureSelect);
+				}
+			}
 		}
 	}
 
@@ -1971,6 +2006,14 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 		ConstructDynamicHandleAllBox();
 
 		UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+	}
+
+	if (*SelectedOption.Get() == USAGE_TEXTUREGROUPERROR)
+	{
+		m_UsageCheckState = TextureGroupError;
+		ConstructDynamicHandleAllBox();
+
+		UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	RefreshAssetsListView();
