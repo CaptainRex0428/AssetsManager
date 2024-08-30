@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "SlateWidgets/ScommonSlate.h"
 #include "SlateWidgets/TCustomSlateDelegates.h"
+
 /**
  * 
  */
@@ -31,9 +32,16 @@ public:
 	SLATE_END_ARGS()
 
 
+private:
+	ItemType ItemShow;
+
+	FOnGenerateTableRowColumn OnGenerateTableRowColumn;
+
 
 public:
-	void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTableView)
+	void Construct(
+		const FArguments& InArgs, 
+		const TSharedRef<STableViewBase>& InOwnerTableView)
 	{
 		this->ItemShow = InArgs._ItemShow;
 		this->OnGenerateTableRowColumn = InArgs._OnGenerateTableRowColumn;
@@ -49,8 +57,4 @@ public:
 		 return this->OnGenerateTableRowColumn.Execute(ColumnName,this->ItemShow);		
 	}
 
-private:
-	ItemType ItemShow;
-
-	FOnGenerateTableRowColumn OnGenerateTableRowColumn;
 };

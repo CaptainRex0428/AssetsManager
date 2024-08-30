@@ -88,95 +88,73 @@ PrivateDependencyModuleNames.AddRange
 
 
 ## 目录结构描述
-|— [AssetsManager.uplugin](https://github.com/CaptainRex0428/AssetsManager/blob/master/AssetsManager.uplugin)
-
-|— [.gitignore](https://github.com/CaptainRex0428/AssetsManager/blob/master/.gitignore)
-
-|— [ReadMe.md](https://github.com/CaptainRex0428/AssetsManager/blob/master/ReadMe.md)
-
-|— [Resources](https://github.com/CaptainRex0428/AssetsManager/tree/master/Resources)
-
-——|— [Icon128.png](https://github.com/CaptainRex0428/AssetsManager/blob/master/Resources/Icon128.png)
-
-——|— [LOGO.ai](https://github.com/CaptainRex0428/AssetsManager/blob/master/Resources/LOGO.ai)
-
-——|—— [LOGO_GREY_256.png](https://github.com/CaptainRex0428/AssetsManager/blob/master/Resources/LOGO_GREY_256.png)
-
-——|—— [LOGO_ORANGE_256.png](https://github.com/CaptainRex0428/AssetsManager/blob/master/Resources/LOGO_ORANGE_256.png)
-
-——|—— [LOGO_PURPLE_256.png](https://github.com/CaptainRex0428/AssetsManager/blob/master/Resources/LOGO_PURPLE_256.png)
-
-——|—— [LOGO_RED_256.png](https://github.com/CaptainRex0428/AssetsManager/blob/master/Resources/LOGO_RED_256.png)
-
-|—— [Source](https://github.com/CaptainRex0428/AssetsManager/tree/master/Source)
-
-——|—— [AssetsManager](https://github.com/CaptainRex0428/AssetsManager/tree/master/Source/AssetsManager)
-
-————|—— [AssetsManager.Build.cs](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/AssetsManager.Build.cs)
-
-————|—— [Public](https://github.com/CaptainRex0428/AssetsManager/tree/master/Source/AssetsManager/Public)
-
-——————|—— [AssetsManager.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/AssetsManager.h)
-
-——————|—— [AssetsManagerConfig.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/AssetsManagerConfig.h)
-
-——————|—— [AssetsManagerStyle.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/AssetsManagerStyle.h)
-
-——————|—— [ManagerLogger.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/ManagerLogger.h)
-
-——————|—— [StandardAsset](https://github.com/CaptainRex0428/AssetsManager/tree/master/Source/AssetsManager/Public/StandardAsset)
-
-————————|—— [FCustomStandardAssetData.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/StandardAsset/FCustomStandardAssetData.h)
-
-——————|—— [SlateWidgets](https://github.com/CaptainRex0428/AssetsManager/tree/master/Source/AssetsManager/Public/SlateWidgets)
-
-————————|—— [ManagerSlate.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/SlateWidgets/ManagerSlate.h)
-
-————————|—— [MaterialCreatorSlate.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/SlateWidgets/MaterialCreatorSlate.h)
-
-————————|—— [SCommonSlate.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/SlateWidgets/SCommonSlate.h)
-
-————————|—— [SCustomEditableText.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/SlateWidgets/SCustomEditableText.h)
-
-————————|—— [SCustomListView.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/SlateWidgets/SCustomListView.h)
-
-————————|—— [SCustomTable.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/SlateWidgets/SCustomTable.h)
-
-————————|—— [SCustomTableRow.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/SlateWidgets/SCustomTableRow.h)
-
-————————|—— [TCustomSlateDelegates.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/SlateWidgets/TCustomSlateDelegates.h)
-
-——————|—— [AssetsChecker](https://github.com/CaptainRex0428/AssetsManager/tree/master/Source/AssetsManager/Public/AssetsChecker)
-
-————————|—— [AssetsChecker.h](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Public/AssetsChecker/AssetsChecker.h)
-
-————|—— [Private](https://github.com/CaptainRex0428/AssetsManager/tree/master/Source/AssetsManager/Private)
-
-——————|—— [AssetsManager.cpp](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Private/AssetsManager.cpp)
-
-——————|—— [AssetsManagerStyle.cpp](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Private/AssetsManagerStyle.cpp)
-
-——————|—— [ManagerLogger.cpp](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Private/ManagerLogger.cpp)
-
-——————|—— [StandardAsset](https://github.com/CaptainRex0428/AssetsManager/tree/master/Source/AssetsManager/Private/StandardAsset)
-
-————————|—— [FCustomStandardAssetData.cpp](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Private/StandardAsset/FCustomStandardAssetData.cpp)
-
-——————|—— [SlateWidgets](https://github.com/CaptainRex0428/AssetsManager/tree/master/Source/AssetsManager/Private/SlateWidgets)
-
-————————|—— [ManagerSlate.cpp](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Private/SlateWidgets/ManagerSlate.cpp)
-
-————————|—— [MaterialCreatorSlate.cpp](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Private/SlateWidgets/MaterialCreatorSlate.cpp)
-
-————————|—— [SCommonSlate.cpp](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Private/SlateWidgets/SCommonSlate.cpp)
-
-————————|—— [TCustomSlateDelegates.cpp](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Private/SlateWidgets/TCustomSlateDelegates.cpp)
-
-——————|—— [AssetsChecker](https://github.com/CaptainRex0428/AssetsManager/tree/master/Source/AssetsManager/Private/AssetsChecker)
-
-————————|—— [AssetsChecker.cpp](https://github.com/CaptainRex0428/AssetsManager/blob/master/Source/AssetsManager/Private/AssetsChecker/AssetsChecker.cpp)
-
-|—— Content
+.
+│  .gitignore
+│  AssetsManager.uplugin
+│  ReadMe.md
+│  
+├─Resources
+│      Icon128.png
+│      LOGO.ai
+│      LOGO_GREY_256.png
+│      LOGO_RED_256.png
+│      LOGO_ORANGE_256.png
+│      LOGO_PURPLE_256.png
+│      LOGO_BLUE_256.png
+│      LOGO_GREEN_256.png
+│      TitleBar.ai
+│      TitleBar.png
+│      
+├─Source
+│  └─AssetsManager
+│      │  AssetsManager.Build.cs
+│      │  
+│      ├─Public
+│      │  │  ManagerLogger.h
+│      │  │  AssetsManager.h
+│      │  │  AssetsManagerConfig.h
+│      │  │  AssetsManagerStyle.h
+│      │  │  
+│      │  ├─AssetsChecker
+│      │  │      AssetsChecker.h
+│      │  │      
+│      │  ├─SlateWidgets
+│      │  │  │  ManagerSlate.h
+│      │  │  │  SCustomTable.h
+│      │  │  │  SCustomTableRow.h
+│      │  │  │  TCustomSlateDelegates.h
+│      │  │  │  SCustomListView.h
+│      │  │  │  SCustomEditableText.h
+│      │  │  │  SCommonSlate.h
+│      │  │  │  
+│      │  │  └─Material
+│      │  │          MaterialCreatorSlate.h
+│      │  │          
+│      │  └─StandardAsset
+│      │          FCustomStandardAssetData.h
+│      │          
+│      └─Private
+│          │  ManagerLogger.cpp
+│          │  AssetsManagerStyle.cpp
+│          │  AssetsManager.cpp
+│          │  
+│          ├─AssetsChecker
+│          │      AssetsChecker.cpp
+│          │      
+│          ├─SlateWidgets
+│          │  │  TCustomSlateDelegates.cpp
+│          │  │  SCommonSlate.cpp
+│          │  │  ManagerSlate.cpp
+│          │  │  
+│          │  └─Material
+│          │          MaterialCreatorSlate.cpp
+│          │          
+│          └─StandardAsset
+│                  FCustomStandardAssetData.cpp
+│          
+├─Content
+└─Config
+       AssetsManager.ini
 
 &nbsp;
 
@@ -188,7 +166,7 @@ PrivateDependencyModuleNames.AddRange
 
 ## Assets Manager
 
-- [ ]  代码整理与注释
+- [*]  代码整理与注释
 - [ ]  界面迭代
 - [ ]  骨骼网格体、骨骼、物理资产的标准化查验
 - [ ]  添加游戏内贴图尺寸查验Strict模式

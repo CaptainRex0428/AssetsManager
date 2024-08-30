@@ -1,0 +1,69 @@
+.
+©¦  .gitignore
+©¦  AssetsManager.uplugin
+©¦  ReadMe.md
+©¦  
+©À©¤Resources
+©¦      Icon128.png
+©¦      LOGO.ai
+©¦      LOGO_GREY_256.png
+©¦      LOGO_RED_256.png
+©¦      LOGO_ORANGE_256.png
+©¦      LOGO_PURPLE_256.png
+©¦      LOGO_BLUE_256.png
+©¦      LOGO_GREEN_256.png
+©¦      TitleBar.ai
+©¦      TitleBar.png
+©¦      
+©À©¤Source
+©¦  ©¸©¤AssetsManager
+©¦      ©¦  AssetsManager.Build.cs
+©¦      ©¦  
+©¦      ©À©¤Public
+©¦      ©¦  ©¦  ManagerLogger.h
+©¦      ©¦  ©¦  AssetsManager.h
+©¦      ©¦  ©¦  AssetsManagerConfig.h
+©¦      ©¦  ©¦  AssetsManagerStyle.h
+©¦      ©¦  ©¦  
+©¦      ©¦  ©À©¤AssetsChecker
+©¦      ©¦  ©¦      AssetsChecker.h
+©¦      ©¦  ©¦      
+©¦      ©¦  ©À©¤SlateWidgets
+©¦      ©¦  ©¦  ©¦  ManagerSlate.h
+©¦      ©¦  ©¦  ©¦  SCustomTable.h
+©¦      ©¦  ©¦  ©¦  SCustomTableRow.h
+©¦      ©¦  ©¦  ©¦  TCustomSlateDelegates.h
+©¦      ©¦  ©¦  ©¦  SCustomListView.h
+©¦      ©¦  ©¦  ©¦  SCustomEditableText.h
+©¦      ©¦  ©¦  ©¦  SCommonSlate.h
+©¦      ©¦  ©¦  ©¦  
+©¦      ©¦  ©¦  ©¸©¤Material
+©¦      ©¦  ©¦          MaterialCreatorSlate.h
+©¦      ©¦  ©¦          
+©¦      ©¦  ©¸©¤StandardAsset
+©¦      ©¦          FCustomStandardAssetData.h
+©¦      ©¦          
+©¦      ©¸©¤Private
+©¦          ©¦  ManagerLogger.cpp
+©¦          ©¦  AssetsManagerStyle.cpp
+©¦          ©¦  AssetsManager.cpp
+©¦          ©¦  
+©¦          ©À©¤AssetsChecker
+©¦          ©¦      AssetsChecker.cpp
+©¦          ©¦      
+©¦          ©À©¤SlateWidgets
+©¦          ©¦  ©¦  TCustomSlateDelegates.cpp
+©¦          ©¦  ©¦  SCommonSlate.cpp
+©¦          ©¦  ©¦  ManagerSlate.cpp
+©¦          ©¦  ©¦  
+©¦          ©¦  ©¸©¤Material
+©¦          ©¦          MaterialCreatorSlate.cpp
+©¦          ©¦          
+©¦          ©¸©¤StandardAsset
+©¦                  FCustomStandardAssetData.cpp
+©¦          
+©À©¤Content
+©À©¤Config
+       AssetsManager.ini
+
+        

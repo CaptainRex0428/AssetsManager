@@ -12,10 +12,13 @@
 class SMaterialCreatorSlate : public SCommonSlate
 {
 	SLATE_BEGIN_ARGS(SMaterialCreatorSlate){}
+
 	SLATE_ARGUMENT(FString, TitleText)
+
 	SLATE_END_ARGS()
 
 public:
-	virtual void Construct(const FArguments& InArgs);
+	virtual void Construct(
+		const FArguments& InArgs);
 
 };
