@@ -166,7 +166,7 @@ PrivateDependencyModuleNames.AddRange
 
 ## Assets Manager
 
-- [*]  代码整理与注释
+- [x]  代码整理与注释
 - [ ]  界面迭代
 - [ ]  骨骼网格体、骨骼、物理资产的标准化查验
 - [ ]  添加游戏内贴图尺寸查验Strict模式
