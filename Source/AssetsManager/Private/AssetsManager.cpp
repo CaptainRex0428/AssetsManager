@@ -27,7 +27,7 @@ void FAssetsManagerModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
-	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDERMANAGERTABNAME));
+	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_MANAGERTAB_NAME));
 	FAssetsMangerStyle::ShutDown();
 }
 
@@ -46,7 +46,7 @@ void FAssetsManagerModule::OnDeleteEmptyFolderButtonClicked()
 
 void FAssetsManagerModule::OnAssetsManagerButtonClicked()
 {
-	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDERMANAGERTABNAME));
+	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDER_MANAGERTAB_NAME));
 }
 
 void FAssetsManagerModule::OnMaterialCreatButtonClicked()
@@ -69,7 +69,7 @@ void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 
 	MenuBuilder.AddMenuEntry
 	(
-		FText::FromString(TEXT(CONTENTFOLDERMANAGERTABNAME)),
+		FText::FromString(TEXT(CONTENTFOLDER_MANAGERTAB_NAME)),
 		FText::FromString(TEXT("A tab window to check the assets inside the seleted folder.")),
 		FSlateIcon(FAssetsMangerStyle::GetStyleName(),"ContentBrowser.AssetsManager"),
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerButtonClicked)
@@ -122,9 +122,9 @@ void FAssetsManagerModule::InitCBMenuExtension()
 void FAssetsManagerModule::RegisterCustomEditorTab()
 {
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
-		FName(CONTENTFOLDERMANAGERTABNAME),
+		FName(CONTENTFOLDER_MANAGERTAB_NAME),
 		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnManagerSlateTab))
-		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDERMANAGERTABNAME)))
+		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDER_MANAGERTAB_NAME)))
 		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleName(),"ContentBrowser.AssetsManager"));
 }
 
@@ -136,7 +136,7 @@ TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnManagerSlateTab(const FSpawnTa
 	SNew(SDockTab).TabRole(ETabRole::NomadTab)
 		[
 			SNew(SManagerSlateTab)
-				//.TitleText(CONTENTFOLDERMANAGERTABNAME)
+				//.TitleText(CONTENTFOLDER_MANAGERTAB_NAME)
 				.TitleText("Assets Manager")
 				.SelectedFolderPaths(SelectedContentFolderPaths)
 				.StoredAssetsData(&assets)
@@ -149,7 +149,7 @@ TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnMaterialCreatorSlateTab(const 
 		SNew(SDockTab).TabRole(ETabRole::NomadTab)
 		[
 			SNew(SMaterialCreatorSlate)
-				//.TitleText(CONTENTFOLDERMANAGERTABNAME)
+				//.TitleText(CONTENTFOLDER_MANAGERTAB_NAME)
 				.TitleText("Material Creator")
 		];
 }

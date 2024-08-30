@@ -701,21 +701,21 @@ TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> SManagerSlateTab::Constr
 		.Font(GetFontInfo(9))
 		.Justify(EHorizontalAlignment::HAlign_Left)
 		.TextColor(FColor::White)
-		.OnItemToDisplayText(this,&SManagerSlateTab::OnAssetDataToText)
-		.OnItemToTipText(this,&SManagerSlateTab::OnAssetDataToTipText)
+		.OnItemToDisplayText(this,&SManagerSlateTab::OnAssetDataToAssetNameEditableText)
+		.OnItemToTipText(this,&SManagerSlateTab::OnAssetDataToAssetEditableTextTip)
 		.OnItemCommit(this,&SManagerSlateTab::OnItemDataCommitted);
 
 	return AssetNameBox.ToSharedRef();
 }
 
-FText SManagerSlateTab::OnAssetDataToText(
+FText SManagerSlateTab::OnAssetDataToAssetNameEditableText(
 	TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
 	FString DisplayAssetName = AssetDataToDisplay->AssetName.ToString();
 	return FText::FromString(DisplayAssetName);
 }
 
-FText SManagerSlateTab::OnAssetDataToTipText(
+FText SManagerSlateTab::OnAssetDataToAssetEditableTextTip(
 	TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
 	FString DisplayAssetPath = AssetDataToDisplay->GetSoftObjectPath().ToString();

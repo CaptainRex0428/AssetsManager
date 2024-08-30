@@ -64,9 +64,12 @@ public:
 	};
 
 
-#pragma region FontSet
-	FSlateFontInfo GetFontInfo(float FontSize,
+#pragma region ConstructFontSet
+
+	FSlateFontInfo GetFontInfo(
+		float FontSize,
 		const FString& FontName = "EmbossedText");
+
 #pragma endregion
 
 #pragma region ConstructImgBlock
@@ -106,8 +109,10 @@ public:
 #pragma endregion
 
 #pragma region BKGFill
+
 	TSharedRef<SOverlay> ConstructOverlayOpaque(
 		TSharedPtr<SWidget> DisplayWidget, 
 		int DisplayLayer);
+
 #pragma endregion
 };
