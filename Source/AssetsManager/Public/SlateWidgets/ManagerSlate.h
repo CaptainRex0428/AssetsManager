@@ -23,6 +23,8 @@ private:
 	TArray<FString> StoredFolderPaths;
 	TArray<TSharedPtr<FAssetData>> StoredAssetsData;
 	TArray<TSharedPtr<FAssetData>> SListViewClassFilterAssetData;
+	TArray<TSharedPtr<FAssetData>> SListViewUsageFilterAssetData;
+
 	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
 
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
