@@ -11,6 +11,7 @@ public:
 	static void ShutDown();
 
 	static const FName & GetStyleName();
+	static const TSharedPtr<FSlateStyleSet>& GetStyleSet();
 
 private:
 	static FName StyleSetName;

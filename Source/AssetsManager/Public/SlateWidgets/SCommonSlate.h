@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Widgets/SCompoundWidget.h"
+#include "Widgets/Layout/SScaleBox.h"
 
 #include "ManagerLogger.h"
 
@@ -46,9 +47,11 @@ public:
 		{Column_TextureGroup, TEXT("TextureGroup")}
 	};
 
-	inline const TMap<CustomTableColumnType, FString>& GetCustomTableColumnTypeToStringMap() { return CustomTableColumnTypeToString; };
+	inline const TMap<CustomTableColumnType, FString>& GetCustomTableColumnTypeToStringMap() 
+	{ return CustomTableColumnTypeToString; };
 	
-	inline TSharedPtr<FString> GetCustomTableColumnTypeToString(CustomTableColumnType type) 
+	inline TSharedPtr<FString> GetCustomTableColumnTypeToString(
+		CustomTableColumnType type) 
 	{
 		const FString * StrTab = CustomTableColumnTypeToString.Find(type);
 
@@ -61,9 +64,22 @@ public:
 	};
 
 
-#pragma region FontSet
-	FSlateFontInfo GetFontInfo(float FontSize,
+#pragma region ConstructFontSet
+
+	FSlateFontInfo GetFontInfo(
+		float FontSize,
 		const FString& FontName = "EmbossedText");
+
+#pragma endregion
+
+#pragma region ConstructImgBlock
+
+	TSharedRef<SScaleBox> ConstructCommonImageBox(
+		const FSlateBrush* ImageBrush,
+		FVector2D ImageSize,
+		EStretch::Type ImageStrech = EStretch::ScaleToFitX,
+		TSharedPtr<SImage>* OutImagePtr = nullptr);
+
 #pragma endregion
 
 #pragma region CustructTextBlock
@@ -93,8 +109,10 @@ public:
 #pragma endregion
 
 #pragma region BKGFill
+
 	TSharedRef<SOverlay> ConstructOverlayOpaque(
 		TSharedPtr<SWidget> DisplayWidget, 
 		int DisplayLayer);
+
 #pragma endregion
 };

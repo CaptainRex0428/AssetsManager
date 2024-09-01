@@ -2,6 +2,7 @@
 
 #include "SlateWidgets/ManagerSlate.h"
 #include "SlateWidgets/SCustomTableRow.h"
+#include "AssetsManagerStyle.h"
 
 
 #include "AssetsManager.h"
@@ -101,9 +102,8 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	StoredFolderPaths = InArgs._SelectedFolderPaths;
 	StoredAssetsData = *InArgs._StoredAssetsData;
 	
-	UAssetsChecker::ECopyAssetsPtrList(StoredAssetsData, SListViewUsageFilterAssetData);
-	UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewClassFilterAssetData);
-	UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
+	UAssetsChecker::ECopyAssetsPtrList(StoredAssetsData, SListViewAssetData);
+	UAssetsChecker::ECopyAssetsPtrList(SListViewAssetData, SListViewClassFilterAssetData);
 
 	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Empty();
 	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_UClass);
@@ -159,35 +159,37 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	TSharedPtr<SVerticalBox> MainUI = SNew(SVerticalBox);
 
-	/*
-	* Add Title
-	*/
+#pragma region title
+
+	const FSlateBrush* TitleImage = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.AssetsManagerTitle");
 
 	MainUI->AddSlot()
 		.AutoHeight()
 		[
-			ConstructTitleTextBlock(InArgs._TitleText, GetFontInfo(24))
+			ConstructCommonImageBox(
+				TitleImage,
+				FVector2D(FVector2D(5332.f, 175.f)),
+				EStretch::ScaleToFitX)
+
+			//ConstructTitleTextBlock(InArgs._TitleText, GetFontInfo(24))
 		];
 
 	MainUI->AddSlot()
 		.AutoHeight()
 		[
 			SNew(SBorder)
-		];
+			
 
-	/*
-	* Add ContentBox
-	*/
+		];
+#pragma endregion
+
+#pragma region Info
 
 	TSharedPtr<SSplitter> ContentBox = SNew(SSplitter)
 		.Orientation(Orient_Vertical);
 
-	/*
-	* Add InfoBox
-	*/
-
 	TSharedPtr<SVerticalBox> InfoBox = SNew(SVerticalBox);
-	TSharedPtr<SVerticalBox> HandleListBox = SNew(SVerticalBox);
+	TSharedPtr<SVerticalBox> HandleBox = SNew(SVerticalBox);
 
 	ContentBox->AddSlot()
 		.MinSize(80.f)
@@ -199,27 +201,19 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	ContentBox->AddSlot()
 		.MinSize(200.f)
 		[
-			HandleListBox.ToSharedRef()
+			HandleBox.ToSharedRef()
 		];
 
-	/*
-	* Add DropDown Menu
-	*/
-
-	HandleListBox->AddSlot()
+#pragma region DropDown
+	HandleBox->AddSlot()
 		.AutoHeight()
 		[
 			ConstructDropDownMenuBox()
 		];
 
-	/*
-	* Add List
-	*/
-
 	ConstructHeaderRow();
 
 	this->CustomTableList = SNew(SCustomTable<TSharedPtr<FAssetData>>)
-		//.SourceItems(&SListViewUsageFilterAssetData)
 		.SourceItems(&SListViewAssetData)
 		.ColumnsType(&SManagerCustomTableTitleRowColumnsType)
 		.CanGenerateColumnsType(&SManagerCustomTableTitleRowColumnsCanGenerateType)
@@ -227,30 +221,30 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 		.OnTableRowMouseButtonDoubleClicked(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked)
 		.OnGenerateTableRowColumn(this,&SManagerSlateTab::OnTableGenerateListColumn);
 
-
-	/*
-	* Construct information box
-	*/
+	TSharedPtr<SVerticalBox> HandleButton = ConstructHandleAllBox();
 
 	InfoBox->AddSlot()
 		.AutoHeight()
 		[
 			ConstructInfoBox(StoredFolderPaths, GetFontInfo(12))
 		];
+#pragma endregion
 
-	HandleListBox->AddSlot()
+#pragma region InfoList
+
+	HandleBox->AddSlot()
 		.VAlign(VAlign_Fill)
 		[
 			this->CustomTableList.ToSharedRef()
 		];
+#pragma endregion
+
+#pragma endregion
 
 	MainUI->AddSlot()[ContentBox.ToSharedRef()];
 
-	/*
-	* Construct HandleAllBox box
-	*/
 
-	TSharedPtr<SVerticalBox> HandleButton = ConstructHandleAllBox();
+#pragma region HandleAllBox	
 
 	ConstructHandleAllBox();
 
@@ -258,6 +252,8 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 		[
 			ConstructOverlayOpaque(this->HandleAllBox,3)
 		];
+
+#pragma endregion
 
 	ChildSlot
 	[
@@ -275,9 +271,9 @@ void SManagerSlateTab::SListViewRemoveAssetData(
 		StoredAssetsData.Remove(AssetData);
 	}
 
-	if (SListViewUsageFilterAssetData.Contains(AssetData))
+	if (SListViewAssetData.Contains(AssetData))
 	{
-		SListViewUsageFilterAssetData.Remove(AssetData);
+		SListViewAssetData.Remove(AssetData);
 	}
 
 	if (SListViewClassFilterAssetData.Contains(AssetData))
@@ -570,7 +566,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructListAssetsCountInfo(
 	const FSlateFontInfo& FontInfo)
 {
 	ClassListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewClassFilterAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Yellow);
-	ListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewUsageFilterAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Green);
+	ListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Green);
 	SelectedCountBlock = ConstructNormalTextBlock(FString::FromInt(CustomTableList->GetSelectedItems().Num()), FontInfo, ETextJustify::Left, FColor::Emerald);
 	
 	TSharedRef<SHorizontalBox> ListAssetsCountInfo =
@@ -705,21 +701,21 @@ TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> SManagerSlateTab::Constr
 		.Font(GetFontInfo(9))
 		.Justify(EHorizontalAlignment::HAlign_Left)
 		.TextColor(FColor::White)
-		.OnItemToDisplayText(this,&SManagerSlateTab::OnAssetDataToText)
-		.OnItemToTipText(this,&SManagerSlateTab::OnAssetDataToTipText)
+		.OnItemToDisplayText(this,&SManagerSlateTab::OnAssetDataToAssetNameEditableText)
+		.OnItemToTipText(this,&SManagerSlateTab::OnAssetDataToAssetEditableTextTip)
 		.OnItemCommit(this,&SManagerSlateTab::OnItemDataCommitted);
 
 	return AssetNameBox.ToSharedRef();
 }
 
-FText SManagerSlateTab::OnAssetDataToText(
+FText SManagerSlateTab::OnAssetDataToAssetNameEditableText(
 	TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
 	FString DisplayAssetName = AssetDataToDisplay->AssetName.ToString();
 	return FText::FromString(DisplayAssetName);
 }
 
-FText SManagerSlateTab::OnAssetDataToTipText(
+FText SManagerSlateTab::OnAssetDataToAssetEditableTextTip(
 	TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
 	FString DisplayAssetPath = AssetDataToDisplay->GetSoftObjectPath().ToString();
@@ -1487,9 +1483,9 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 			{
 				AssetToRename.Add(*Asset);
 
-				if (SListViewUsageFilterAssetData.Contains(Asset))
+				if (SListViewAssetData.Contains(Asset))
 				{
-					SListViewUsageFilterAssetData.Remove(Asset);
+					SListViewAssetData.Remove(Asset);
 				}
 			}
 
@@ -1508,9 +1504,9 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 		{
 			if(UAssetsChecker::ESetTextureStandardSettings(*AssetData))
 			{
-				if (SListViewUsageFilterAssetData.Contains(AssetData))
+				if (SListViewAssetData.Contains(AssetData))
 				{
-					SListViewUsageFilterAssetData.Remove(AssetData);
+					SListViewAssetData.Remove(AssetData);
 				}
 			}
 		}
@@ -1624,7 +1620,7 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 	}
 	else
 	{
-		OutputData = SListViewUsageFilterAssetData;
+		OutputData = SListViewAssetData;
 	}
 
 	float TargetNum = OutputData.Num();
@@ -1851,7 +1847,7 @@ void SManagerSlateTab::OnClassFilterButtonChanged(
 	ClassFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
 
 	ConstuctClassFilterList(ClassFilterCurrent);
-	UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+	UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewAssetData);
 	
 	// Update count
 
@@ -1942,7 +1938,7 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 		m_UsageCheckState = DefaultUsageCheckState;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	if (*SelectedOption.Get() == USAGE_UNUSED)
@@ -1971,7 +1967,7 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 			}
 		}
 
-		UAssetsChecker::EListUnusedAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::EListUnusedAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	if (*SelectedOption.Get() == USAGE_PREFIXERROR)
@@ -1979,7 +1975,7 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 		m_UsageCheckState = PrefixError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListPrefixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::EListPrefixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	if (*SelectedOption.Get() == USAGE_SAMENAMEASSETERROR)
@@ -1987,7 +1983,7 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 		m_UsageCheckState = SameNameAssetError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListSameNameErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::EListSameNameErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	if (*SelectedOption.Get() == USAGE_MAXINGAMESIZEERROR)
@@ -1995,7 +1991,7 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 		m_UsageCheckState = MaxInGameSizeError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	if (*SelectedOption.Get() == USAGE_SOURCESIZEERROR)
@@ -2003,7 +1999,7 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 		m_UsageCheckState = SourceSizeError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	if (*SelectedOption.Get() == USAGE_TEXTURESUBFIXERROR)
@@ -2011,7 +2007,7 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 		m_UsageCheckState = SubfixError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	if (*SelectedOption.Get() == USAGE_TEXTURESETTINGSERROR)
@@ -2019,7 +2015,7 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 		m_UsageCheckState = TextureSettingsError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	if (*SelectedOption.Get() == USAGE_TEXTUREGROUPERROR)
@@ -2027,7 +2023,7 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 		m_UsageCheckState = TextureGroupError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
 	}
 
 	RefreshAssetsListView();
