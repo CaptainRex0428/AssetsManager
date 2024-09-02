@@ -73,7 +73,7 @@ PrivateDependencyModuleNames.AddRange
 
 
 ### 使用说明
-在待检查资产的文件夹上右键，选择`AssetsManager`即可打开插件主界面
+在待检查资产的文件夹上右键，选择`AssetsManager`即可打开插件主界面\
 !["MenuEntry"](./img/MenuEntry.png "MenuEntry")
 
 &nbsp;
@@ -88,72 +88,72 @@ PrivateDependencyModuleNames.AddRange
 
 
 ## 目录结构描述
-.
-│  .gitignore
-│  AssetsManager.uplugin
-│  ReadMe.md
-│  
-├─Resources
-│      Icon128.png
-│      LOGO.ai
-│      LOGO_GREY_256.png
-│      LOGO_RED_256.png
-│      LOGO_ORANGE_256.png
-│      LOGO_PURPLE_256.png
-│      LOGO_BLUE_256.png
-│      LOGO_GREEN_256.png
-│      TitleBar.ai
-│      TitleBar.png
-│      
-├─Source
-│  └─AssetsManager
-│      │  AssetsManager.Build.cs
-│      │  
-│      ├─Public
-│      │  │  ManagerLogger.h
-│      │  │  AssetsManager.h
-│      │  │  AssetsManagerConfig.h
-│      │  │  AssetsManagerStyle.h
-│      │  │  
-│      │  ├─AssetsChecker
-│      │  │      AssetsChecker.h
-│      │  │      
-│      │  ├─SlateWidgets
-│      │  │  │  ManagerSlate.h
-│      │  │  │  SCustomTable.h
-│      │  │  │  SCustomTableRow.h
-│      │  │  │  TCustomSlateDelegates.h
-│      │  │  │  SCustomListView.h
-│      │  │  │  SCustomEditableText.h
-│      │  │  │  SCommonSlate.h
-│      │  │  │  
-│      │  │  └─Material
-│      │  │          MaterialCreatorSlate.h
-│      │  │          
-│      │  └─StandardAsset
-│      │          FCustomStandardAssetData.h
-│      │          
-│      └─Private
-│          │  ManagerLogger.cpp
-│          │  AssetsManagerStyle.cpp
-│          │  AssetsManager.cpp
-│          │  
-│          ├─AssetsChecker
-│          │      AssetsChecker.cpp
-│          │      
-│          ├─SlateWidgets
-│          │  │  TCustomSlateDelegates.cpp
-│          │  │  SCommonSlate.cpp
-│          │  │  ManagerSlate.cpp
-│          │  │  
-│          │  └─Material
-│          │          MaterialCreatorSlate.cpp
-│          │          
-│          └─StandardAsset
-│                  FCustomStandardAssetData.cpp
-│          
-├─Content
-└─Config
+.\
+│  .gitignore\
+│  AssetsManager.uplugin\
+│  ReadMe.md\
+│  \
+├─Resources\
+│      Icon128.png\
+│      LOGO.ai\
+│      LOGO_GREY_256.png\
+│      LOGO_RED_256.png\
+│      LOGO_ORANGE_256.png\
+│      LOGO_PURPLE_256.png\
+│      LOGO_BLUE_256.png\
+│      LOGO_GREEN_256.png\
+│      TitleBar.ai\
+│      TitleBar.png\
+│      \
+├─Source\
+│  └─AssetsManager\
+│      │  AssetsManager.Build.cs\
+│      │  \
+│      ├─Public\
+│      │  │  ManagerLogger.h\
+│      │  │  AssetsManager.h\
+│      │  │  AssetsManagerConfig.h\
+│      │  │  AssetsManagerStyle.h\
+│      │  │  \
+│      │  ├─AssetsChecker\
+│      │  │      AssetsChecker.h\
+│      │  │      \
+│      │  ├─SlateWidgets\
+│      │  │  │  ManagerSlate.h\
+│      │  │  │  SCustomTable.h\
+│      │  │  │  SCustomTableRow.h\
+│      │  │  │  TCustomSlateDelegates.h\
+│      │  │  │  SCustomListView.h\
+│      │  │  │  SCustomEditableText.h\
+│      │  │  │  SCommonSlate.h\
+│      │  │  │  \
+│      │  │  └─Material\
+│      │  │          MaterialCreatorSlate.h\
+│      │  │          \
+│      │  └─StandardAsset\
+│      │          FCustomStandardAssetData.h\
+│      │          \
+│      └─Private\
+│          │  ManagerLogger.cpp\
+│          │  AssetsManagerStyle.cpp\
+│          │  AssetsManager.cpp\
+│          │  \
+│          ├─AssetsChecker\
+│          │      AssetsChecker.cpp\
+│          │      \
+│          ├─SlateWidgets\
+│          │  │  TCustomSlateDelegates.cpp\
+│          │  │  SCommonSlate.cpp\
+│          │  │  ManagerSlate.cpp\
+│          │  │  \
+│          │  └─Material\
+│          │          MaterialCreatorSlate.cpp\
+│          │          \
+│          └─StandardAsset\
+│                  FCustomStandardAssetData.cpp\
+│          \
+├─Content\
+└─Config\
        AssetsManager.ini
 
 &nbsp;
@@ -166,7 +166,7 @@ PrivateDependencyModuleNames.AddRange
 
 ## Assets Manager
 
-- [*]  代码整理与注释
+- [x]  代码整理与注释
 - [ ]  界面迭代
 - [ ]  骨骼网格体、骨骼、物理资产的标准化查验
 - [ ]  添加游戏内贴图尺寸查验Strict模式
