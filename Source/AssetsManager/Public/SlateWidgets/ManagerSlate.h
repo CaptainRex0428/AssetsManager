@@ -50,6 +50,8 @@ private:
 	TArray<FString> StoredFolderPaths;
 	TArray<TSharedPtr<FAssetData>> StoredAssetsData;
 	TArray<TSharedPtr<FAssetData>> SListViewClassFilterAssetData;
+	TArray<TSharedPtr<FAssetData>> SListViewUsageFilterAssetData;
+
 	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
 
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
@@ -107,6 +109,7 @@ private:
 	*/
 	TSharedRef<SHorizontalBox> ConstructListAssetsCountInfo(
 		const FSlateFontInfo& FontInfo);
+
 	TSharedPtr<STextBlock> ListViewCountBlock;
 	TSharedPtr<STextBlock> ClassListViewCountBlock;
 	TSharedPtr<STextBlock> SelectedCountBlock;
@@ -274,7 +277,7 @@ private:
 
 #pragma region GenerateHandleAllButton
 
-	TSharedPtr<SVerticalBox> HandleAllBox;
+	TSharedPtr<SVerticalBox> BatchHandleBox;
 	TSharedRef<SVerticalBox> ConstructHandleAllBox();
 
 	TSharedPtr<SHorizontalBox> DynamicHandleAllBox;
@@ -352,6 +355,8 @@ private:
 
 	TSharedPtr<SComboBox<TSharedPtr<FString>>> UsageFilterComboBox;
 
+	FString UsageFilterCurrent;
+
 	TArray<TSharedPtr<FString>> UsageFilterComboSourceItems;
 	TSharedPtr<STextBlock> UsageFilterComboDisplayText;
 
@@ -374,7 +379,35 @@ private:
 	void OnUsageFilterButtonChanged(
 		TSharedPtr<FString> SelectedOption, 
 		ESelectInfo::Type InSelectInfo);
-	
+
+	void UpdateUsageFilterAssetData(
+		const FString& Selection);
+
+#pragma endregion
+
+#pragma region ReverseCondition
+	bool ReverseCondition;
+
+	TSharedPtr<SCheckBox> ReverseConditionCheckBox;
+	TSharedRef<SHorizontalBox> ConstructReverseConditionCheckBox();
+	void OnReverseConditionCheckBoxStateChanged(
+		ECheckBoxState NewState);
+#pragma endregion
+
+#pragma region DetailMode
+	bool DetailMode;
+
+	TSharedRef<SHorizontalBox> ConstructDetailModeBox();
+	void OnDetailModeCheckBoxStateChanged(
+		ECheckBoxState NewState);
+#pragma endregion
+
+#pragma region OnlyCheck
+	bool OnlyCheck;
+
+	TSharedRef<SHorizontalBox> ConstructOnlyCheckBox();
+	void OnOnlyCheckBoxStateChanged(
+		ECheckBoxState NewState);
 #pragma endregion
 
 #pragma endregion

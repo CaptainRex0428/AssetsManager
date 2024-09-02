@@ -213,7 +213,7 @@ inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(
 			break;
 
 		case Column_AssetName:
-			ColumnBoxArgs.FillWidth(0.3f);
+			ColumnBoxArgs.FillWidth(0.2f);
 			break;
 
 		case Column_AssetPath:
@@ -393,8 +393,6 @@ inline const TArray<ItemType>& SCustomTable<ItemType>::GetListItems()
 template<typename ItemType>
 inline void SCustomTable<ItemType>::SelectAll()
 {
-	/*NtfyMsg(FString::FromInt(CheckBoxArray.Num()));
-	NtfyMsg(FString::FromInt(this->TestCount));*/
 
 	if (CheckBoxArray.Num() == 0)
 	{

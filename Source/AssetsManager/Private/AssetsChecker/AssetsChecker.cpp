@@ -46,8 +46,6 @@ bool UAssetsChecker::bIsPowerOfTwo(const float num)
 	return bIsPowerOfTwo((double)num);
 }
 
-
-
 int UAssetsChecker::EDuplicateAssets(
 	const TArray<FAssetData>& AssetsDataSelected, 
 	int NumOfDupicates, 
