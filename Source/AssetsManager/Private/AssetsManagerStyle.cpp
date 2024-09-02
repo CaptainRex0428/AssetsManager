@@ -49,6 +49,7 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
 	const FVector2D Icon16x16(16.f, 16.f);
 	const FVector2D Icon32x32(32.f, 32.f);
 	const FVector2D Icon64x64(64.f, 64.f);
+	const FVector2D TitleBar(5400.f, 200.f);
 
 	CustomStyleSet->Set(
 		"ContentBrowser.DeleteUnusedFolders",
@@ -76,7 +77,11 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
 
 	CustomStyleSet->Set(
 		"ContentBrowser.AssetsManagerTitle",
-		new FSlateImageBrush(IconDirectory / "TitleBar.png", FVector2D(5332.f,175.f)));
+		new FSlateImageBrush(IconDirectory / "TitleBar.png", TitleBar));
+
+	CustomStyleSet->Set(
+		"ContentBrowser.MaterialCreatorTitle",
+		new FSlateImageBrush(IconDirectory / "MaterialBar.png", TitleBar));
 
 	return CustomStyleSet;
 }
