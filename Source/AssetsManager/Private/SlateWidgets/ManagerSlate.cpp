@@ -1972,6 +1972,7 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 	if (ReverseCondition)
 	{
 		ReverseConditionCheckBox->SetIsChecked(ECheckBoxState::Unchecked);
+		ReverseCondition = false;
 	}
 
 	UsageFilterCurrent = *SelectedOption.Get();
