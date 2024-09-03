@@ -3,6 +3,7 @@
 #include "SlateWidgets/ManagerSlate.h"
 #include "SlateWidgets/SCustomTableRow.h"
 #include "AssetsManagerStyle.h"
+#include "ConfigManager.h"
 
 
 #include "AssetsManager.h"
@@ -577,6 +578,12 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(
 				ConstructSingleAssetDeleteButtonBox(ClickedAssetData)
 		];
 
+	/*DealPanel->AddSlot()
+		.HAlign(HAlign_Fill)
+		[
+			ConstructSingleAssetDebugButtonBox(ClickedAssetData)
+		];*/
+
 	return DealPanel.ToSharedRef();
 }
 
@@ -1001,10 +1008,6 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetDebugButtonBox(
 FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	FVector2D s = UAssetsChecker::EGetTextureAssetSourceSize(*ClickedAssetData);
-
-	NtfyMsg(FString::FromInt(s.X) + "x" + FString::FromInt(s.Y));
-
 	return FReply::Handled();
 }
 

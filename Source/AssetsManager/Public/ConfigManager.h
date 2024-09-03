@@ -16,6 +16,7 @@ public:
 
 	ConfigManager(ConfigManager&) = delete;
 
+	float Test();
 private:
 	ConfigManager();
 	virtual ~ConfigManager() = default;
