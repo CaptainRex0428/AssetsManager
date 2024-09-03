@@ -63,6 +63,8 @@ private:
 	TSharedPtr<SCustomTable<TSharedPtr<FAssetData>>> CustomTableList;
 	TSharedPtr<SListView<TSharedPtr<FAssetData>>> CustomTableListView;
 
+	TSharedPtr<SHorizontalBox> DropDownContent;
+
 #pragma endregion
 
 
@@ -382,6 +384,18 @@ private:
 
 	void UpdateUsageFilterAssetData(
 		const FString& Selection);
+
+#pragma endregion
+
+#pragma region TextureSizeCheckStrictMode
+	bool bTextureSizeCheckStrictMode;
+	bool bTextureSizeCheckStrictCheckBoxConstructed;
+	TSharedPtr<SCheckBox> TextureSizeCheckStrictCheckBox;
+	TSharedPtr<SHorizontalBox> TextureSizeCheckStrictBox;
+	TSharedRef<SHorizontalBox> ConstructTextureSizeStrictCheckBox(
+		ECheckBoxState State = ECheckBoxState::Unchecked);
+	void OnTextureSizeStrictCheckBoxStateChanged(
+		ECheckBoxState NewState);
 
 #pragma endregion
 

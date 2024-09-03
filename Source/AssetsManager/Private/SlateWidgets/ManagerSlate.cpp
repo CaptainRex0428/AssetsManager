@@ -94,6 +94,9 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 {
 	bCanSupportFocus = true;
 
+	this->bTextureSizeCheckStrictMode = false;
+	this->bTextureSizeCheckStrictCheckBoxConstructed = false;
+
 	m_ClassCheckState = DefaultClassCheckState;
 	m_UsageCheckState = DefaultUsageCheckState;
 
@@ -896,8 +899,6 @@ FReply SManagerSlateTab::OnSingleAssetDeleteButtonClicked(
 		{
 			return FReply::Handled();
 		}
-
-		// NtfyMsgLog("Clicked OK");
 	}
 
 	if (UAssetsChecker::EDeleteAsset(*ClickedAssetData))
@@ -1560,9 +1561,11 @@ TSharedRef<SButton> SManagerSlateTab::ConstructFixUpRedirectorButton()
 		.OnClicked(this, &SManagerSlateTab::OnFixUpRedirectorButtonClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	this->FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- 修复所选文件夹中的重定向器(Redirector) --")));
+	this->FixUpRedirectorButton->SetContent(
+		ConstructTextForButtons(TEXT("-- 修复所选文件夹中的重定向器(Redirector) --")));
 #else
-	this->FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- Fix Up Redirectors In Selected Folders --")));
+	this->FixUpRedirectorButton->SetContent(
+		ConstructTextForButtons(TEXT("-- Fix Up Redirectors In Selected Folders --")));
 #endif
 
 	return this->FixUpRedirectorButton.ToSharedRef();
@@ -1617,9 +1620,9 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 	Output += L":\n";
 	Output += UsageFilterComboDisplayText->GetText().ToString();
 #ifdef ZH_CN
-	Output += ReverseCondition ? "(反选)" : "";
+	Output += ReverseCondition ? TEXT("(反选)") : TEXT("");
 #else
-	Output += ReverseCondition ? "(Reverse)" : "";
+	Output += ReverseCondition ? TEXT("(Reverse)") : TEXT("");
 #endif
 	Output += "\n\n";
 
@@ -1728,7 +1731,7 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDropDownMenuBox()
 {
 
-	TSharedPtr<SHorizontalBox> DropDownContent =
+	DropDownContent =
 		SNew(SHorizontalBox);
 
 	DropDownContent->AddSlot()
@@ -2050,7 +2053,11 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 		m_UsageCheckState = MaxInGameSizeError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
+			SListViewClassFilterAssetData, 
+			SListViewUsageFilterAssetData, 
+			bTextureSizeCheckStrictMode);
+
 		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
@@ -2060,7 +2067,11 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 		m_UsageCheckState = SourceSizeError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
+			SListViewClassFilterAssetData, 
+			SListViewUsageFilterAssetData, 
+			bTextureSizeCheckStrictMode);
+
 		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
@@ -2070,8 +2081,13 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 		m_UsageCheckState = SubfixError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
+		UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
+			SListViewClassFilterAssetData, 
+			SListViewUsageFilterAssetData);
+
+		UAssetsChecker::ECopyAssetsPtrList(
+			SListViewUsageFilterAssetData, 
+			SListViewAssetData);
 	}
 
 
@@ -2080,8 +2096,13 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 		m_UsageCheckState = TextureSettingsError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
+		UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
+			SListViewClassFilterAssetData, 
+			SListViewUsageFilterAssetData);
+
+		UAssetsChecker::ECopyAssetsPtrList(
+			SListViewUsageFilterAssetData, 
+			SListViewAssetData);
 	}
 
 	if (Selection == USAGE_TEXTUREGROUPERROR)
@@ -2091,6 +2112,102 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 
 		UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
 		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
+	}
+
+	// dynamic components
+
+	if (Selection == USAGE_MAXINGAMESIZEERROR || Selection == USAGE_SOURCESIZEERROR)
+	{
+		if (bTextureSizeCheckStrictCheckBoxConstructed)
+		{
+			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
+		}
+
+		DropDownContent->InsertSlot(2)
+			.FillWidth(.05f)
+			.Padding(FMargin(2.f))
+			[
+				ConstructTextureSizeStrictCheckBox(
+					bTextureSizeCheckStrictMode ?
+					ECheckBoxState::Checked : ECheckBoxState::Unchecked)
+			];
+	}
+	else
+	{
+		if(bTextureSizeCheckStrictCheckBoxConstructed)
+		{
+			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
+		}
+	}
+}
+
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructTextureSizeStrictCheckBox(
+	ECheckBoxState State)
+{
+	TextureSizeCheckStrictBox =
+		SNew(SHorizontalBox);
+
+	bTextureSizeCheckStrictCheckBoxConstructed = true;
+
+	TextureSizeCheckStrictCheckBox =
+		SNew(SCheckBox)
+		.Type(ESlateCheckBoxType::CheckBox)
+		.Padding(FMargin(3.f))
+		.HAlign(HAlign_Center)
+		.IsChecked(State)
+		.Visibility(EVisibility::Visible)
+		.OnCheckStateChanged(this, &SManagerSlateTab::OnTextureSizeStrictCheckBoxStateChanged);
+
+	TextureSizeCheckStrictBox ->AddSlot()
+		.AutoWidth()
+		.Padding(FMargin(2.f))
+		[
+			TextureSizeCheckStrictCheckBox.ToSharedRef()
+		];
+
+	TextureSizeCheckStrictBox ->AddSlot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+#ifdef ZH_CN
+			ConstructNormalTextBlock(TEXT("严格筛选"), GetFontInfo(12))
+#else
+			ConstructNormalTextBlock(TEXT("Strict Filter Mode"), GetFontInfo(12))
+#endif
+		];
+
+	return 	TextureSizeCheckStrictBox.ToSharedRef();
+}
+
+void SManagerSlateTab::OnTextureSizeStrictCheckBoxStateChanged(
+	ECheckBoxState NewState)
+{
+	switch (NewState)
+	{
+	case ECheckBoxState::Unchecked:
+	{
+		if (bTextureSizeCheckStrictMode)
+		{
+			bTextureSizeCheckStrictMode = false;
+			UpdateUsageFilterAssetData(this->UsageFilterCurrent);
+			RefreshAssetsListView(false);
+		}
+		break;
+	}
+	case ECheckBoxState::Checked:
+	{
+		if (!bTextureSizeCheckStrictMode)
+		{
+			bTextureSizeCheckStrictMode = true;
+			UpdateUsageFilterAssetData(this->UsageFilterCurrent);
+			RefreshAssetsListView(false);
+		}
+		break;
+	}
+	case ECheckBoxState::Undetermined:
+		break;
+	default:
+		break;
 	}
 }
 
