@@ -9,7 +9,7 @@
 
 #include "AssetsChecker.generated.h"
 
-/**
+/*
  * 
  */
 UCLASS()
@@ -17,10 +17,12 @@ class ASSETSMANAGER_API UAssetsChecker : public UAssetActionUtility
 {
 	GENERATED_BODY()
 	
-public:    
+public:
+
 #pragma region PublicFuntions
 
 #pragma region Common Tools
+
 	static bool bIsPowerOfTwo(const int num);
 	static bool bIsPowerOfTwo(const uint32 num);
 	static bool bIsPowerOfTwo(const double num);
@@ -40,6 +42,7 @@ public:
 		bool forced);
 	
 #pragma region FixPrefix
+
 	static bool EConfirmPrefixes(
 		TArray< TSharedPtr<FAssetData>>& AssetsSelected,
 		TArray< TSharedPtr<FAssetData>>& ReadyToFixAssets);
@@ -49,20 +52,29 @@ public:
 	
 	static void EAddPrefixes(
 		const TArray<FAssetData>& AssetsSelected);
+
 #pragma endregion
 
 #pragma region GetReferences
-	static TArray<FString> EGetAssetReferencesPath(const FString& AssetPath);
-	static TArray<FString> EGetAssetReferencesPath(const FAssetData& AssetData);
-	static TArray<FString> EGetAssetReferencesPath(const TSharedPtr<FAssetData>& AssetData);
+
+	static TArray<FString> EGetAssetReferencesPath(
+		const FString& AssetPath);
+	static TArray<FString> EGetAssetReferencesPath(
+		const FAssetData& AssetData);
+	static TArray<FString> EGetAssetReferencesPath(
+		const TSharedPtr<FAssetData>& AssetData);
+
 #pragma endregion
 
 #pragma region HandleRedirectors
+
 	static void EFixUpRedirectors(const FString& Path = "/Game");
 	static void EFixUpRedirectors(const TArray<FString>& Path);
+
 #pragma endregion
 
 #pragma region HandleTexture
+
 	static FVector2D EGetTextureAssetSourceSize(
 		const FAssetData& AssetData);
 
@@ -112,28 +124,46 @@ public:
 #pragma endregion
 
 #pragma region DeleteAssets
-	static uint32 EDeleteAssets(const TArray<FAssetData>& AssetsData);
-	static uint32 EDeleteAsset(const FAssetData& AssetData);
+
+	static uint32 EDeleteAssets(
+		const TArray<FAssetData>& AssetsData);
+	static uint32 EDeleteAsset(
+		const FAssetData& AssetData);
+
 #pragma endregion
 
 #pragma region HandleUnusedAssets
-	void ERemoveUnusedAssets(const TArray<FAssetData>& AssetsDataSelected);
-	static void ERemoveUnusedAssets(const TArray<FString>& FolderPathSelected);
 
-	static void ERemoveEmptyFolder(const FString FolderPathSelected = "/Game");
-	static void ERemoveEmptyFolder(const TArray<FString>& FolderPathSelected);
+	void ERemoveUnusedAssets(
+		const TArray<FAssetData>& AssetsDataSelected);
+	static void ERemoveUnusedAssets(
+		const TArray<FString>& FolderPathSelected);
+
+	static void ERemoveEmptyFolder(
+		const FString FolderPathSelected = "/Game");
+	static void ERemoveEmptyFolder(
+		const TArray<FString>& FolderPathSelected);
+
 #pragma endregion
 
 #pragma region HandleAssetsName
-	int EReplaceName(const TArray<UObject*>& AssetsSelected, const FString& OriginStr, const FString& ReplaceStr);
-	
-	static bool ERenameAsset(TSharedPtr<FAssetData> & AssetData, FString NewName);
 
-	TSharedPtr<FString> EGetAssetNameSubfix(const FAssetData & AssetSelected);
+	int EReplaceName(
+		const TArray<UObject*>& AssetsSelected, 
+		const FString& OriginStr, 
+		const FString& ReplaceStr);
+	
+	static bool ERenameAsset(
+		TSharedPtr<FAssetData> & AssetData, 
+		FString NewName);
+
+	TSharedPtr<FString> EGetAssetNameSubfix(
+		const FAssetData & AssetSelected);
 
 #pragma endregion
 
 #pragma region ListAssets
+
 	static TArray<TSharedPtr<FAssetData>> EListAssetsDataPtrUnderSelectedFolder(
 		const FString& FolderPathSelected);
 
@@ -156,13 +186,15 @@ public:
 		bool isAdditiveMode = false);
 
 	static void EListMaxInGameSizeErrorAssetsForAssetList(
-		const TArray<TSharedPtr<FAssetData>>& FindInList, 
+		const TArray<TSharedPtr<FAssetData>>& FindInList,
 		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool bStrictMode = false,
 		bool isAdditiveMode = false);
 
 	static void EListSourceSizeErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
 		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool bStrictMode = false,
 		bool isAdditiveMode = false);
 
 	static void EListTextureSubfixErrorAssetsForAssetList(
@@ -187,17 +219,24 @@ public:
 
 	UFUNCTION(CallInEditor)
 	void CheckCheck();
+
 #pragma endregion
 
 #pragma region Call In Editor
+
 	UFUNCTION(CallInEditor)
-	void DuplicateAssets(int NumOfDupicates, bool forced = true);
+	void DuplicateAssets(
+		int NumOfDupicates, 
+		bool forced = true);
 	
 	UFUNCTION(CallInEditor)
 	void RemoveUnusedAssets();
 
 	UFUNCTION(CallInEditor)
-	void ReplaceName(const FString& OriginStr, const FString & ReplaceStr);
+	void ReplaceName(
+		const FString& OriginStr, 
+		const FString & ReplaceStr);
+
 #pragma endregion
 
 #pragma endregion

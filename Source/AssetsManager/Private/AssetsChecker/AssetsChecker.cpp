@@ -5,6 +5,7 @@
 #include "AssetsChecker/AssetsChecker.h"
 #include "ManagerLogger.h"
 #include "StandardAsset/FCustomStandardAssetData.h"
+#include "StandardAsset/FCustomStandardTexture2DData.h"
 
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
@@ -45,8 +46,6 @@ bool UAssetsChecker::bIsPowerOfTwo(const float num)
 {
 	return bIsPowerOfTwo((double)num);
 }
-
-
 
 int UAssetsChecker::EDuplicateAssets(
 	const TArray<FAssetData>& AssetsDataSelected, 
@@ -502,114 +501,35 @@ TArray<FString> UAssetsChecker::EGetAssetReferencesPath(
 FVector2D UAssetsChecker::EGetTextureAssetSourceSize(
 	const FAssetData& AssetData)
 {
-	FVector2D size(0, 0);
+	FCustomStandardTexture2DData AsTextureData(AssetData);
 
-	UObject* AssetOBJ = AssetData.GetAsset();
-
-	if (!AssetOBJ->IsA<UTexture2D>())
+	if (AsTextureData.isTexture2D())
 	{
-		return size;
+		return AsTextureData.GetSourceSize();
 	}
 
-	UTexture2D* AssetAsT = Cast<UTexture2D>(AssetOBJ);
-	
-	if (AssetAsT)
-	{
-		size.X = AssetAsT->GetImportedSize().X;
-		size.Y = AssetAsT->GetImportedSize().Y;
-	}
-
-	return size;
+	return FVector2D(0, 0);
 }
 
 FVector2D UAssetsChecker::EGetTextureAssetMaxInGameSize(
 	const FAssetData& AssetData)
 {
-	FVector2D size(0, 0);
+	FCustomStandardTexture2DData AsTextureData(AssetData);
 
-	UObject* AssetOBJ = AssetData.GetAsset();                       
-
-	if (!AssetOBJ)
+	if(AsTextureData.isTexture2D())
 	{
-		return size;
+		return AsTextureData.GetMaxInGameSize();
 	}
 
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return size;
-	}
-
-	TObjectPtr<UTexture2D> AssetAsT = Cast<UTexture2D>(AssetOBJ);
-
-	if (!AssetAsT)
-	{
-		return size;
-	}
-
-	size.X = AssetAsT->GetImportedSize().X;
-	size.Y = AssetAsT->GetImportedSize().Y;
-	
-	uint32 bias = AssetAsT->GetCachedLODBias();
-
-	int32 MaximumTextureSize = AssetAsT->MaxTextureSize;
-	
-	if (MaximumTextureSize == 0 && bias == 0)
-	{
-		return size;
-	}
-
-	float rate;
-	
-	if (MaximumTextureSize == 0)
-	{
-		rate = 1;
-	}
-	else
-	{
-		rate = (MaximumTextureSize / (size.X > size.Y ? size.X : size.Y));
-	}
-	
-	size.X *= (rate>1? 1:rate);
-	size.Y *= (rate>1? 1:rate);
-
-	if (bias > 0)
-	{
-
-		double scale = pow(2, bias);
-		size.X /= scale;
-		size.Y /= scale;
-
-		size.X = size.X > 1 ? size.X : 1;
-		size.Y = size.Y > 1 ? size.Y : 1;
-	}
-
-	return size;
+	return FVector2D(0, 0);
 }
-
 
 TSharedPtr<TextureCompressionSettings> UAssetsChecker::EGetTextureAssetCompressionSettings(
 	const FAssetData& AssetData)
 {
-	UObject* AssetOBJ = AssetData.GetAsset();
+	FCustomStandardTexture2DData AsTextureData(AssetData);
 
-	if (!AssetOBJ)
-	{
-		return nullptr;
-	}
-
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return nullptr;
-	}
-
-	UTexture2D * AssetT = Cast<UTexture2D>(AssetOBJ);
-
-	if(AssetT)
-	{
-		return MakeShared<TextureCompressionSettings>(AssetT->CompressionSettings);
-	}
-
-	return nullptr;
+	return AsTextureData.GetCompressionSettings();
 }
 
 TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureAssetTextureGroup(const FAssetData& AssetData)
@@ -857,27 +777,20 @@ void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
 void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
 	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool bStrictMode,
 	bool isAdditiveMode)
 {
 	if (!isAdditiveMode)
 	{
 		OutList.Empty();
 	}
-
+	
 	for (const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
-		FVector2D size = EGetTextureAssetMaxInGameSize(*AssetDPtr);
+		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr);
 
-		if (size.X >2048 || 
-			size.Y > 2048 || 
-			!bIsPowerOfTwo(size.X) || 
-			!bIsPowerOfTwo(size.Y))
+		if (CustomStandardAsset.isTextureMaxInGameOverSize(bStrictMode))
 		{
-			if (isAdditiveMode)
-			{
-				if (OutList.Contains(AssetDPtr)) continue;
-			}
-
 			OutList.Add(AssetDPtr);
 		}
 	}
@@ -886,6 +799,7 @@ void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
 void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
 	TArray<TSharedPtr<FAssetData>>& OutList,
+	bool bStrictMode,
 	bool isAdditiveMode)
 {
 	if (!isAdditiveMode)
@@ -893,21 +807,13 @@ void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 		OutList.Empty();
 	}
 
-	for (TSharedPtr<FAssetData> AssetD : FindInList)
+	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
-		FVector2D size = EGetTextureAssetSourceSize(*AssetD);
+		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr);
 
-		if (size.X > 2048 ||
-			size.Y > 2048 ||
-			!bIsPowerOfTwo(size.X) ||
-			!bIsPowerOfTwo(size.Y))
+		if (CustomStandardAsset.isTextureSourceOverSize(bStrictMode))
 		{
-			if (isAdditiveMode)
-			{
-				if (OutList.Contains(AssetD)) continue;
-			}
-
-			OutList.Add(AssetD);
+			OutList.Add(AssetDPtr);
 		}
 	}
 }

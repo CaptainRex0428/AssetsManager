@@ -4,34 +4,42 @@
 
 #include "CoreMinimal.h"
 #include "SlateWidgets/SCommonSlate.h"
-#include "SlateWidgets/TCustomSlateDelegates.h"
 #include "SlateWidgets/SCustomTableRow.h"
 #include "SlateWidgets/SCustomListView.h"
 
-/**
- * 
+#include "SlateWidgets/TCustomSlateDelegates.h"
+
+/*
+ * this custom table can generate a list with default check box
+ * the header should be constructed in some standard rules to avoid undefined columns being constructed
  */
 template <typename ItemType>
 class ASSETSMANAGER_API SCustomTable : public SCommonSlate
 {	
 public:
+
+	/*
+	* This block defines some delegates that can be define outside this class
+	* These delegates are defined in SlateWidgets/TCustomSlateDelegates.h
+	*/
+
 	using FOnTableCheckBoxStateChanged = TCustomSlateDelegates<ItemType>::FOnTableCheckBoxStateChanged;
 	using FOnTableRowMouseButtonDoubleClicked = TCustomSlateDelegates<ItemType>::FOnTableRowMouseButtonDoubleClicked;
 
+	using FOnGenerateTableHeaderRow = TCustomSlateDelegates<ItemType>::FOnGenerateTableHeaderRow;
 	using FOnGenerateTableRowColumn = TCustomSlateDelegates<ItemType>::FOnGenerateTableRowColumn;
 
 public:
 	
 
 	SLATE_BEGIN_ARGS(SCustomTable) {}
-	
-	SLATE_ARGUMENT(TArray<SCommonSlate::CustomTableColumnType>*,ColumnsType)
-	SLATE_ARGUMENT(TArray<SCommonSlate::CustomTableColumnType>*,CanGenerateColumnsType)
+
 	SLATE_ARGUMENT(TArray<ItemType>*,SourceItems)
 
 	SLATE_EVENT(FOnTableCheckBoxStateChanged, OnTableCheckBoxStateChanged)
 	SLATE_EVENT(FOnTableRowMouseButtonDoubleClicked, OnTableRowMouseButtonDoubleClicked)
 	
+	SLATE_EVENT(FOnGenerateTableHeaderRow, OnGenerateTableHeaderRow)
 	SLATE_EVENT(FOnGenerateTableRowColumn, OnGenerateTableRowColumn)
 
 	SLATE_END_ARGS()
@@ -39,48 +47,38 @@ public:
 public:
 	virtual void Construct(const SCustomTable<ItemType>::FArguments& InArgs);
 
+	/*
+	* These functions can be called to interact with table list
+	*/
+
 	virtual const TArray<ItemType> & GetSelectedItems();
 	virtual const TArray<ItemType> & GetListItems();
+
 	virtual void SelectAll();
 	virtual void UnselectAll();
 
-	virtual void RefreshTable(bool bRefreshHeader = true);
+	virtual void RefreshTable(
+		bool bRefreshHeader = true);
 
 private:
+
+	/*
+	* these are some delegates should be initialized outside the class
+	*/
 
 	FOnTableCheckBoxStateChanged OnTableCheckBoxStateChanged;
 	FOnTableRowMouseButtonDoubleClicked  OnTableRowMouseButtonDoubleClicked;
 
+	FOnGenerateTableHeaderRow OnGenerateTableHeaderRow;
 	FOnGenerateTableRowColumn OnGenerateTableRowColumn;
 
-	TArray<ItemType>* SourceItems;
-	TArray<SCommonSlate::CustomTableColumnType>* ColumnsType;
-	TArray<SCommonSlate::CustomTableColumnType>* CanGenerateColumnsType;
-
 private:
-
-	TSharedRef<SCustomListView<ItemType>> ConstructTableListView();
-	TSharedRef<SHeaderRow> ConstructTableHeaderRow(bool bIsGenerateHeader = false);
-
-	TSharedRef<ITableRow> OnTableGenerateRowForlist(
-		ItemType ItemIn,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	void OnRowMouseButtonDoubleClicked(
-		ItemType ItemIn);
-
-	TSharedRef<SWidget> OnTableGenerateListColumn(
-		const FName& ColumnName,
-		ItemType& ItemShow);
-
-	TSharedRef<SCheckBox> ConstructRowCheckBox(
-		const ItemType& ItemIn);
 	
-	void OnCheckBoxStateChanged(
-		ECheckBoxState NewState,
-		const ItemType ItemIn);
+	/*
+	* these variables should be initialized outside the class
+	*/
 
-	FReply OnTestButtonClicked();
+	TArray<ItemType>* SourceItems;
 
 private:
 
@@ -93,6 +91,43 @@ private:
 	int TestCount;
 
 	TSharedPtr<SButton> TestButton;
+
+private:
+	/*
+	*
+	*/
+	TSharedRef<SHeaderRow> ConstructTableHeaderRow(
+		bool bIsGenerateHeader = false);
+
+
+	/*
+	*
+	*/
+	TSharedRef<SCustomListView<ItemType>> ConstructTableListView();
+
+	TSharedRef<ITableRow> OnTableGenerateRowForlist(
+		ItemType ItemIn,
+		const TSharedRef<STableViewBase>& OwnerTable);
+
+	TSharedRef<SWidget> OnTableGenerateListColumn(
+		const FName& ColumnName,
+		ItemType& ItemShow);
+
+	void OnRowMouseButtonDoubleClicked(
+		ItemType ItemIn);
+
+
+	/*
+	*
+	*/
+	TSharedRef<SCheckBox> ConstructRowCheckBox(
+		const ItemType& ItemIn);
+	
+	void OnCheckBoxStateChanged(
+		ECheckBoxState NewState,
+		const ItemType ItemIn);
+
+	FReply OnTestButtonClicked();
 };
 
 template<typename ItemType>
@@ -101,13 +136,12 @@ inline void SCustomTable<ItemType>::Construct(
 {
 	bCanSupportFocus = true;
 
-	this->ColumnsType = InArgs._ColumnsType;
-	this->CanGenerateColumnsType = InArgs._CanGenerateColumnsType;
 	this->SourceItems = InArgs._SourceItems;
 
 	this->OnTableCheckBoxStateChanged = InArgs._OnTableCheckBoxStateChanged;
 	this->OnTableRowMouseButtonDoubleClicked = InArgs._OnTableRowMouseButtonDoubleClicked;
 
+	this->OnGenerateTableHeaderRow = InArgs._OnGenerateTableHeaderRow;
 	this->OnGenerateTableRowColumn = InArgs._OnGenerateTableRowColumn;
 
 	this->CheckBoxArray.Empty();
@@ -151,7 +185,6 @@ inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(
 		this->TableHeaderRow->ClearColumns();
 	}
 	
-
 	SHeaderRow::FColumn::FArguments CheckBoxArgs;
 	CheckBoxArgs.DefaultLabel(FText::FromString(""));
 	CheckBoxArgs.ColumnId("CheckBox");
@@ -161,69 +194,7 @@ inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(
 
 	TableHeaderRow->AddColumn(CheckBoxArgs);
 
-	for(SCommonSlate::CustomTableColumnType ColumnIn: * this->ColumnsType)
-	{
-		SHeaderRow::FColumn::FArguments ColumnBoxArgs;
-
-		ColumnBoxArgs.DefaultLabel(FText::FromString("[Undefined Column]"));
-		ColumnBoxArgs.ColumnId("[Undefined]");
-		ColumnBoxArgs.ShouldGenerateWidget(true);
-		ColumnBoxArgs.HAlignHeader(HAlign_Center);
-
-		switch (ColumnIn)
-		{
-		case Column_UClass:
-			ColumnBoxArgs.FillWidth(0.07f);
-			break;
-
-		case Column_AssetName:
-			ColumnBoxArgs.FillWidth(0.3f);
-			break;
-
-		case Column_AssetPath:
-			ColumnBoxArgs.FillWidth(0.5f);
-			break;
-			
-		case Column_PerAssetHandle:
-			ColumnBoxArgs.FillWidth(0.25f);
-			break;
-
-		case Column_TextureMaxInGameSize:
-			ColumnBoxArgs.FillWidth(0.07f);
-			break;
-
-		case Column_TextureSourceSize:
-			ColumnBoxArgs.FillWidth(0.07f);
-			break;
-
-		case Column_TextureCompressionSettings:
-			ColumnBoxArgs.FillWidth(0.2f);
-			break;
-
-		case Column_TextureSRGB:
-			ColumnBoxArgs.FillWidth(0.05f);
-			break;
-				
-		case Column_TextureGroup:
-			ColumnBoxArgs.FillWidth(0.2f);
-			break;
-
-		default:
-			ColumnBoxArgs.FillWidth(0.1f);
-			break;
-		}
-		
-		
-		const FString* ColumnNamePtr = CustomTableColumnTypeToString.Find(ColumnIn);
-
-		if (ColumnNamePtr)
-		{
-			ColumnBoxArgs.DefaultLabel(FText::FromString(*ColumnNamePtr));
-			ColumnBoxArgs.ColumnId(FName(*ColumnNamePtr));
-		}
-
-		TableHeaderRow->AddColumn(ColumnBoxArgs);
-	}
+	this->OnGenerateTableHeaderRow.Execute(this->TableHeaderRow);
 
 	return TableHeaderRow.ToSharedRef();
 }
@@ -357,30 +328,39 @@ inline const TArray<ItemType>& SCustomTable<ItemType>::GetListItems()
 template<typename ItemType>
 inline void SCustomTable<ItemType>::SelectAll()
 {
-	/*NtfyMsg(FString::FromInt(CheckBoxArray.Num()));
-	NtfyMsg(FString::FromInt(this->TestCount));*/
-
-	if (CheckBoxArray.Num() == 0)
+	if (SourceItems->Num() == 0 && CheckBoxArray.Num() == 0)
 	{
 		return;
 	}
 
-	for (const TSharedPtr<SCheckBox> & CheckBox : CheckBoxArray)
+	for (ItemType & item: *SourceItems)
+	{
+		if(!CheckBoxSelected.Contains(item))
+		{
+			CheckBoxSelected.AddUnique(item);
+		}
+	}
+
+	for (const TSharedPtr<SCheckBox>& CheckBox : CheckBoxArray)
 	{
 		if (!CheckBox->IsChecked())
 		{
 			CheckBox->ToggleCheckedState();
 		}
 	}
+
+	this->OnTableCheckBoxStateChanged.Execute();
 }
 
 template<typename ItemType>
 inline void SCustomTable<ItemType>::UnselectAll()
 {
-	if (CheckBoxArray.Num() == 0)
+	if (SourceItems->Num() == 0 && CheckBoxArray.Num() == 0)
 	{
 		return;
 	}
+
+	CheckBoxSelected.Empty();
 
 	for (const TSharedPtr<SCheckBox> & CheckBox : CheckBoxArray)
 	{
@@ -389,6 +369,8 @@ inline void SCustomTable<ItemType>::UnselectAll()
 			CheckBox->ToggleCheckedState();
 		}
 	}
+
+	this->OnTableCheckBoxStateChanged.Execute();
 }
 
 template<typename ItemType>

@@ -1,5 +1,6 @@
 
 #include "SlateWidgets/SCommonSlate.h"
+#include "AssetsManagerStyle.h"
 
 FSlateFontInfo SCommonSlate::GetFontInfo(
 	float FontSize, 
@@ -11,6 +12,33 @@ FSlateFontInfo SCommonSlate::GetFontInfo(
 	font.Size = FontSize;
 
 	return font;
+}
+
+TSharedRef<SScaleBox> SCommonSlate::ConstructCommonImageBox(
+	const FSlateBrush * ImageBrush,
+	FVector2D ImageSize,
+	EStretch::Type ImageStrech,
+	TSharedPtr<SImage> * OutImagePtr)
+{
+	TSharedPtr<SImage> ImageCommon =
+		SNew(SImage)
+		.Image(ImageBrush)
+		.DesiredSizeOverride(ImageSize);
+
+	if (OutImagePtr)
+	{
+		*OutImagePtr = ImageCommon;
+	}
+
+	TSharedPtr<SScaleBox> ScaleResult =
+		SNew(SScaleBox)
+		.Stretch(ImageStrech)
+		.OverrideScreenSize(ImageSize)
+		[
+			ImageCommon.ToSharedRef()
+		];
+
+	return ScaleResult.ToSharedRef();
 }
 
 TSharedRef<STextBlock> SCommonSlate::ConstructNormalTextBlock(

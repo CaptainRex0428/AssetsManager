@@ -33,14 +33,21 @@ public:
 
 
 public:
-	virtual void Construct(const SCustomEditableText<ItemType>::FArguments& InArgs);
+	virtual void Construct(
+		const SCustomEditableText<ItemType>::FArguments& InArgs);
 
 private:
 	TSharedRef<STextBlock> ConstructTextBlockFromFText();
-	FReply OnTextBlockDoubleClicked(const FGeometry& Geo, const FPointerEvent& e);
+
+	FReply OnTextBlockDoubleClicked(
+		const FGeometry& Geo, 
+		const FPointerEvent& e);
 
 	TSharedRef<SEditableTextBox> ConstructEditableTextBlockFromFText();
-	void OnEditableTextBlockCommitted(const FText& TextIn, ETextCommit::Type CommitType);
+
+	void OnEditableTextBlockCommitted(
+		const FText& TextIn, 
+		ETextCommit::Type CommitType);
 
 private:
 	ItemType SourceItem;

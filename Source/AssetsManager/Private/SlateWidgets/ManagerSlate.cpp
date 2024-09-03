@@ -2,6 +2,7 @@
 
 #include "SlateWidgets/ManagerSlate.h"
 #include "SlateWidgets/SCustomTableRow.h"
+#include "AssetsManagerStyle.h"
 
 
 #include "AssetsManager.h"
@@ -93,6 +94,9 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 {
 	bCanSupportFocus = true;
 
+	this->bTextureSizeCheckStrictMode = false;
+	this->bTextureSizeCheckStrictCheckBoxConstructed = false;
+
 	m_ClassCheckState = DefaultClassCheckState;
 	m_UsageCheckState = DefaultUsageCheckState;
 
@@ -101,17 +105,9 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	StoredFolderPaths = InArgs._SelectedFolderPaths;
 	StoredAssetsData = *InArgs._StoredAssetsData;
 	
-	UAssetsChecker::ECopyAssetsPtrList(StoredAssetsData, SListViewAssetData);
-	UAssetsChecker::ECopyAssetsPtrList(SListViewAssetData, SListViewClassFilterAssetData);
-
-	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Empty();
-	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_UClass);
-	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_AssetName);
-	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_TextureMaxInGameSize);
-	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_TextureSourceSize);
-	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_TextureCompressionSettings);
-	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_TextureSRGB);
-	this->SManagerCustomTableTitleRowColumnsCanGenerateType.Add(CustomTableColumnType::Column_PerAssetHandle);
+	UAssetsChecker::ECopyAssetsPtrList(StoredAssetsData, SListViewUsageFilterAssetData);
+	UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewClassFilterAssetData);
+	UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewAssetData);
 
 	ClassFilterDefault = MakeShared<FString>(CLASS_LISTALL);
 	ClassFilterCurrent = ClassFilterDefault;
@@ -158,28 +154,36 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	TSharedPtr<SVerticalBox> MainUI = SNew(SVerticalBox);
 
-#pragma region title
+	/*
+	*	Title
+	*/
+
+	const FSlateBrush* TitleImage = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.AssetsManagerTitle");
+
 	MainUI->AddSlot()
 		.AutoHeight()
 		[
-			ConstructTitleTextBlock(InArgs._TitleText, GetFontInfo(24))
+			ConstructCommonImageBox(
+				TitleImage,
+				FVector2D(FVector2D(5332.f, 175.f)),
+				EStretch::ScaleToFitX)
 		];
 
 	MainUI->AddSlot()
 		.AutoHeight()
 		[
 			SNew(SBorder)
-
 		];
-#pragma endregion
 
-#pragma region Info
+	/*
+	*	Info
+	*/
 
 	TSharedPtr<SSplitter> ContentBox = SNew(SSplitter)
 		.Orientation(Orient_Vertical);
 
 	TSharedPtr<SVerticalBox> InfoBox = SNew(SVerticalBox);
-	TSharedPtr<SVerticalBox> HandleBox = SNew(SVerticalBox);
+	TSharedPtr<SVerticalBox> HandleListBox = SNew(SVerticalBox);
 
 	ContentBox->AddSlot()
 		.MinSize(80.f)
@@ -191,56 +195,58 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	ContentBox->AddSlot()
 		.MinSize(200.f)
 		[
-			HandleBox.ToSharedRef()
+			HandleListBox.ToSharedRef()
 		];
 
-#pragma region DropDown
-	HandleBox->AddSlot()
+	/*
+	*	Drop down Menu
+	*/
+
+	HandleListBox->AddSlot()
 		.AutoHeight()
 		[
 			ConstructDropDownMenuBox()
 		];
 
+
+	/*
+	*	BuildList
+	*/
+
 	ConstructHeaderRow();
 
 	this->CustomTableList = SNew(SCustomTable<TSharedPtr<FAssetData>>)
 		.SourceItems(&SListViewAssetData)
-		.ColumnsType(&SManagerCustomTableTitleRowColumnsType)
-		.CanGenerateColumnsType(&SManagerCustomTableTitleRowColumnsCanGenerateType)
+		.OnGenerateTableHeaderRow(this,&SManagerSlateTab::OnTableGenerateHeaderRow)
 		.OnTableCheckBoxStateChanged(this, &SManagerSlateTab::OnTableCheckBoxStateChanged)
 		.OnTableRowMouseButtonDoubleClicked(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked)
 		.OnGenerateTableRowColumn(this,&SManagerSlateTab::OnTableGenerateListColumn);
-
-	TSharedPtr<SVerticalBox> HandleButton = ConstructHandleAllBox();
 
 	InfoBox->AddSlot()
 		.AutoHeight()
 		[
 			ConstructInfoBox(StoredFolderPaths, GetFontInfo(12))
 		];
-#pragma endregion
 
-#pragma region InfoList
-
-	HandleBox->AddSlot()
+	HandleListBox->AddSlot()
 		.VAlign(VAlign_Fill)
 		[
 			this->CustomTableList.ToSharedRef()
 		];
-#pragma endregion
 
-#pragma endregion
 
 	MainUI->AddSlot()[ContentBox.ToSharedRef()];
 
 
-#pragma region HandleAllBox	
+	/*
+	*	batch processing box
+	*/
 
 	ConstructHandleAllBox();
 
 	MainUI->AddSlot().AutoHeight()
 		[
-			ConstructOverlayOpaque(this->HandleAllBox,3)
+			ConstructOverlayOpaque(this->BatchHandleBox, 3)
 		];
 
 #pragma endregion
@@ -261,15 +267,21 @@ void SManagerSlateTab::SListViewRemoveAssetData(
 		StoredAssetsData.Remove(AssetData);
 	}
 
-	if (SListViewAssetData.Contains(AssetData))
-	{
-		SListViewAssetData.Remove(AssetData);
-	}
-
 	if (SListViewClassFilterAssetData.Contains(AssetData))
 	{
 		SListViewClassFilterAssetData.Remove(AssetData);
 	}
+
+	if (SListViewUsageFilterAssetData.Contains(AssetData))
+	{
+		SListViewUsageFilterAssetData.Remove(AssetData);
+	}
+
+	if (SListViewAssetData.Contains(AssetData))
+	{
+		SListViewAssetData.Remove(AssetData);
+	}
+	
 }
 
 #pragma region OnGenerateRowForlist
@@ -304,7 +316,11 @@ void SManagerSlateTab::ConstructHeaderRow()
 
 	SManagerCustomTableTitleRowColumnsType.Add(Column_UClass);
 	SManagerCustomTableTitleRowColumnsType.Add(Column_AssetName);
-	SManagerCustomTableTitleRowColumnsType.Add(Column_PerAssetHandle);
+
+	if (!OnlyCheck)
+	{
+		SManagerCustomTableTitleRowColumnsType.Add(Column_PerAssetHandle);
+	}
 
 	if (m_ClassCheckState == Texture)
 	{
@@ -312,12 +328,12 @@ void SManagerSlateTab::ConstructHeaderRow()
 			m_UsageCheckState == SourceSizeError ? 
 			Column_TextureSourceSize :Column_TextureMaxInGameSize, 1);
 
-		if (m_UsageCheckState == TextureGroupError)
+		if (m_UsageCheckState == TextureGroupError || DetailMode)
 		{
 			SManagerCustomTableTitleRowColumnsType.Insert(Column_TextureGroup, 3);
 		}
 
-		if (m_UsageCheckState == TextureSettingsError)
+		if (m_UsageCheckState == TextureSettingsError || DetailMode)
 		{
 			SManagerCustomTableTitleRowColumnsType.Insert(Column_TextureSRGB,3);
 			
@@ -325,6 +341,77 @@ void SManagerSlateTab::ConstructHeaderRow()
 		}
 	}
 
+}
+
+TSharedRef<SHeaderRow> SManagerSlateTab::OnTableGenerateHeaderRow(
+	TSharedPtr<SHeaderRow>& TableHeaderRow)
+{
+	
+	for (SCommonSlate::CustomTableColumnType ColumnIn : SManagerCustomTableTitleRowColumnsType)
+	{
+		SHeaderRow::FColumn::FArguments ColumnBoxArgs;
+
+		ColumnBoxArgs.DefaultLabel(FText::FromString("[Undefined Column]"));
+		ColumnBoxArgs.ColumnId("[Undefined]");
+		ColumnBoxArgs.ShouldGenerateWidget(true);
+		ColumnBoxArgs.HAlignHeader(HAlign_Center);
+
+		switch (ColumnIn)
+		{
+		case Column_UClass:
+			ColumnBoxArgs.FillWidth(0.07f);
+			break;
+
+		case Column_AssetName:
+			ColumnBoxArgs.FillWidth(0.2f);
+			break;
+
+		case Column_AssetPath:
+			ColumnBoxArgs.FillWidth(0.5f);
+			break;
+
+		case Column_PerAssetHandle:
+			ColumnBoxArgs.FillWidth(0.25f);
+			break;
+
+		case Column_TextureMaxInGameSize:
+			ColumnBoxArgs.FillWidth(0.07f);
+			break;
+
+		case Column_TextureSourceSize:
+			ColumnBoxArgs.FillWidth(0.07f);
+			break;
+
+		case Column_TextureCompressionSettings:
+			ColumnBoxArgs.FillWidth(0.2f);
+			break;
+
+		case Column_TextureSRGB:
+			ColumnBoxArgs.FillWidth(0.05f);
+			break;
+
+		case Column_TextureGroup:
+			ColumnBoxArgs.FillWidth(0.2f);
+			break;
+
+		default:
+			ColumnBoxArgs.FillWidth(0.1f);
+			break;
+		}
+
+
+		const FString* ColumnNamePtr = CustomTableColumnTypeToString.Find(ColumnIn);
+
+		if (ColumnNamePtr)
+		{
+			ColumnBoxArgs.DefaultLabel(FText::FromString(*ColumnNamePtr));
+			ColumnBoxArgs.ColumnId(FName(*ColumnNamePtr));
+		}
+
+		TableHeaderRow->AddColumn(ColumnBoxArgs);
+	}
+
+	return TableHeaderRow.ToSharedRef();
 }
 
 TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
@@ -556,7 +643,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructListAssetsCountInfo(
 	const FSlateFontInfo& FontInfo)
 {
 	ClassListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewClassFilterAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Yellow);
-	ListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Green);
+	ListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewUsageFilterAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Green);
 	SelectedCountBlock = ConstructNormalTextBlock(FString::FromInt(CustomTableList->GetSelectedItems().Num()), FontInfo, ETextJustify::Left, FColor::Emerald);
 	
 	TSharedRef<SHorizontalBox> ListAssetsCountInfo =
@@ -691,21 +778,21 @@ TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> SManagerSlateTab::Constr
 		.Font(GetFontInfo(9))
 		.Justify(EHorizontalAlignment::HAlign_Left)
 		.TextColor(FColor::White)
-		.OnItemToDisplayText(this,&SManagerSlateTab::OnAssetDataToText)
-		.OnItemToTipText(this,&SManagerSlateTab::OnAssetDataToTipText)
+		.OnItemToDisplayText(this,&SManagerSlateTab::OnAssetDataToAssetNameEditableText)
+		.OnItemToTipText(this,&SManagerSlateTab::OnAssetDataToAssetEditableTextTip)
 		.OnItemCommit(this,&SManagerSlateTab::OnItemDataCommitted);
 
 	return AssetNameBox.ToSharedRef();
 }
 
-FText SManagerSlateTab::OnAssetDataToText(
+FText SManagerSlateTab::OnAssetDataToAssetNameEditableText(
 	TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
 	FString DisplayAssetName = AssetDataToDisplay->AssetName.ToString();
 	return FText::FromString(DisplayAssetName);
 }
 
-FText SManagerSlateTab::OnAssetDataToTipText(
+FText SManagerSlateTab::OnAssetDataToAssetEditableTextTip(
 	TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
 	FString DisplayAssetPath = AssetDataToDisplay->GetSoftObjectPath().ToString();
@@ -873,8 +960,6 @@ FReply SManagerSlateTab::OnSingleAssetDeleteButtonClicked(
 		{
 			return FReply::Handled();
 		}
-
-		// NtfyMsgLog("Clicked OK");
 	}
 
 	if (UAssetsChecker::EDeleteAsset(*ClickedAssetData))
@@ -886,7 +971,7 @@ FReply SManagerSlateTab::OnSingleAssetDeleteButtonClicked(
 		NtfyMsgLog(TEXT("Successfully deleted ") + ClickedAssetData->AssetName.ToString());
 #endif
 
-		// update slist view
+		// update table list view
 		SListViewRemoveAssetData(ClickedAssetData);
 		RefreshAssetsListView(false);
 	};
@@ -1236,9 +1321,9 @@ FReply SManagerSlateTab::OnSingleTextureLODGroupStandardFixButtonClicked(
 
 TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllBox()
 {
-	this->HandleAllBox = SNew(SVerticalBox);
+	this->BatchHandleBox = SNew(SVerticalBox);
 
-	this->HandleAllBox->AddSlot()
+	this->BatchHandleBox->AddSlot()
 		.AutoHeight()
 		[
 			SNew(SHorizontalBox)
@@ -1258,7 +1343,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllBox()
 				]
 		];
 
-	this->HandleAllBox->AddSlot()
+	this->BatchHandleBox->AddSlot()
 		.AutoHeight()
 		[
 			SNew(SHorizontalBox)
@@ -1270,13 +1355,13 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllBox()
 				]
 		];
 
-	this->HandleAllBox->AddSlot()
+	this->BatchHandleBox->AddSlot()
 		.AutoHeight()
 		[
 			this->DynamicHandleAllBox.ToSharedRef()
 		];
 
-	this->HandleAllBox->AddSlot()
+	this->BatchHandleBox->AddSlot()
 		.AutoHeight()
 		[
 			SNew(SHorizontalBox)
@@ -1289,7 +1374,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllBox()
 				]
 		];
 
-	this->HandleAllBox->AddSlot()
+	this->BatchHandleBox->AddSlot()
 			.AutoHeight()
 			[
 				SNew(SHorizontalBox)
@@ -1302,7 +1387,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllBox()
 					]
 			];
 
-	return HandleAllBox.ToSharedRef();
+	return BatchHandleBox.ToSharedRef();
 }
 
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDynamicHandleAllBox()
@@ -1312,9 +1397,10 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDynamicHandleAllBox()
 		this->DynamicHandleAllBox = SNew(SHorizontalBox);
 	}
 
-	if(m_UsageCheckState == TextureSettingsError || 
+	if( !OnlyCheck &&
+		(m_UsageCheckState == TextureSettingsError || 
 		m_UsageCheckState == PrefixError ||
-		m_UsageCheckState == TextureGroupError)
+		m_UsageCheckState == TextureGroupError))
 	{
 		this->DynamicHandleAllBox->RemoveSlot(this->FixSelectedButton.ToSharedRef());
 
@@ -1472,11 +1558,6 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 			for (TSharedPtr<FAssetData> & Asset : AssetShouldRename)
 			{
 				AssetToRename.Add(*Asset);
-
-				if (SListViewAssetData.Contains(Asset))
-				{
-					SListViewAssetData.Remove(Asset);
-				}
 			}
 
 			UAssetsChecker::EAddPrefixes(AssetToRename);
@@ -1494,9 +1575,9 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 		{
 			if(UAssetsChecker::ESetTextureStandardSettings(*AssetData))
 			{
-				if (SListViewAssetData.Contains(AssetData))
+				if (SListViewUsageFilterAssetData.Contains(AssetData))
 				{
-					SListViewAssetData.Remove(AssetData);
+					SListViewUsageFilterAssetData.Remove(AssetData);
 				}
 			}
 		}
@@ -1541,9 +1622,11 @@ TSharedRef<SButton> SManagerSlateTab::ConstructFixUpRedirectorButton()
 		.OnClicked(this, &SManagerSlateTab::OnFixUpRedirectorButtonClicked)
 		.ContentPadding(FMargin(5.f));
 #ifdef ZH_CN
-	this->FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- 修复所选文件夹中的重定向器(Redirector) --")));
+	this->FixUpRedirectorButton->SetContent(
+		ConstructTextForButtons(TEXT("-- 修复所选文件夹中的重定向器(Redirector) --")));
 #else
-	this->FixUpRedirectorButton->SetContent(ConstructTextForButtons(TEXT("-- Fix Up Redirectors In Selected Folders --")));
+	this->FixUpRedirectorButton->SetContent(
+		ConstructTextForButtons(TEXT("-- Fix Up Redirectors In Selected Folders --")));
 #endif
 
 	return this->FixUpRedirectorButton.ToSharedRef();
@@ -1597,6 +1680,11 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 	Output += USAGEFILTER;
 	Output += L":\n";
 	Output += UsageFilterComboDisplayText->GetText().ToString();
+#ifdef ZH_CN
+	Output += ReverseCondition ? TEXT("(反选)") : TEXT("");
+#else
+	Output += ReverseCondition ? TEXT("(Reverse)") : TEXT("");
+#endif
 	Output += "\n\n";
 
 	Output += L"Files:\n";
@@ -1610,7 +1698,7 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 	}
 	else
 	{
-		OutputData = SListViewAssetData;
+		OutputData = this->CustomTableList->GetListItems();
 	}
 
 	float TargetNum = OutputData.Num();
@@ -1704,9 +1792,10 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDropDownMenuBox()
 {
 
-	TSharedPtr<SHorizontalBox> DropDownContent =
-		SNew(SHorizontalBox)
-		+ SHorizontalBox::Slot()
+	DropDownContent =
+		SNew(SHorizontalBox);
+
+	DropDownContent->AddSlot()
 		.FillWidth(.25f)
 		.Padding(FMargin(2.f))
 		[
@@ -1726,9 +1815,9 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDropDownMenuBox()
 				[
 					ConstructClassFilterButton()
 				]
-		]
+		];
 
-		+ SHorizontalBox::Slot()
+	DropDownContent->AddSlot()
 		.FillWidth(.25f)
 		.Padding(FMargin(2.f))
 		[
@@ -1749,6 +1838,27 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDropDownMenuBox()
 					ConstructUsageFilterButton()
 				]
 
+		];
+
+	DropDownContent->AddSlot()
+		.FillWidth(.05f)
+		.Padding(FMargin(2.f))
+		[
+			ConstructReverseConditionCheckBox()
+		];
+
+	DropDownContent->AddSlot()
+		.FillWidth(.05f)
+		.Padding(FMargin(2.f))
+		[
+			ConstructDetailModeBox()
+		];
+
+	DropDownContent->AddSlot()
+		.FillWidth(.05f)
+		.Padding(FMargin(2.f))
+		[
+			ConstructOnlyCheckBox()
 		];
 
 	TSharedRef<SHorizontalBox> DropDownMenu =
@@ -1837,7 +1947,8 @@ void SManagerSlateTab::OnClassFilterButtonChanged(
 	ClassFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
 
 	ConstuctClassFilterList(ClassFilterCurrent);
-	UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewAssetData);
+	UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+	UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	
 	// Update count
 
@@ -1892,7 +2003,7 @@ void SManagerSlateTab::OnClassFilterButtonChanged(
 TSharedRef<SComboBox<TSharedPtr<FString>>> SManagerSlateTab::ConstructUsageFilterButton()
 {
 	
-	TSharedRef<SComboBox<TSharedPtr<FString>>> UsageFilterButton =
+	this->UsageFilterComboBox =
 		SNew(SComboBox<TSharedPtr<FString>>)
 		.OptionsSource(&UsageFilterComboSourceItems)
 		.OnGenerateWidget(this,&SManagerSlateTab::OnGenerateUsageFilterButton)
@@ -1902,9 +2013,9 @@ TSharedRef<SComboBox<TSharedPtr<FString>>> SManagerSlateTab::ConstructUsageFilte
 				.Text(FText::FromString(USAGE_NONE))
 		];
 
-	this->UsageFilterComboBox = UsageFilterButton.ToSharedPtr();
+	UsageFilterCurrent = USAGE_NONE;
 
-	return UsageFilterButton;
+	return this->UsageFilterComboBox.ToSharedRef();
 }
 
 TSharedRef<SWidget> SManagerSlateTab::OnGenerateUsageFilterButton(
@@ -1923,15 +2034,31 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 {
 	UsageFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
 	
-	if (*SelectedOption.Get() == USAGE_NONE)
+	if (ReverseCondition)
+	{
+		ReverseConditionCheckBox->SetIsChecked(ECheckBoxState::Unchecked);
+		ReverseCondition = false;
+	}
+
+	UsageFilterCurrent = *SelectedOption.Get();
+
+	UpdateUsageFilterAssetData(*SelectedOption.Get());
+
+	RefreshAssetsListView();
+}
+
+void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
+{
+	if (Selection == USAGE_NONE)
 	{
 		m_UsageCheckState = DefaultUsageCheckState;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewAssetData);
+		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
-	if (*SelectedOption.Get() == USAGE_UNUSED)
+	if (Selection == USAGE_UNUSED)
 	{
 		m_UsageCheckState = Unused;
 		ConstructDynamicHandleAllBox();
@@ -1941,7 +2068,7 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 #ifdef ZH_CN
 			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
 				TEXT("选择的文件太多[")
-				+FString::FromInt(SListViewClassFilterAssetData.Num()) 
+				+ FString::FromInt(SListViewClassFilterAssetData.Num())
 				+ TEXT("个文件]\n由于需要查找所有引用项，这将会消耗大量时间!!!\n\n是否继续?"));
 #else
 			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
@@ -1957,66 +2084,391 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 			}
 		}
 
-		UAssetsChecker::EListUnusedAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+		UAssetsChecker::EListUnusedAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
-	if (*SelectedOption.Get() == USAGE_PREFIXERROR)
+
+	if (Selection == USAGE_PREFIXERROR)
 	{
 		m_UsageCheckState = PrefixError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListPrefixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+		UAssetsChecker::EListPrefixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
-	if (*SelectedOption.Get() == USAGE_SAMENAMEASSETERROR)
+
+	if (Selection == USAGE_SAMENAMEASSETERROR)
 	{
 		m_UsageCheckState = SameNameAssetError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListSameNameErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+		UAssetsChecker::EListSameNameErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
-	if (*SelectedOption.Get() == USAGE_MAXINGAMESIZEERROR)
+
+	if (Selection == USAGE_MAXINGAMESIZEERROR)
 	{
 		m_UsageCheckState = MaxInGameSizeError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+		UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
+			SListViewClassFilterAssetData, 
+			SListViewUsageFilterAssetData, 
+			bTextureSizeCheckStrictMode);
+
+		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
-	if (*SelectedOption.Get() == USAGE_SOURCESIZEERROR)
+
+	if (Selection == USAGE_SOURCESIZEERROR)
 	{
 		m_UsageCheckState = SourceSizeError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+		UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
+			SListViewClassFilterAssetData, 
+			SListViewUsageFilterAssetData, 
+			bTextureSizeCheckStrictMode);
+
+		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
-	if (*SelectedOption.Get() == USAGE_TEXTURESUBFIXERROR)
+
+	if (Selection == USAGE_TEXTURESUBFIXERROR)
 	{
 		m_UsageCheckState = SubfixError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+		UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
+			SListViewClassFilterAssetData, 
+			SListViewUsageFilterAssetData);
+
+		UAssetsChecker::ECopyAssetsPtrList(
+			SListViewUsageFilterAssetData, 
+			SListViewAssetData);
 	}
 
-	if (*SelectedOption.Get() == USAGE_TEXTURESETTINGSERROR)
+
+	if (Selection == USAGE_TEXTURESETTINGSERROR)
 	{
 		m_UsageCheckState = TextureSettingsError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+		UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
+			SListViewClassFilterAssetData, 
+			SListViewUsageFilterAssetData);
+
+		UAssetsChecker::ECopyAssetsPtrList(
+			SListViewUsageFilterAssetData, 
+			SListViewAssetData);
 	}
 
-	if (*SelectedOption.Get() == USAGE_TEXTUREGROUPERROR)
+	if (Selection == USAGE_TEXTUREGROUPERROR)
 	{
 		m_UsageCheckState = TextureGroupError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewAssetData);
+		UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
-	RefreshAssetsListView();
+	// dynamic components
+
+	if (Selection == USAGE_MAXINGAMESIZEERROR || Selection == USAGE_SOURCESIZEERROR)
+	{
+		if (bTextureSizeCheckStrictCheckBoxConstructed)
+		{
+			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
+		}
+
+		DropDownContent->InsertSlot(2)
+			.FillWidth(.05f)
+			.Padding(FMargin(2.f))
+			[
+				ConstructTextureSizeStrictCheckBox(
+					bTextureSizeCheckStrictMode ?
+					ECheckBoxState::Checked : ECheckBoxState::Unchecked)
+			];
+	}
+	else
+	{
+		if(bTextureSizeCheckStrictCheckBoxConstructed)
+		{
+			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
+		}
+	}
+}
+
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructTextureSizeStrictCheckBox(
+	ECheckBoxState State)
+{
+	TextureSizeCheckStrictBox =
+		SNew(SHorizontalBox);
+
+	bTextureSizeCheckStrictCheckBoxConstructed = true;
+
+	TextureSizeCheckStrictCheckBox =
+		SNew(SCheckBox)
+		.Type(ESlateCheckBoxType::CheckBox)
+		.Padding(FMargin(3.f))
+		.HAlign(HAlign_Center)
+		.IsChecked(State)
+		.Visibility(EVisibility::Visible)
+		.OnCheckStateChanged(this, &SManagerSlateTab::OnTextureSizeStrictCheckBoxStateChanged);
+
+	TextureSizeCheckStrictBox ->AddSlot()
+		.AutoWidth()
+		.Padding(FMargin(2.f))
+		[
+			TextureSizeCheckStrictCheckBox.ToSharedRef()
+		];
+
+	TextureSizeCheckStrictBox ->AddSlot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+#ifdef ZH_CN
+			ConstructNormalTextBlock(TEXT("严格筛选"), GetFontInfo(12))
+#else
+			ConstructNormalTextBlock(TEXT("Strict Filter"), GetFontInfo(12))
+#endif
+		];
+
+	return 	TextureSizeCheckStrictBox.ToSharedRef();
+}
+
+void SManagerSlateTab::OnTextureSizeStrictCheckBoxStateChanged(
+	ECheckBoxState NewState)
+{
+	switch (NewState)
+	{
+	case ECheckBoxState::Unchecked:
+	{
+		if (bTextureSizeCheckStrictMode)
+		{
+			bTextureSizeCheckStrictMode = false;
+			UpdateUsageFilterAssetData(this->UsageFilterCurrent);
+			RefreshAssetsListView(false);
+		}
+		break;
+	}
+	case ECheckBoxState::Checked:
+	{
+		if (!bTextureSizeCheckStrictMode)
+		{
+			bTextureSizeCheckStrictMode = true;
+			UpdateUsageFilterAssetData(this->UsageFilterCurrent);
+			RefreshAssetsListView(false);
+		}
+		break;
+	}
+	case ECheckBoxState::Undetermined:
+		break;
+	default:
+		break;
+	}
+}
+
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructReverseConditionCheckBox()
+{
+	TSharedPtr<SHorizontalBox> HorizontalBox =
+		SNew(SHorizontalBox);
+
+	ReverseConditionCheckBox =
+		SNew(SCheckBox)
+		.Type(ESlateCheckBoxType::CheckBox)
+		.Padding(FMargin(3.f))
+		.HAlign(HAlign_Center)
+		.IsChecked(ECheckBoxState::Unchecked)
+		.Visibility(EVisibility::Visible)
+		.OnCheckStateChanged(this, &SManagerSlateTab::OnReverseConditionCheckBoxStateChanged);
+
+	HorizontalBox->AddSlot()
+		.AutoWidth()
+		.Padding(FMargin(2.f))
+		[
+			ReverseConditionCheckBox.ToSharedRef()
+		];
+
+	HorizontalBox->AddSlot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+#ifdef ZH_CN
+			ConstructNormalTextBlock(TEXT("条件反选"), GetFontInfo(12))
+#else
+			ConstructNormalTextBlock(TEXT("ReverseCondition"), GetFontInfo(12))
+#endif
+		];
+
+	return HorizontalBox.ToSharedRef();
+}
+
+void SManagerSlateTab::OnReverseConditionCheckBoxStateChanged(
+	ECheckBoxState NewState)
+{
+	switch (NewState)
+	{
+	case ECheckBoxState::Unchecked:
+	{
+		if (ReverseCondition)
+		{
+			ReverseCondition = false;
+
+			UpdateUsageFilterAssetData(this->UsageFilterCurrent);
+
+			RefreshAssetsListView(false);
+
+		}
+		break;
+	}
+
+	case ECheckBoxState::Checked:
+	{
+		if (!ReverseCondition)
+		{
+			ReverseCondition = true;
+
+			SListViewAssetData.Empty();
+
+			for (TSharedPtr<FAssetData> assetData : SListViewClassFilterAssetData)
+			{
+				if(!SListViewUsageFilterAssetData.Contains(assetData))
+				{
+					SListViewAssetData.Add(assetData);
+				}
+			}
+
+			RefreshAssetsListView(false);
+		}
+		break;
+	}
+
+	case ECheckBoxState::Undetermined:
+		break;
+	default:
+		break;
+	}
+}
+
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDetailModeBox()
+{
+	TSharedPtr<SHorizontalBox> HorizontalBox = 
+		SNew(SHorizontalBox);
+
+	HorizontalBox->AddSlot()
+		.AutoWidth()
+		.Padding(FMargin(2.f))
+		[
+			SNew(SCheckBox)
+				.Type(ESlateCheckBoxType::CheckBox)
+				.Padding(FMargin(3.f))
+				.HAlign(HAlign_Center)
+				.IsChecked(ECheckBoxState::Unchecked)
+				.Visibility(EVisibility::Visible)
+				.OnCheckStateChanged(this, &SManagerSlateTab::OnDetailModeCheckBoxStateChanged)
+		];
+
+	HorizontalBox->AddSlot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+#ifdef ZH_CN
+			ConstructNormalTextBlock(TEXT("详细信息"),GetFontInfo(12))
+#else
+			ConstructNormalTextBlock(TEXT("DetailMode"), GetFontInfo(12))
+#endif
+		];
+
+	return HorizontalBox.ToSharedRef();
+}
+
+void SManagerSlateTab::OnDetailModeCheckBoxStateChanged(
+	ECheckBoxState NewState)
+{
+	switch (NewState)
+	{
+	case ECheckBoxState::Unchecked:
+	{
+		DetailMode = false;
+		RefreshAssetsListView();
+		break;
+	}
+		
+	case ECheckBoxState::Checked:
+	{
+		DetailMode = true;
+		RefreshAssetsListView();
+		break;
+	}
+		
+	case ECheckBoxState::Undetermined:
+		break;
+	default:
+		break;
+	}
+}
+
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructOnlyCheckBox()
+{
+	TSharedPtr<SHorizontalBox> HorizontalBox =
+		SNew(SHorizontalBox);
+
+	HorizontalBox->AddSlot()
+		.AutoWidth()
+		.Padding(FMargin(2.f))
+		[
+			SNew(SCheckBox)
+				.Type(ESlateCheckBoxType::CheckBox)
+				.Padding(FMargin(3.f))
+				.HAlign(HAlign_Center)
+				.IsChecked(ECheckBoxState::Unchecked)
+				.Visibility(EVisibility::Visible)
+				.OnCheckStateChanged(this, &SManagerSlateTab::OnOnlyCheckBoxStateChanged)
+		];
+
+	HorizontalBox->AddSlot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+#ifdef ZH_CN
+			ConstructNormalTextBlock(TEXT("仅检查"), GetFontInfo(12))
+#else
+			ConstructNormalTextBlock(TEXT("CheckOnly"), GetFontInfo(12))
+#endif
+		];
+
+	return HorizontalBox.ToSharedRef();
+}
+
+void SManagerSlateTab::OnOnlyCheckBoxStateChanged(ECheckBoxState NewState)
+{
+	switch (NewState)
+	{
+	case ECheckBoxState::Unchecked:
+	{
+		OnlyCheck = false;
+		RefreshAssetsListView();
+		ConstructDynamicHandleAllBox();
+		break;
+	}
+
+	case ECheckBoxState::Checked:
+	{
+		OnlyCheck = true;
+		RefreshAssetsListView();
+		ConstructDynamicHandleAllBox();
+		break;
+	}
+
+	case ECheckBoxState::Undetermined:
+		break;
+	default:
+		break;
+	}
 }
 
 #pragma endregion
