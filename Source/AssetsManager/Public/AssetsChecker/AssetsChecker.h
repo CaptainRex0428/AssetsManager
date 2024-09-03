@@ -186,13 +186,15 @@ public:
 		bool isAdditiveMode = false);
 
 	static void EListMaxInGameSizeErrorAssetsForAssetList(
-		const TArray<TSharedPtr<FAssetData>>& FindInList, 
+		const TArray<TSharedPtr<FAssetData>>& FindInList,
 		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool bStrictMode = false,
 		bool isAdditiveMode = false);
 
 	static void EListSourceSizeErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
 		TArray<TSharedPtr<FAssetData>>& OutList,
+		bool bStrictMode = false,
 		bool isAdditiveMode = false);
 
 	static void EListTextureSubfixErrorAssetsForAssetList(

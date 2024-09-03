@@ -98,6 +98,7 @@ TextureSubfixCompressionSettingsMap =
 	{"D",TC_Default},
 	{"E",TC_Default},
 	{"ARMS",TC_Masks},
+	{"Mask",TC_Masks},
 	{"N",TC_Normalmap},
 	{"Attr",TC_VectorDisplacementmap},
 	{"Detail",TC_VectorDisplacementmap},
@@ -109,10 +110,35 @@ const TMap<FString, bool> TextureSubfixSRGBSettingsMap =
 	{"D",true},
 	{"E",true},
 	{"ARMS",false},
+	{"Mask",false},
 	{"N",false},
 	{"Attr",false},
 	{"Detail",false},
 	{"AO",false}
+};
+
+const TMap<FString, TextureGroup> TextureLODGroupForCharacterBySubfix =
+{
+	{"D",TEXTUREGROUP_Character},
+	{"E",TEXTUREGROUP_Project02},
+	{"ARMS",TEXTUREGROUP_CharacterSpecular},
+	{"Mask",TEXTUREGROUP_CharacterSpecular},
+	{"N",TEXTUREGROUP_CharacterNormalMap},
+	{"Attr",TEXTUREGROUP_Project01},
+	{"Detail",TEXTUREGROUP_Project01},
+	{"AO",TEXTUREGROUP_Project03}
+};
+
+const TMap<FString, float> TextureSubfixMaxSizeSettingsMap =
+{
+	{"D",2048.f},
+	{"E",2048.f},
+	{"ARMS",512.f},
+	{"Mask",512.f},
+	{"N",1024.f},
+	{"Attr",512.f},
+	{"Detail",512.f},
+	{"AO",512.f}
 };
 
 const TMap<FString, FCustomStandardAssetData::Category> AssetCategoryMap =
@@ -157,15 +183,4 @@ const TMap<FCustomStandardAssetData::Category, TextureGroup> TextureLODGroupForC
 	{FCustomStandardAssetData::Scene, TEXTUREGROUP_World},
 	{FCustomStandardAssetData::UI, TEXTUREGROUP_UI}
 
-};
-
-const TMap<FString, TextureGroup> TextureLODGroupForCharacterBySubfix =
-{
-	{"D",TEXTUREGROUP_Character},
-	{"E",TEXTUREGROUP_Project02},
-	{"ARMS",TEXTUREGROUP_CharacterSpecular},
-	{"N",TEXTUREGROUP_CharacterNormalMap},
-	{"Attr",TEXTUREGROUP_Project01},
-	{"Detail",TEXTUREGROUP_Project01},
-	{"AO",TEXTUREGROUP_Project03}
 };
