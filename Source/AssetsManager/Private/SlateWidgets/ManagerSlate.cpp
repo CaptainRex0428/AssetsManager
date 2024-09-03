@@ -1884,6 +1884,7 @@ void SManagerSlateTab::OnClassFilterButtonChanged(
 
 	ConstuctClassFilterList(ClassFilterCurrent);
 	UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+	UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	
 	// Update count
 
