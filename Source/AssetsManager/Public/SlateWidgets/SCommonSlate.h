@@ -99,13 +99,6 @@ public:
 		const FColor& FontColor = FColor::White,
 		const FString& ToolTip = L"");
 
-	TSharedRef<STextBlock> ConstructTitleTextBlock(
-		const FString& StringToDisplay,
-		const FSlateFontInfo& FontInfo,
-		const ETextJustify::Type Alignment = ETextJustify::Center,
-		const FColor& FontColor = FColor::White,
-		const FString& ToolTip = L"");
-
 #pragma endregion
 
 #pragma region ButtonTextCustruct
