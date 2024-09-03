@@ -82,12 +82,15 @@ FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData)
 			m_StrictAssetCategory = *CategoryFoundLoc0;
 		}
 		
-		const FCustomStandardAssetData::Category* CategoryFoundLoc1 =
-			AssetCategoryMap.Find(m_AssetNameInfoList[1]);
-
-		if (CategoryFoundLoc1)
+		if (m_AssetNameInfoList.Num() > 1) 
 		{
-			m_StrictAssetCategory = *CategoryFoundLoc1;
+			const FCustomStandardAssetData::Category* CategoryFoundLoc1 =
+				AssetCategoryMap.Find(m_AssetNameInfoList[1]);
+
+			if (CategoryFoundLoc1)
+			{
+				m_StrictAssetCategory = *CategoryFoundLoc1;
+			}
 		}
 	}
 }

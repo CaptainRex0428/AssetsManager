@@ -55,7 +55,6 @@ private:
 	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
 
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
-	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsCanGenerateType;
 
 	ClassCheckState m_ClassCheckState;
 	UsageCheckState m_UsageCheckState;
@@ -63,12 +62,17 @@ private:
 	TSharedPtr<SCustomTable<TSharedPtr<FAssetData>>> CustomTableList;
 	TSharedPtr<SListView<TSharedPtr<FAssetData>>> CustomTableListView;
 
+	TSharedPtr<SHorizontalBox> DropDownContent;
+
 #pragma endregion
 
 
 #pragma region ConstructListRow
 
 	void ConstructHeaderRow();
+
+	TSharedRef<SHeaderRow> OnTableGenerateHeaderRow(
+		TSharedPtr<SHeaderRow>& TableHeaderRow);
 
 	TSharedRef<SWidget> OnTableGenerateListColumn(
 		const FName& ColumnName,
@@ -382,6 +386,18 @@ private:
 
 	void UpdateUsageFilterAssetData(
 		const FString& Selection);
+
+#pragma endregion
+
+#pragma region TextureSizeCheckStrictMode
+	bool bTextureSizeCheckStrictMode;
+	bool bTextureSizeCheckStrictCheckBoxConstructed;
+	TSharedPtr<SCheckBox> TextureSizeCheckStrictCheckBox;
+	TSharedPtr<SHorizontalBox> TextureSizeCheckStrictBox;
+	TSharedRef<SHorizontalBox> ConstructTextureSizeStrictCheckBox(
+		ECheckBoxState State = ECheckBoxState::Unchecked);
+	void OnTextureSizeStrictCheckBoxStateChanged(
+		ECheckBoxState NewState);
 
 #pragma endregion
 
