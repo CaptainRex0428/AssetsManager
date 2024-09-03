@@ -55,7 +55,6 @@ private:
 	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
 
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
-	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsCanGenerateType;
 
 	ClassCheckState m_ClassCheckState;
 	UsageCheckState m_UsageCheckState;

@@ -34,8 +34,6 @@ public:
 
 	SLATE_BEGIN_ARGS(SCustomTable) {}
 
-	SLATE_ARGUMENT(TArray<SCommonSlate::CustomTableColumnType>*,ColumnsType)
-	SLATE_ARGUMENT(TArray<SCommonSlate::CustomTableColumnType>*,CanGenerateColumnsType)
 	SLATE_ARGUMENT(TArray<ItemType>*,SourceItems)
 
 	SLATE_EVENT(FOnTableCheckBoxStateChanged, OnTableCheckBoxStateChanged)
@@ -81,8 +79,6 @@ private:
 	*/
 
 	TArray<ItemType>* SourceItems;
-	TArray<SCommonSlate::CustomTableColumnType>* ColumnsType;
-	TArray<SCommonSlate::CustomTableColumnType>* CanGenerateColumnsType;
 
 private:
 
@@ -140,8 +136,6 @@ inline void SCustomTable<ItemType>::Construct(
 {
 	bCanSupportFocus = true;
 
-	this->ColumnsType = InArgs._ColumnsType;
-	this->CanGenerateColumnsType = InArgs._CanGenerateColumnsType;
 	this->SourceItems = InArgs._SourceItems;
 
 	this->OnTableCheckBoxStateChanged = InArgs._OnTableCheckBoxStateChanged;
@@ -334,28 +328,39 @@ inline const TArray<ItemType>& SCustomTable<ItemType>::GetListItems()
 template<typename ItemType>
 inline void SCustomTable<ItemType>::SelectAll()
 {
-
-	if (CheckBoxArray.Num() == 0)
+	if (SourceItems->Num() == 0 && CheckBoxArray.Num() == 0)
 	{
 		return;
 	}
 
-	for (const TSharedPtr<SCheckBox> & CheckBox : CheckBoxArray)
+	for (ItemType & item: *SourceItems)
+	{
+		if(!CheckBoxSelected.Contains(item))
+		{
+			CheckBoxSelected.AddUnique(item);
+		}
+	}
+
+	for (const TSharedPtr<SCheckBox>& CheckBox : CheckBoxArray)
 	{
 		if (!CheckBox->IsChecked())
 		{
 			CheckBox->ToggleCheckedState();
 		}
 	}
+
+	this->OnTableCheckBoxStateChanged.Execute();
 }
 
 template<typename ItemType>
 inline void SCustomTable<ItemType>::UnselectAll()
 {
-	if (CheckBoxArray.Num() == 0)
+	if (SourceItems->Num() == 0 && CheckBoxArray.Num() == 0)
 	{
 		return;
 	}
+
+	CheckBoxSelected.Empty();
 
 	for (const TSharedPtr<SCheckBox> & CheckBox : CheckBoxArray)
 	{
@@ -364,6 +369,8 @@ inline void SCustomTable<ItemType>::UnselectAll()
 			CheckBox->ToggleCheckedState();
 		}
 	}
+
+	this->OnTableCheckBoxStateChanged.Execute();
 }
 
 template<typename ItemType>
