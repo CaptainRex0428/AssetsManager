@@ -26,6 +26,7 @@ public:
 	using FOnTableCheckBoxStateChanged = TCustomSlateDelegates<ItemType>::FOnTableCheckBoxStateChanged;
 	using FOnTableRowMouseButtonDoubleClicked = TCustomSlateDelegates<ItemType>::FOnTableRowMouseButtonDoubleClicked;
 
+	using FOnGenerateTableHeaderRow = TCustomSlateDelegates<ItemType>::FOnGenerateTableHeaderRow;
 	using FOnGenerateTableRowColumn = TCustomSlateDelegates<ItemType>::FOnGenerateTableRowColumn;
 
 public:
@@ -40,6 +41,7 @@ public:
 	SLATE_EVENT(FOnTableCheckBoxStateChanged, OnTableCheckBoxStateChanged)
 	SLATE_EVENT(FOnTableRowMouseButtonDoubleClicked, OnTableRowMouseButtonDoubleClicked)
 	
+	SLATE_EVENT(FOnGenerateTableHeaderRow, OnGenerateTableHeaderRow)
 	SLATE_EVENT(FOnGenerateTableRowColumn, OnGenerateTableRowColumn)
 
 	SLATE_END_ARGS()
@@ -69,6 +71,7 @@ private:
 	FOnTableCheckBoxStateChanged OnTableCheckBoxStateChanged;
 	FOnTableRowMouseButtonDoubleClicked  OnTableRowMouseButtonDoubleClicked;
 
+	FOnGenerateTableHeaderRow OnGenerateTableHeaderRow;
 	FOnGenerateTableRowColumn OnGenerateTableRowColumn;
 
 private:
@@ -144,6 +147,7 @@ inline void SCustomTable<ItemType>::Construct(
 	this->OnTableCheckBoxStateChanged = InArgs._OnTableCheckBoxStateChanged;
 	this->OnTableRowMouseButtonDoubleClicked = InArgs._OnTableRowMouseButtonDoubleClicked;
 
+	this->OnGenerateTableHeaderRow = InArgs._OnGenerateTableHeaderRow;
 	this->OnGenerateTableRowColumn = InArgs._OnGenerateTableRowColumn;
 
 	this->CheckBoxArray.Empty();
@@ -187,7 +191,6 @@ inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(
 		this->TableHeaderRow->ClearColumns();
 	}
 	
-
 	SHeaderRow::FColumn::FArguments CheckBoxArgs;
 	CheckBoxArgs.DefaultLabel(FText::FromString(""));
 	CheckBoxArgs.ColumnId("CheckBox");
@@ -197,69 +200,7 @@ inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(
 
 	TableHeaderRow->AddColumn(CheckBoxArgs);
 
-	for(SCommonSlate::CustomTableColumnType ColumnIn: * this->ColumnsType)
-	{
-		SHeaderRow::FColumn::FArguments ColumnBoxArgs;
-
-		ColumnBoxArgs.DefaultLabel(FText::FromString("[Undefined Column]"));
-		ColumnBoxArgs.ColumnId("[Undefined]");
-		ColumnBoxArgs.ShouldGenerateWidget(true);
-		ColumnBoxArgs.HAlignHeader(HAlign_Center);
-
-		switch (ColumnIn)
-		{
-		case Column_UClass:
-			ColumnBoxArgs.FillWidth(0.07f);
-			break;
-
-		case Column_AssetName:
-			ColumnBoxArgs.FillWidth(0.2f);
-			break;
-
-		case Column_AssetPath:
-			ColumnBoxArgs.FillWidth(0.5f);
-			break;
-			
-		case Column_PerAssetHandle:
-			ColumnBoxArgs.FillWidth(0.25f);
-			break;
-
-		case Column_TextureMaxInGameSize:
-			ColumnBoxArgs.FillWidth(0.07f);
-			break;
-
-		case Column_TextureSourceSize:
-			ColumnBoxArgs.FillWidth(0.07f);
-			break;
-
-		case Column_TextureCompressionSettings:
-			ColumnBoxArgs.FillWidth(0.2f);
-			break;
-
-		case Column_TextureSRGB:
-			ColumnBoxArgs.FillWidth(0.05f);
-			break;
-				
-		case Column_TextureGroup:
-			ColumnBoxArgs.FillWidth(0.2f);
-			break;
-
-		default:
-			ColumnBoxArgs.FillWidth(0.1f);
-			break;
-		}
-		
-		
-		const FString* ColumnNamePtr = CustomTableColumnTypeToString.Find(ColumnIn);
-
-		if (ColumnNamePtr)
-		{
-			ColumnBoxArgs.DefaultLabel(FText::FromString(*ColumnNamePtr));
-			ColumnBoxArgs.ColumnId(FName(*ColumnNamePtr));
-		}
-
-		TableHeaderRow->AddColumn(ColumnBoxArgs);
-	}
+	this->OnGenerateTableHeaderRow.Execute(this->TableHeaderRow);
 
 	return TableHeaderRow.ToSharedRef();
 }

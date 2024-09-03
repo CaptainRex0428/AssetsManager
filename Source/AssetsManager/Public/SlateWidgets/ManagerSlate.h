@@ -72,6 +72,9 @@ private:
 
 	void ConstructHeaderRow();
 
+	TSharedRef<SHeaderRow> OnTableGenerateHeaderRow(
+		TSharedPtr<SHeaderRow>& TableHeaderRow);
+
 	TSharedRef<SWidget> OnTableGenerateListColumn(
 		const FName& ColumnName,
 		TSharedPtr<FAssetData>& AssetToDisplay);

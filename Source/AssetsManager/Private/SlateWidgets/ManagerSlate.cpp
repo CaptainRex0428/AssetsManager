@@ -228,6 +228,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 		.SourceItems(&SListViewAssetData)
 		.ColumnsType(&SManagerCustomTableTitleRowColumnsType)
 		.CanGenerateColumnsType(&SManagerCustomTableTitleRowColumnsCanGenerateType)
+		.OnGenerateTableHeaderRow(this,&SManagerSlateTab::OnTableGenerateHeaderRow)
 		.OnTableCheckBoxStateChanged(this, &SManagerSlateTab::OnTableCheckBoxStateChanged)
 		.OnTableRowMouseButtonDoubleClicked(this, &SManagerSlateTab::OnRowMouseButtonDoubleClicked)
 		.OnGenerateTableRowColumn(this,&SManagerSlateTab::OnTableGenerateListColumn);
@@ -351,6 +352,77 @@ void SManagerSlateTab::ConstructHeaderRow()
 		}
 	}
 
+}
+
+TSharedRef<SHeaderRow> SManagerSlateTab::OnTableGenerateHeaderRow(
+	TSharedPtr<SHeaderRow>& TableHeaderRow)
+{
+	
+	for (SCommonSlate::CustomTableColumnType ColumnIn : SManagerCustomTableTitleRowColumnsType)
+	{
+		SHeaderRow::FColumn::FArguments ColumnBoxArgs;
+
+		ColumnBoxArgs.DefaultLabel(FText::FromString("[Undefined Column]"));
+		ColumnBoxArgs.ColumnId("[Undefined]");
+		ColumnBoxArgs.ShouldGenerateWidget(true);
+		ColumnBoxArgs.HAlignHeader(HAlign_Center);
+
+		switch (ColumnIn)
+		{
+		case Column_UClass:
+			ColumnBoxArgs.FillWidth(0.07f);
+			break;
+
+		case Column_AssetName:
+			ColumnBoxArgs.FillWidth(0.2f);
+			break;
+
+		case Column_AssetPath:
+			ColumnBoxArgs.FillWidth(0.5f);
+			break;
+
+		case Column_PerAssetHandle:
+			ColumnBoxArgs.FillWidth(0.25f);
+			break;
+
+		case Column_TextureMaxInGameSize:
+			ColumnBoxArgs.FillWidth(0.07f);
+			break;
+
+		case Column_TextureSourceSize:
+			ColumnBoxArgs.FillWidth(0.07f);
+			break;
+
+		case Column_TextureCompressionSettings:
+			ColumnBoxArgs.FillWidth(0.2f);
+			break;
+
+		case Column_TextureSRGB:
+			ColumnBoxArgs.FillWidth(0.05f);
+			break;
+
+		case Column_TextureGroup:
+			ColumnBoxArgs.FillWidth(0.2f);
+			break;
+
+		default:
+			ColumnBoxArgs.FillWidth(0.1f);
+			break;
+		}
+
+
+		const FString* ColumnNamePtr = CustomTableColumnTypeToString.Find(ColumnIn);
+
+		if (ColumnNamePtr)
+		{
+			ColumnBoxArgs.DefaultLabel(FText::FromString(*ColumnNamePtr));
+			ColumnBoxArgs.ColumnId(FName(*ColumnNamePtr));
+		}
+
+		TableHeaderRow->AddColumn(ColumnBoxArgs);
+	}
+
+	return TableHeaderRow.ToSharedRef();
 }
 
 TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
@@ -2172,7 +2244,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructTextureSizeStrictCheckBox(
 #ifdef ZH_CN
 			ConstructNormalTextBlock(TEXT("严格筛选"), GetFontInfo(12))
 #else
-			ConstructNormalTextBlock(TEXT("Strict Filter Mode"), GetFontInfo(12))
+			ConstructNormalTextBlock(TEXT("Strict Filter"), GetFontInfo(12))
 #endif
 		];
 
