@@ -4,17 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "SlateWidgets/SCommonSlate.h"
-#include "SlateWidgets/TCustomSlateDelegates.h"
 #include "SlateWidgets/SCustomTableRow.h"
 #include "SlateWidgets/SCustomListView.h"
 
-/**
- * 
+#include "SlateWidgets/TCustomSlateDelegates.h"
+
+/*
+ * this custom table can generate a list with default check box
+ * the header should be constructed in some standard rules to avoid undefined columns being constructed
  */
 template <typename ItemType>
 class ASSETSMANAGER_API SCustomTable : public SCommonSlate
 {	
 public:
+
+	/*
+	* This block defines some delegates that can be define outside this class
+	* These delegates are defined in SlateWidgets/TCustomSlateDelegates.h
+	*/
+
 	using FOnTableCheckBoxStateChanged = TCustomSlateDelegates<ItemType>::FOnTableCheckBoxStateChanged;
 	using FOnTableRowMouseButtonDoubleClicked = TCustomSlateDelegates<ItemType>::FOnTableRowMouseButtonDoubleClicked;
 
@@ -24,7 +32,7 @@ public:
 	
 
 	SLATE_BEGIN_ARGS(SCustomTable) {}
-	
+
 	SLATE_ARGUMENT(TArray<SCommonSlate::CustomTableColumnType>*,ColumnsType)
 	SLATE_ARGUMENT(TArray<SCommonSlate::CustomTableColumnType>*,CanGenerateColumnsType)
 	SLATE_ARGUMENT(TArray<ItemType>*,SourceItems)
@@ -39,48 +47,39 @@ public:
 public:
 	virtual void Construct(const SCustomTable<ItemType>::FArguments& InArgs);
 
+	/*
+	* These functions can be called to interact with table list
+	*/
+
 	virtual const TArray<ItemType> & GetSelectedItems();
 	virtual const TArray<ItemType> & GetListItems();
+
 	virtual void SelectAll();
 	virtual void UnselectAll();
 
-	virtual void RefreshTable(bool bRefreshHeader = true);
+	virtual void RefreshTable(
+		bool bRefreshHeader = true);
 
 private:
+
+	/*
+	* these are some delegates should be initialized outside the class
+	*/
 
 	FOnTableCheckBoxStateChanged OnTableCheckBoxStateChanged;
 	FOnTableRowMouseButtonDoubleClicked  OnTableRowMouseButtonDoubleClicked;
 
 	FOnGenerateTableRowColumn OnGenerateTableRowColumn;
 
+private:
+	
+	/*
+	* these variables should be initialized outside the class
+	*/
+
 	TArray<ItemType>* SourceItems;
 	TArray<SCommonSlate::CustomTableColumnType>* ColumnsType;
 	TArray<SCommonSlate::CustomTableColumnType>* CanGenerateColumnsType;
-
-private:
-
-	TSharedRef<SCustomListView<ItemType>> ConstructTableListView();
-	TSharedRef<SHeaderRow> ConstructTableHeaderRow(bool bIsGenerateHeader = false);
-
-	TSharedRef<ITableRow> OnTableGenerateRowForlist(
-		ItemType ItemIn,
-		const TSharedRef<STableViewBase>& OwnerTable);
-
-	void OnRowMouseButtonDoubleClicked(
-		ItemType ItemIn);
-
-	TSharedRef<SWidget> OnTableGenerateListColumn(
-		const FName& ColumnName,
-		ItemType& ItemShow);
-
-	TSharedRef<SCheckBox> ConstructRowCheckBox(
-		const ItemType& ItemIn);
-	
-	void OnCheckBoxStateChanged(
-		ECheckBoxState NewState,
-		const ItemType ItemIn);
-
-	FReply OnTestButtonClicked();
 
 private:
 
@@ -93,6 +92,43 @@ private:
 	int TestCount;
 
 	TSharedPtr<SButton> TestButton;
+
+private:
+	/*
+	*
+	*/
+	TSharedRef<SHeaderRow> ConstructTableHeaderRow(
+		bool bIsGenerateHeader = false);
+
+
+	/*
+	*
+	*/
+	TSharedRef<SCustomListView<ItemType>> ConstructTableListView();
+
+	TSharedRef<ITableRow> OnTableGenerateRowForlist(
+		ItemType ItemIn,
+		const TSharedRef<STableViewBase>& OwnerTable);
+
+	TSharedRef<SWidget> OnTableGenerateListColumn(
+		const FName& ColumnName,
+		ItemType& ItemShow);
+
+	void OnRowMouseButtonDoubleClicked(
+		ItemType ItemIn);
+
+
+	/*
+	*
+	*/
+	TSharedRef<SCheckBox> ConstructRowCheckBox(
+		const ItemType& ItemIn);
+	
+	void OnCheckBoxStateChanged(
+		ECheckBoxState NewState,
+		const ItemType ItemIn);
+
+	FReply OnTestButtonClicked();
 };
 
 template<typename ItemType>
@@ -177,7 +213,7 @@ inline TSharedRef<SHeaderRow> SCustomTable<ItemType>::ConstructTableHeaderRow(
 			break;
 
 		case Column_AssetName:
-			ColumnBoxArgs.FillWidth(0.3f);
+			ColumnBoxArgs.FillWidth(0.2f);
 			break;
 
 		case Column_AssetPath:
@@ -357,8 +393,6 @@ inline const TArray<ItemType>& SCustomTable<ItemType>::GetListItems()
 template<typename ItemType>
 inline void SCustomTable<ItemType>::SelectAll()
 {
-	/*NtfyMsg(FString::FromInt(CheckBoxArray.Num()));
-	NtfyMsg(FString::FromInt(this->TestCount));*/
 
 	if (CheckBoxArray.Num() == 0)
 	{

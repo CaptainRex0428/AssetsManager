@@ -46,7 +46,8 @@ private:
 		ItemType ItemIn);
 
 public:
-	inline void Construct(const SCustomListView<ItemType>::FArguments& InArgs)
+	inline void Construct(
+		const SCustomListView<ItemType>::FArguments& InArgs)
 	{
 		this->InHeaderRow = InArgs._HeaderRow;
 		this->ItemHeight = InArgs._ItemHeight;
@@ -64,13 +65,6 @@ public:
 			.OnMouseButtonDoubleClick(this, &SCustomListView<ItemType>::OnRowMouseButtonDoubleClicked));
 			
 	}
-
-	inline virtual void ResetHeaderRow(TSharedPtr<SHeaderRow> & NewHeader)
-	{
-		this->HeaderRow = NewHeader;
-
-
-	}
 };
 
 template<typename ItemType>
@@ -82,7 +76,8 @@ inline TSharedRef<ITableRow> SCustomListView<ItemType>::OnGenerateRowForlist(
 }
 
 template<typename ItemType>
-inline void SCustomListView<ItemType>::OnRowMouseButtonDoubleClicked(ItemType ItemIn)
+inline void SCustomListView<ItemType>::OnRowMouseButtonDoubleClicked(
+	ItemType ItemIn)
 {
 	return this->OnMouseButtonDoubleClick.Execute(ItemIn);
 }
