@@ -12,15 +12,29 @@
 class ASSETSMANAGER_API ConfigManager
 {
 public:
+	ConfigManager(ConfigManager&) = delete;
+	
 	static ConfigManager& Get();
 
-	ConfigManager(ConfigManager&) = delete;
+	void SetConfigPath(
+		const FString& FilePath);	
+	void SetConfigDefault();
+	TArray<FString> GetConfigsFullPath();
+	TArray<FString> GetConfigsFileName();
 
-	float Test();
+	const TMap<UClass*, FString> GetUClassTagMap();
+	const TMap<UClass*, FString> GetUClassPrefixMap();
+
 private:
 	ConfigManager();
 	virtual ~ConfigManager() = default;
 
+	void RefreshConfig();
+
 private:
 	FString ConfigPath;
+	FString DefaultConfigPath;
+
+	TMap<UClass*, FString> UClassTagMap;
+	TMap<UClass*, FString> UClassPrefixMap;
 };

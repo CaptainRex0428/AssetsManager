@@ -578,11 +578,11 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(
 				ConstructSingleAssetDeleteButtonBox(ClickedAssetData)
 		];
 
-	/*DealPanel->AddSlot()
+	DealPanel->AddSlot()
 		.HAlign(HAlign_Fill)
 		[
 			ConstructSingleAssetDebugButtonBox(ClickedAssetData)
-		];*/
+		];
 
 	return DealPanel.ToSharedRef();
 }
@@ -1008,6 +1008,7 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetDebugButtonBox(
 FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
+
 	return FReply::Handled();
 }
 
