@@ -96,6 +96,7 @@ const FName* ConfigManager::GetSectionKey(
 	const FConfigSection* Section, 
 	const FConfigValue& ValueTag)
 {
+	GConfig->LoadFile(ConfigPath);
 	return Section->FindKey(ValueTag);
 }
 
@@ -112,6 +113,7 @@ const FConfigValue* ConfigManager::GetSectionValue(
 	const FConfigSection* Section, 
 	const FName& KeyTag)
 {
+	GConfig->LoadFile(ConfigPath);
 	return Section->Find(KeyTag);
 }
 
