@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Misc/ConfigCacheIni.h"
 
 #define ASSETSMANAGER_CONFIGFOLDER FPaths::ProjectDir() + "/Plugins/AssetsManager/Config/"
 
@@ -16,6 +17,10 @@ public:
 	
 	static ConfigManager& Get();
 
+	double SToD(const FString& string);
+	float SToF(const FString& string);
+	int SToI(const FString& string);
+
 	void SetConfigPath(
 		const FString& FilePath);	
 	void SetConfigDefault();
@@ -24,6 +29,25 @@ public:
 
 	const TMap<UClass*, FString> GetUClassTagMap();
 	const TMap<UClass*, FString> GetUClassPrefixMap();
+
+	const FConfigSection* GetSection(
+		const TCHAR * SectionTag);
+
+	const FName * GetSectionKey(
+		const TCHAR* SectionTag,
+		const FConfigValue& ValueTag);
+
+	const FName* GetSectionKey(
+		const FConfigSection* Section,
+		const FConfigValue& ValueTag);
+
+	const FConfigValue* GetSectionValue(
+		const TCHAR* SectionTag,
+		const FName & KeyTag);
+
+	const FConfigValue* GetSectionValue(
+		const FConfigSection* Section,
+		const FName& KeyTag);
 
 private:
 	ConfigManager();

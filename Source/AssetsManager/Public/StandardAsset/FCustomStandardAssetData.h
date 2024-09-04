@@ -37,7 +37,14 @@ protected:
 		const FString& InStr,
 		const FString& SpliteTag);
 
-private:
+	const FConfigSection* GetAssetConfigSection(
+		const FString & UsageCategory,
+		bool bStrictMode = true);
+
+	const FConfigSection* GetAssetConfigGlobalSection(
+		const FString& UsageCategory = L"");
+
+protected:
 	TArray<FString> m_AssetNameInfoList;
 	bool bHasStandardPrefix;
 
@@ -45,4 +52,6 @@ private:
 
 	FCustomStandardAssetData::Category m_CommonAssetCategory;
 	FCustomStandardAssetData::Category m_StrictAssetCategory;
+
+	FConfigSection* AssetConfigSection;
 };

@@ -3,15 +3,78 @@
 
 #include "StandardAsset/FCustomStandardTexture2DData.h"
 #include "AssetsManagerConfig.h"
+#include "ConfigManager.h"
 
 FCustomStandardTexture2DData::FCustomStandardTexture2DData(const FAssetData& AssetData)
 	:FCustomStandardAssetData(AssetData),
 	bTexture2D(false),
-	GlobalMaxSize(2048),
-	MaxSize(2048),
 	MaxInGameSizeX(0),MaxInGameSizeY(0),
 	SourceSizeX(0),SourceSizeY(0)
 {
+
+	/*
+	* Get sections
+	*/
+
+	const FConfigSection* TextureConfigSection =
+		FCustomStandardAssetData::GetAssetConfigSection("Texture");
+
+	if (TextureConfigSection)
+	{
+		this->TextureCategoryConfigSection = 
+			new FConfigSection(*TextureConfigSection);
+	}
+	else
+	{
+		this->TextureCategoryConfigSection = nullptr;
+	}
+
+	const FConfigSection* TextureGConfigSection =
+		FCustomStandardAssetData::GetAssetConfigGlobalSection("Texture");
+
+	if (TextureGConfigSection)
+	{
+		this->TextureGlobalConfigSection =
+			new FConfigSection(*TextureConfigSection);
+	}
+	else
+	{
+		this->TextureGlobalConfigSection = nullptr;
+	}
+
+	/*
+	* Read global max texture size settings.
+	*/
+
+	if(this->TextureGlobalConfigSection)
+	{
+		const FConfigValue * GlobalMaxSizeConfig = 
+			ConfigManager::Get().GetSectionValue(this->TextureGlobalConfigSection, "MaxSize");
+
+		if (GlobalMaxSizeConfig)
+		{
+			double ConfigResult = 
+				ConfigManager::Get().SToD(GlobalMaxSizeConfig->GetValue());
+			
+			this->GlobalMaxSize = ConfigResult;
+			this->MaxSize = ConfigResult;
+		}
+		else
+		{
+			this->GlobalMaxSize = 2048;
+			this->MaxSize = 2048;
+		}
+	}
+	else
+	{
+		this->GlobalMaxSize = 2048;
+		this->MaxSize = 2048;
+	}
+
+	/*
+	* Judge texture validity
+	*/
+
 	UObject* AssetPtr = AssetData.GetAsset();
 
 	if(AssetPtr && AssetPtr->IsA<UTexture2D>())
@@ -19,6 +82,10 @@ FCustomStandardTexture2DData::FCustomStandardTexture2DData(const FAssetData& Ass
 		this->bTexture2D = true;
 	}
 	
+	/*
+	* Read strict max size
+	*/
+
 	TSharedPtr<FString> subfix = GetAssetSubfix();
 
 	if (subfix.IsValid())
@@ -30,6 +97,10 @@ FCustomStandardTexture2DData::FCustomStandardTexture2DData(const FAssetData& Ass
 			this->MaxSize = *ValidMaxSize;
 		}
 	}
+
+	/*
+	* Get texture real size in game and source
+	*/
 
 	FVector2D size(0, 0);
 

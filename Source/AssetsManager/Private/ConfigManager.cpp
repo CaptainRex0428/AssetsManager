@@ -2,12 +2,26 @@
 
 
 #include "ConfigManager.h"
-#include "Misc/ConfigCacheIni.h"
 
 ConfigManager& ConfigManager::Get()
 {
 	static ConfigManager instance;
 	return instance;
+}
+
+double ConfigManager::SToD(const FString& string)
+{
+	return FCString::Atod(*string);
+}
+
+float ConfigManager::SToF(const FString& string)
+{
+	return FCString::Atof(*string);
+}
+
+int ConfigManager::SToI(const FString& string)
+{
+	return FCString::Atoi(*string);
 }
 
 void ConfigManager::SetConfigPath(
@@ -56,6 +70,49 @@ const TMap<UClass*, FString> ConfigManager::GetUClassTagMap()
 const TMap<UClass*, FString> ConfigManager::GetUClassPrefixMap()
 {
 	return this->UClassPrefixMap;
+}
+
+const FConfigSection* ConfigManager::GetSection(
+	const TCHAR* SectionTag)
+{ 
+	GConfig->LoadFile(ConfigPath);
+
+	const FConfigSection* section =
+		GConfig->GetSection(SectionTag, false, ConfigPath);
+
+	return section;
+}
+
+const FName * ConfigManager::GetSectionKey(
+	const TCHAR* SectionTag, 
+	const FConfigValue& ValueTag)
+{
+	const FConfigSection* section = GetSection(SectionTag);
+
+	return section->FindKey(ValueTag);
+}
+
+const FName* ConfigManager::GetSectionKey(
+	const FConfigSection* Section, 
+	const FConfigValue& ValueTag)
+{
+	return Section->FindKey(ValueTag);
+}
+
+const FConfigValue* ConfigManager::GetSectionValue(
+	const TCHAR* SectionTag,
+	const FName& KeyTag)
+{
+	const FConfigSection* section = GetSection(SectionTag);
+
+	return section->Find(KeyTag);
+}
+
+const FConfigValue* ConfigManager::GetSectionValue(
+	const FConfigSection* Section, 
+	const FName& KeyTag)
+{
+	return Section->Find(KeyTag);
 }
 
 ConfigManager::ConfigManager()

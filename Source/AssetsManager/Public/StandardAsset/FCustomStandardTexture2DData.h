@@ -32,4 +32,8 @@ protected:
 	double MaxInGameSizeY;
 	double SourceSizeX;
 	double SourceSizeY;
+
+	FConfigSection* TextureGlobalConfigSection;
+	FConfigSection* TextureCategoryConfigSection;
+	
 };

@@ -4,10 +4,24 @@
 #include "StandardAsset/FCustomStandardAssetData.h"
 #include "AssetsChecker/AssetsChecker.h"
 #include "AssetsManagerConfig.h"
+#include "ConfigManager.h"
 
 FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData)
 	:FAssetData(AssetData)
 {
+	const FConfigSection* AssetCS = GetAssetConfigGlobalSection("");
+
+	if (AssetCS)
+	{
+		this->AssetConfigSection =
+			new FConfigSection(*AssetCS);
+	}
+	else
+	{
+		this->AssetConfigSection = nullptr;
+	}
+
+
 	FString AssetSelectedName = AssetData.AssetName.ToString();
 
 	m_AssetNameInfoList.Empty();
@@ -205,6 +219,82 @@ TArray<FString> FCustomStandardAssetData::SplitStringRecursive(
 	}	
 
 	return OutList;
+}
+
+const FConfigSection* FCustomStandardAssetData::GetAssetConfigSection(
+	const FString& UsageCategory,
+	bool bStrictMode)
+{
+	FString ConfigCategory;
+
+	switch (bStrictMode ? GetConfirmAssetCategory():GetCommonAssetCategory())
+	{
+	case FCustomStandardAssetData::Undefined:
+	{
+		ConfigCategory = "Global";
+		break;
+	}
+	case FCustomStandardAssetData::Character:
+	{
+		ConfigCategory = "Character";
+		break;
+	}
+	case FCustomStandardAssetData::Effect:
+	{
+		ConfigCategory = "Effect";
+		break;
+	}
+	case FCustomStandardAssetData::Scene:
+	{
+		ConfigCategory = "Scene";
+		break;
+	}
+	case FCustomStandardAssetData::UI:
+	{
+		ConfigCategory = "UI";
+		break;
+	}
+	case FCustomStandardAssetData::Hair:
+	{
+		ConfigCategory = "Hair";
+		break;
+	}
+	default:
+	{
+		ConfigCategory = "Global";
+		break;
+	}
+	}
+
+	FString GlobalTextureConfigSectionName = 
+		"AssetsManager." + ConfigCategory + "." + UsageCategory;
+
+	const FConfigSection * GlobalMaxSizeConfig =
+		ConfigManager::Get().GetSection(*GlobalTextureConfigSectionName);
+
+	if(GlobalMaxSizeConfig)
+	{
+		return GlobalMaxSizeConfig;
+	}
+
+	return GetAssetConfigGlobalSection(UsageCategory);
+}
+
+const FConfigSection* FCustomStandardAssetData::GetAssetConfigGlobalSection(
+	const FString& UsageCategory)
+{
+	FString DGlobalTextureConfigSectionName;
+
+	if(UsageCategory.IsEmpty())
+	{
+		DGlobalTextureConfigSectionName = "AssetsManager.Global";
+	}
+	else
+	{
+		DGlobalTextureConfigSectionName = "AssetsManager.Global." + UsageCategory;
+	}
+	
+	return ConfigManager::Get().GetSection(*DGlobalTextureConfigSectionName);
 }
 
 
