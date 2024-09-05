@@ -14,20 +14,6 @@ class ASSETSMANAGER_API UConfigManager
 {
 
 public:
-	enum ReadType
-	{
-		Config_Int, 
-		Config_Float,
-		Config_Double,
-		Config_Bool,
-		Config_Str,
-		Config_Struct,
-		Config_Array_Str,
-		Config_Vector,
-		Config_LinerColor,
-		Config_Vector4,
-		Config_Vector2D
-	};
 
 	UConfigManager(UConfigManager&) = delete;
 	
@@ -62,13 +48,8 @@ private:
 	UConfigManager();
 	virtual ~UConfigManager() = default;
 
-	void RefreshConfig();
-
 private:
 
 	FString ConfigPath;
 	FString DefaultConfigPath;
-
-	TMap<UClass*, FString> UClassTagMap;
-	TMap<UClass*, FString> UClassPrefixMap;
 };

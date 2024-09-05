@@ -31,7 +31,6 @@ void UConfigManager::SetConfigPath(
 {
 	this->ConfigPath = FilePath;
 	ConfigPath = FConfigCacheIni::NormalizeConfigIniPath(ConfigPath);
-	RefreshConfig();
 }
 
 void UConfigManager::SetConfigDefault()
@@ -131,10 +130,4 @@ UConfigManager::UConfigManager()
 {
 	GConfig->LoadFile(ConfigPath);
 	ConfigPath = FConfigCacheIni::NormalizeConfigIniPath(ConfigPath);
-	RefreshConfig();
-}
-
-void UConfigManager::RefreshConfig()
-{
-	
 }
