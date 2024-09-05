@@ -1008,13 +1008,14 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetDebugButtonBox(
 FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	FString SectionName = "AssetsManager.Global";
+	FString SectionName = FPaths::Combine("/AssetsManager/Global");
 	FString SectionKey = "CharacterCategoryTag";
-	TArray<FString> a = FConfigManager::Get().GetArrayValue(*SectionName, *SectionKey);
+	
+	TArray<FConfigValue> NewArr = UConfigManager::Get().GetSectionValuesArray(*SectionName, *SectionKey);
 
-	for (auto b : a)
+	for (FConfigValue& ValueIn : NewArr)
 	{
-		NtfyMsg(b);
+		NtfyMsg(ValueIn.GetValue());
 	}
 
 	return FReply::Handled();

@@ -258,7 +258,7 @@ FString FCustomStandardAssetData::GetAssetConfigSection(
 		"AssetsManager." + ConfigCategory + "." + UsageCategory;
 
 	const FConfigSection * GlobalMaxSizeConfig =
-		FConfigManager::Get().GetSection(*GlobalTextureConfigSectionName);
+		UConfigManager::Get().GetSection(*GlobalTextureConfigSectionName);
 
 	if(GlobalMaxSizeConfig)
 	{
@@ -282,7 +282,7 @@ FString FCustomStandardAssetData::GetAssetConfigGlobalSection(
 		DGlobalTextureConfigSectionName = FPaths::Combine(ModuleConfigMaster, TEXT("Global"),UsageCategory);
 	}
 	
-	if (FConfigManager::Get().GetSection(*DGlobalTextureConfigSectionName))
+	if (UConfigManager::Get().GetSection(*DGlobalTextureConfigSectionName))
 	{
 		return DGlobalTextureConfigSectionName;
 	}

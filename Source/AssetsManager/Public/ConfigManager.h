@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -12,12 +10,28 @@
 /**
  * 
  */
-class ASSETSMANAGER_API FConfigManager
+class ASSETSMANAGER_API UConfigManager
 {
+
 public:
-	FConfigManager(FConfigManager&) = delete;
+	enum ReadType
+	{
+		Config_Int, 
+		Config_Float,
+		Config_Double,
+		Config_Bool,
+		Config_Str,
+		Config_Struct,
+		Config_Array_Str,
+		Config_Vector,
+		Config_LinerColor,
+		Config_Vector4,
+		Config_Vector2D
+	};
+
+	UConfigManager(UConfigManager&) = delete;
 	
-	static FConfigManager& Get();
+	static UConfigManager& Get();
 
 	double SToD(const FString& string);
 	float SToF(const FString& string);
@@ -40,36 +54,18 @@ public:
 		const TCHAR* SectionTag,
 		const FName & KeyTag);
 
-	TArray<FString> GetArrayValue(
+	TArray<FConfigValue> GetSectionValuesArray(
 		const TCHAR* SectionTag,
-		const TCHAR* KeyTag
-	);
-
-	/*void GetArrayValue(
-		const FConfigSection* Section,
-		const FName& KeyTag
-	);
-
-	void GetStructValue(
-		const TCHAR* SectionTag,
-		const FName& KeyTag
-	);
-
-	void GetStructValue(
-		const FConfigSection* Section,
-		const FName& KeyTag
-	);*/
-
-	const TMap<UClass*, FString> GetUClassTagMap();
-	const TMap<UClass*, FString> GetUClassPrefixMap();
+		const FName& KeyTag);
 
 private:
-	FConfigManager();
-	virtual ~FConfigManager() = default;
+	UConfigManager();
+	virtual ~UConfigManager() = default;
 
 	void RefreshConfig();
 
 private:
+
 	FString ConfigPath;
 	FString DefaultConfigPath;
 
