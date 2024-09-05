@@ -16,60 +16,8 @@ FCustomStandardTexture2DData::FCustomStandardTexture2DData(const FAssetData& Ass
 	* Get sections
 	*/
 
-	const FConfigSection* TextureConfigSection =
-		FCustomStandardAssetData::GetAssetConfigSection("Texture");
-
-	if (TextureConfigSection)
-	{
-		this->TextureCategoryConfigSection = 
-			new FConfigSection(*TextureConfigSection);
-	}
-	else
-	{
-		this->TextureCategoryConfigSection = nullptr;
-	}
-
-	const FConfigSection* TextureGConfigSection =
-		FCustomStandardAssetData::GetAssetConfigGlobalSection("Texture");
-
-	if (TextureGConfigSection)
-	{
-		this->TextureGlobalConfigSection =
-			new FConfigSection(*TextureConfigSection);
-	}
-	else
-	{
-		this->TextureGlobalConfigSection = nullptr;
-	}
-
-	/*
-	* Read global max texture size settings.
-	*/
-
-	if(this->TextureGlobalConfigSection)
-	{
-		const FConfigValue * GlobalMaxSizeConfig = 
-			ConfigManager::Get().GetSectionValue(this->TextureGlobalConfigSection, "MaxSize");
-
-		if (GlobalMaxSizeConfig)
-		{
-			double ConfigResult = 
-				ConfigManager::Get().SToD(GlobalMaxSizeConfig->GetValue());
-			
-			this->GlobalMaxSize = ConfigResult;
-			this->MaxSize = ConfigResult;
-		}
-		else
-		{
-			this->GlobalMaxSize = 2048;
-			this->MaxSize = 2048;
-		}
-	}
-	else
-	{
-		this->GlobalMaxSize = 2048;
-		this->MaxSize = 2048;
-	}
+	this->GlobalMaxSize = 2048;
+	this->MaxSize = 2048;
 
 	/*
 	* Judge texture validity

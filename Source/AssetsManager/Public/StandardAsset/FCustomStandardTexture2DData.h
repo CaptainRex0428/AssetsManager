@@ -33,7 +33,7 @@ protected:
 	double SourceSizeX;
 	double SourceSizeY;
 
-	FConfigSection* TextureGlobalConfigSection;
-	FConfigSection* TextureCategoryConfigSection;
+	FString * TextureGlobalConfigSection;
+	FString * TextureCategoryConfigSection;
 	
 };

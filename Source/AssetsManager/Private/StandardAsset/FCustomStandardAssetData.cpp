@@ -9,18 +9,6 @@
 FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData)
 	:FAssetData(AssetData)
 {
-	const FConfigSection* AssetCS = GetAssetConfigGlobalSection("");
-
-	if (AssetCS)
-	{
-		this->AssetConfigSection =
-			new FConfigSection(*AssetCS);
-	}
-	else
-	{
-		this->AssetConfigSection = nullptr;
-	}
-
 
 	FString AssetSelectedName = AssetData.AssetName.ToString();
 
@@ -221,7 +209,7 @@ TArray<FString> FCustomStandardAssetData::SplitStringRecursive(
 	return OutList;
 }
 
-const FConfigSection* FCustomStandardAssetData::GetAssetConfigSection(
+FString FCustomStandardAssetData::GetAssetConfigSection(
 	const FString& UsageCategory,
 	bool bStrictMode)
 {
@@ -270,31 +258,36 @@ const FConfigSection* FCustomStandardAssetData::GetAssetConfigSection(
 		"AssetsManager." + ConfigCategory + "." + UsageCategory;
 
 	const FConfigSection * GlobalMaxSizeConfig =
-		ConfigManager::Get().GetSection(*GlobalTextureConfigSectionName);
+		FConfigManager::Get().GetSection(*GlobalTextureConfigSectionName);
 
 	if(GlobalMaxSizeConfig)
 	{
-		return GlobalMaxSizeConfig;
+		return GlobalTextureConfigSectionName;
 	}
 
-	return GetAssetConfigGlobalSection(UsageCategory);
+	return "";
 }
 
-const FConfigSection* FCustomStandardAssetData::GetAssetConfigGlobalSection(
+FString FCustomStandardAssetData::GetAssetConfigGlobalSection(
 	const FString& UsageCategory)
 {
 	FString DGlobalTextureConfigSectionName;
 
 	if(UsageCategory.IsEmpty())
 	{
-		DGlobalTextureConfigSectionName = "AssetsManager.Global";
+		DGlobalTextureConfigSectionName = FPaths::Combine(ModuleConfigMaster,TEXT("Global"));
 	}
 	else
 	{
-		DGlobalTextureConfigSectionName = "AssetsManager.Global." + UsageCategory;
+		DGlobalTextureConfigSectionName = FPaths::Combine(ModuleConfigMaster, TEXT("Global"),UsageCategory);
 	}
 	
-	return ConfigManager::Get().GetSection(*DGlobalTextureConfigSectionName);
+	if (FConfigManager::Get().GetSection(*DGlobalTextureConfigSectionName))
+	{
+		return DGlobalTextureConfigSectionName;
+	}
+
+	return FPaths::Combine(ModuleConfigMaster, TEXT("Global"));
 }
 
 

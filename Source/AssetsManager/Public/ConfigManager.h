@@ -5,17 +5,19 @@
 #include "CoreMinimal.h"
 #include "Misc/ConfigCacheIni.h"
 
+#define ModuleConfigMaster TEXT("/AssetsManager")
+
 #define ASSETSMANAGER_CONFIGFOLDER FPaths::ProjectDir() + "/Plugins/AssetsManager/Config/"
 
 /**
  * 
  */
-class ASSETSMANAGER_API ConfigManager
+class ASSETSMANAGER_API FConfigManager
 {
 public:
-	ConfigManager(ConfigManager&) = delete;
+	FConfigManager(FConfigManager&) = delete;
 	
-	static ConfigManager& Get();
+	static FConfigManager& Get();
 
 	double SToD(const FString& string);
 	float SToF(const FString& string);
@@ -27,31 +29,43 @@ public:
 	TArray<FString> GetConfigsFullPath();
 	TArray<FString> GetConfigsFileName();
 
-	const TMap<UClass*, FString> GetUClassTagMap();
-	const TMap<UClass*, FString> GetUClassPrefixMap();
-
-	const FConfigSection* GetSection(
+	const FConfigSection * GetSection(
 		const TCHAR * SectionTag);
 
 	const FName * GetSectionKey(
 		const TCHAR* SectionTag,
 		const FConfigValue& ValueTag);
 
-	const FName* GetSectionKey(
-		const FConfigSection* Section,
-		const FConfigValue& ValueTag);
-
-	const FConfigValue* GetSectionValue(
+	const FConfigValue * GetSectionValue(
 		const TCHAR* SectionTag,
 		const FName & KeyTag);
 
-	const FConfigValue* GetSectionValue(
+	TArray<FString> GetArrayValue(
+		const TCHAR* SectionTag,
+		const TCHAR* KeyTag
+	);
+
+	/*void GetArrayValue(
 		const FConfigSection* Section,
-		const FName& KeyTag);
+		const FName& KeyTag
+	);
+
+	void GetStructValue(
+		const TCHAR* SectionTag,
+		const FName& KeyTag
+	);
+
+	void GetStructValue(
+		const FConfigSection* Section,
+		const FName& KeyTag
+	);*/
+
+	const TMap<UClass*, FString> GetUClassTagMap();
+	const TMap<UClass*, FString> GetUClassPrefixMap();
 
 private:
-	ConfigManager();
-	virtual ~ConfigManager() = default;
+	FConfigManager();
+	virtual ~FConfigManager() = default;
 
 	void RefreshConfig();
 

@@ -37,11 +37,11 @@ protected:
 		const FString& InStr,
 		const FString& SpliteTag);
 
-	const FConfigSection* GetAssetConfigSection(
+	FString GetAssetConfigSection(
 		const FString & UsageCategory,
 		bool bStrictMode = true);
 
-	const FConfigSection* GetAssetConfigGlobalSection(
+	FString GetAssetConfigGlobalSection(
 		const FString& UsageCategory = L"");
 
 protected:
@@ -53,5 +53,5 @@ protected:
 	FCustomStandardAssetData::Category m_CommonAssetCategory;
 	FCustomStandardAssetData::Category m_StrictAssetCategory;
 
-	FConfigSection* AssetConfigSection;
+	FString * AssetConfigSection;
 };
