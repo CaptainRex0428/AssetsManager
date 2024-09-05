@@ -1,12 +1,31 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "AssetsConfigManager.h"
 
-UAssetsConfigManager::UAssetsConfigManager()
+UAssetsConfigManager& UAssetsConfigManager::Get()
 {
+	static UAssetsConfigManager instance;
+	return instance;
 }
 
-UAssetsConfigManager::~UAssetsConfigManager()
+TArray<FString> UAssetsConfigManager::GetCategoryValidTag(FString& Categoty)
 {
+	FString SectionName = "AssetsManager/Global";
+	FString KeyName = "+" + Categoty + "CategoryTag";
+	
+	TArray<FConfigValue> ValueArray 
+		= UConfigManager::Get().GetSectionValuesArray(*SectionName, *KeyName);
+
+	TArray<FString> ValidTag;
+	ValidTag.Empty();
+
+	if(ValueArray.Num() ==0)
+	{
+		return ValidTag;
+	}
+
+	for (FConfigValue& ConfigValue : ValueArray)
+	{
+		ValidTag.Add(ConfigValue.GetValue());
+	}
+
+	return ValidTag;
 }

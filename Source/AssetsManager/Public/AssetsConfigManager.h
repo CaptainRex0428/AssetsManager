@@ -8,9 +8,15 @@
 /**
  * 
  */
-class ASSETSMANAGER_API UAssetsConfigManager : public UConfigManager
+class ASSETSMANAGER_API UAssetsConfigManager
 {
 public:
+	static UAssetsConfigManager& Get();
+	UAssetsConfigManager(UAssetsConfigManager&) = delete;
+
+	TArray<FString> GetCategoryValidTag(FString& Categoty);
+	
+private:
 	UAssetsConfigManager();
-	~UAssetsConfigManager();
+	~UAssetsConfigManager() = default;
 };
