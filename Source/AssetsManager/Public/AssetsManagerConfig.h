@@ -140,39 +140,6 @@ const TMap<FString, float> TextureSubfixMaxSizeSettingsMap =
 	{"AO",512.f}
 };
 
-const TMap<FString, FCustomStandardAssetData::Category> AssetCategoryMap =
-{
-	// Character
-	{"Character", FCustomStandardAssetData::Character},
-	{"Player", FCustomStandardAssetData::Character},
-	{"Weapon", FCustomStandardAssetData::Character},
-	{"WeaponL", FCustomStandardAssetData::Character},
-	{"WeaponR", FCustomStandardAssetData::Character},
-	{"WeaponBullet", FCustomStandardAssetData::Character},
-	{"Parasite", FCustomStandardAssetData::Character},
-	{"ParasiteA", FCustomStandardAssetData::Character},
-	{"ParasiteB", FCustomStandardAssetData::Character},
-	{"Face", FCustomStandardAssetData::Character},
-
-	// Hair
-	{"Hair", FCustomStandardAssetData::Hair},
-	{"Groom", FCustomStandardAssetData::Hair},
-	
-	//Effect
-	{"Effect", FCustomStandardAssetData::Effect},
-	{"VFX", FCustomStandardAssetData::Effect},
-
-	//Scene
-	{"Scene", FCustomStandardAssetData::Scene},
-	{"Prop", FCustomStandardAssetData::Scene},
-	{"Level", FCustomStandardAssetData::Scene},
-	
-
-	//
-	{"UI", FCustomStandardAssetData::UI},
-	{"Hero", FCustomStandardAssetData::UI}
-};
-
 const TMap<FCustomStandardAssetData::Category, TextureGroup> TextureLODGroupForCategroyDefault =
 {
 	{FCustomStandardAssetData::Undefined, TEXTUREGROUP_World},

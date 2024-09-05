@@ -331,7 +331,7 @@ bool UAssetsChecker::ESetTextureStandardSettings(FAssetData& ClickedAssetData)
 {
 	FCustomStandardAssetData SAsset(ClickedAssetData);
 
-	TSharedPtr<FString> subfix = SAsset.GetAssetSubfix();
+	TSharedPtr<FString> subfix = SAsset.GetAssetSuffix();
 
 	if (!subfix.IsValid())
 	{
@@ -419,7 +419,7 @@ TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureLODStandardGroup(
 	
 		if (AssetStrictCategory == FCustomStandardAssetData::Category::Character)
 		{
-			const TSharedPtr<FString> subfixCurrent = SAsset.GetAssetSubfix();
+			const TSharedPtr<FString> subfixCurrent = SAsset.GetAssetSuffix();
 
 			if (!subfixCurrent.IsValid() || !TextureLODGroupForCharacterBySubfix.Find(*subfixCurrent))
 			{
@@ -837,14 +837,14 @@ void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
 
 		FCustomStandardAssetData Asset(*AssetDPtr);
 
-		if (!Asset.GetAssetSubfix().IsValid())
+		if (!Asset.GetAssetSuffix().IsValid())
 		{
 			OutList.Add(AssetDPtr);
 			continue;
 		}
 
 		const TextureCompressionSettings * result = 
-			TextureSubfixCompressionSettingsMap.Find(*Asset.GetAssetSubfix());
+			TextureSubfixCompressionSettingsMap.Find(*Asset.GetAssetSuffix());
 
 		if (!result)
 		{
@@ -883,7 +883,7 @@ void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
 
 		FCustomStandardAssetData Asset(*AssetDPtr);
 
-		TSharedPtr<FString> subfix = Asset.GetAssetSubfix();
+		TSharedPtr<FString> subfix = Asset.GetAssetSuffix();
 
 		if (!subfix.IsValid())
 		{
@@ -1294,7 +1294,7 @@ TSharedPtr<FString> UAssetsChecker::EGetAssetNameSubfix(const FAssetData& AssetS
 {
 	FCustomStandardAssetData AssetS(AssetSelected);
 
-	return AssetS.GetAssetSubfix();
+	return AssetS.GetAssetSuffix();
 }
 
 void UAssetsChecker::ReplaceName(

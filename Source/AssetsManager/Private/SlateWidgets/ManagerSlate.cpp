@@ -28,6 +28,7 @@
 
 #include "Engine/Texture.h"
 
+
 #pragma region Filter
 
 #ifdef ZH_CN
@@ -1008,16 +1009,6 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetDebugButtonBox(
 FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	FString SectionName = FPaths::Combine("/AssetsManager/Global");
-	FString SectionKey = "CharacterCategoryTag";
-	
-	TArray<FConfigValue> NewArr = UConfigManager::Get().GetSectionValuesArray(*SectionName, *SectionKey);
-
-	for (FConfigValue& ValueIn : NewArr)
-	{
-		NtfyMsg(ValueIn.GetValue());
-	}
-
 	return FReply::Handled();
 }
 

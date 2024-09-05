@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "Misc/ConfigCacheIni.h"
 
+#define VNAME(value) (#value)
+
 #define ModuleConfigMaster TEXT("/AssetsManager")
 
 #define ASSETSMANAGER_CONFIGFOLDER FPaths::ProjectDir() + "/Plugins/AssetsManager/Config/"

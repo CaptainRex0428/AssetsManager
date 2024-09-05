@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
+#include "ConfigManager.h"
 /**
  * 
  */
@@ -13,7 +13,8 @@ public:
 	enum Category
 	{
 		Undefined = 0,
-		Character, Effect, Scene, UI, Hair
+		Character, Effect, Scene, UI, Hair,
+		LastCatergory
 	};
 
 	FCustomStandardAssetData(const FAssetData & AssetData);
@@ -24,7 +25,7 @@ public:
 		bool bContainsInfoStartIndex = false);
 
 	const TSharedPtr<FString> GetAssetStandardPrefix() const;
-	const TSharedPtr<FString> GetAssetSubfix();
+	const TSharedPtr<FString> GetAssetSuffix();
 	const uint32 GetAssetNameInfoCount() const;
 
 	const FCustomStandardAssetData::Category& GetCommonAssetCategory();
@@ -37,12 +38,8 @@ protected:
 		const FString& InStr,
 		const FString& SpliteTag);
 
-	FString GetAssetConfigSection(
-		const FString & UsageCategory,
-		bool bStrictMode = true);
-
-	FString GetAssetConfigGlobalSection(
-		const FString& UsageCategory = L"");
+	TArray<FString> GetValidCategoryTag(
+		Category Cate);
 
 protected:
 	TArray<FString> m_AssetNameInfoList;
@@ -51,7 +48,11 @@ protected:
 	uint32 m_AssetNameInfoStartIndex;
 
 	FCustomStandardAssetData::Category m_CommonAssetCategory;
-	FCustomStandardAssetData::Category m_StrictAssetCategory;
+	TSharedPtr<FString> m_CommonAssetCategoryTag;
 
-	FString * AssetConfigSection;
+	FCustomStandardAssetData::Category m_StrictAssetCategory;
+	TSharedPtr<FString> m_StrictAssetCategoryTag;
+
+	TSharedPtr<FString> AssetConfigGlobalSection;
+	
 };
