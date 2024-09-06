@@ -4,16 +4,20 @@
 #include "StandardAsset/FCustomStandardTexture2DData.h"
 #include "AssetsManagerConfig.h"
 #include "ConfigManager.h"
+#include "ManagerLogger.h"
 
-FCustomStandardTexture2DData::FCustomStandardTexture2DData(const FAssetData& AssetData)
-	:FCustomStandardAssetData(AssetData),
+FCustomStandardTexture2DData::FCustomStandardTexture2DData(
+	const FAssetData& AssetData,
+	bool StrictCheckMode)
+	:FCustomStandardAssetData(AssetData, StrictCheckMode),
 	TextureGlobalConfigSection(nullptr),
 	TextureCategoryCommonConfigSection(nullptr),
 	TextureCategoryStrictConfigSection(nullptr),
 	bTexture2D(false),
 	GlobalMaxSize(0), MaxSize(0),
 	MaxInGameSizeX(0),MaxInGameSizeY(0),
-	SourceSizeX(0),SourceSizeY(0)
+	SourceSizeX(0),SourceSizeY(0),
+	CompressionSettings(ValidCompressionConfig[0])
 	
 {
 
@@ -25,27 +29,35 @@ FCustomStandardTexture2DData::FCustomStandardTexture2DData(const FAssetData& Ass
 
 	if (UConfigManager::Get().GetSection(*TGlobalSection))
 	{
-		AssetConfigGlobalSection = MakeShareable(new FString(TGlobalSection));
+		this->TextureGlobalConfigSection = MakeShareable(new FString(TGlobalSection));
 	}
 
 	if(m_StrictAssetCategoryTag.IsValid())
 	{
-		TextureCategoryStrictConfigSection 
-			= MakeShared<FString>(FPaths::Combine(ModuleConfigMaster, *m_StrictAssetCategoryTag, TEXT("Texture")));
+		this->TextureCategoryStrictConfigSection
+			= MakeShareable(new FString(FPaths::Combine(ModuleConfigMaster, *m_StrictAssetCategoryTag, TEXT("Texture"))));
 	}
 
 	if (m_CommonAssetCategoryTag.IsValid())
 	{
-		TextureCategoryCommonConfigSection
-			= MakeShared<FString>(FPaths::Combine(ModuleConfigMaster, *m_CommonAssetCategoryTag, TEXT("Texture")));
+		this->TextureCategoryCommonConfigSection
+			= MakeShareable(new FString(FPaths::Combine(ModuleConfigMaster, *m_CommonAssetCategoryTag, TEXT("Texture"))));
 	}
 
+	/*NtfyMsg(*this->TextureGlobalConfigSection);
+	NtfyMsg(*this->TextureCategoryStrictConfigSection);
+	NtfyMsg(*this->TextureCategoryCommonConfigSection);*/
+	
+
 	/*
-	* Set global max size
+	* Set global & strict max size
 	*/
 
 	this->GlobalMaxSize = GetStandardMaxSize();
-	this->MaxSize = this->GlobalMaxSize;
+	this->MaxSize = GetStandardMaxSizeStrict();
+
+	//NtfyMsg(FString::Printf(TEXT("%d"),this->GlobalMaxSize));
+	//NtfyMsg(FString::Printf(TEXT("%d"),this->MaxSize));
 
 	/*
 	* Judge texture validity
@@ -57,20 +69,24 @@ FCustomStandardTexture2DData::FCustomStandardTexture2DData(const FAssetData& Ass
 	{
 		this->bTexture2D = true;
 	}
-	
+
 	/*
-	* Set strict max size
+	* Read compression settings
 	*/
 
-	TSharedPtr<FString> subfix = GetAssetSuffix();
+	TSharedPtr<TextureCompressionSettings> CompSettings = GetCompressionSettings();
 
-	if (subfix.IsValid())
-	{
-		const float* ValidMaxSize = TextureSubfixMaxSizeSettingsMap.Find(*subfix);
-
-		if(ValidMaxSize)
+	if (bTexture2D && CompSettings.IsValid())
+	{	
+		for (const CompressionSettingsInfo& CConfig :ValidCompressionConfig)
 		{
-			this->MaxSize = *ValidMaxSize;
+			if (CConfig.Setting == *CompSettings)
+			{
+				this->CompressionSettings.ConfigName = CConfig.ConfigName;
+				this->CompressionSettings.DisplayName = CConfig.DisplayName;
+				this->CompressionSettings.Setting = CConfig.Setting;
+				break;
+			}
 		}
 	}
 
@@ -144,18 +160,18 @@ bool FCustomStandardTexture2DData::isTexture2D()
 	return bTexture2D;
 }
 
-bool FCustomStandardTexture2DData::isTextureMaxInGameOverSize(bool bStrict)
+bool FCustomStandardTexture2DData::IsTextureMaxInGameOverSize()
 {
-	if (bStrict) { return this->MaxInGameSizeX > MaxSize || this->MaxInGameSizeY > MaxSize; };
+	if (this->bStrictCheckMode) { return this->MaxInGameSizeX > this->MaxSize || this->MaxInGameSizeY > this->MaxSize; };
 	
-	return this->MaxInGameSizeX > GlobalMaxSize || this->MaxInGameSizeY > GlobalMaxSize;
+	return this->MaxInGameSizeX > this->GlobalMaxSize || this->MaxInGameSizeY > this->GlobalMaxSize;
 }
 
-bool FCustomStandardTexture2DData::isTextureSourceOverSize(bool bStrict)
+bool FCustomStandardTexture2DData::IsTextureSourceOverSize()
 {
-	if (bStrict) { return this->SourceSizeX > MaxSize || this->SourceSizeY > MaxSize; };
+	if (bStrictCheckMode) { return this->SourceSizeX > this->MaxSize || this->SourceSizeY > this->MaxSize; };
 
-	return this->SourceSizeX > GlobalMaxSize || this->SourceSizeY > GlobalMaxSize;
+	return this->SourceSizeX > this->GlobalMaxSize || this->SourceSizeY > this->GlobalMaxSize;
 }
 
 FVector2D FCustomStandardTexture2DData::GetSourceSize()
@@ -185,11 +201,18 @@ TSharedPtr<TextureCompressionSettings> FCustomStandardTexture2DData::GetCompress
 	return nullptr;
 }
 
+FCustomStandardTexture2DData::CompressionSettingsInfo 
+FCustomStandardTexture2DData::GetCompressionSettingsInfo() const
+{
+	return this->CompressionSettings;
+}
+
 double FCustomStandardTexture2DData::GetStandardMaxSize()
 {
 	if(TextureCategoryStrictConfigSection.IsValid())
 	{
-		const FConfigValue * value = UConfigManager::Get().GetSectionValue(**TextureCategoryStrictConfigSection, "MaxSize");
+		const FConfigValue * value = UConfigManager::Get().GetSectionValue(
+			**TextureCategoryStrictConfigSection, "MaxSize");
 
 		if(value)
 		{
@@ -199,7 +222,8 @@ double FCustomStandardTexture2DData::GetStandardMaxSize()
 
 	if (TextureCategoryCommonConfigSection.IsValid())
 	{
-		const FConfigValue* value = UConfigManager::Get().GetSectionValue(**TextureCategoryCommonConfigSection, "MaxSize");
+		const FConfigValue* value = UConfigManager::Get().GetSectionValue(
+			**TextureCategoryCommonConfigSection, "MaxSize");
 
 		if (value)
 		{
@@ -209,7 +233,8 @@ double FCustomStandardTexture2DData::GetStandardMaxSize()
 
 	if (TextureGlobalConfigSection.IsValid())
 	{
-		const FConfigValue* value = UConfigManager::Get().GetSectionValue(**TextureGlobalConfigSection, "MaxSize");
+		const FConfigValue* value = UConfigManager::Get().GetSectionValue(
+			**TextureGlobalConfigSection, "MaxSize");
 
 		if (value)
 		{
@@ -222,5 +247,75 @@ double FCustomStandardTexture2DData::GetStandardMaxSize()
 
 double FCustomStandardTexture2DData::GetStandardMaxSizeStrict()
 {
-	return 0.0;
+	TSharedPtr<FString> suffixCurrent = this->GetAssetSuffix();
+	
+	if(!suffixCurrent.IsValid() || suffixCurrent->IsEmpty())
+	{
+		return GetStandardMaxSize();
+	}
+
+	if (TextureCategoryStrictConfigSection.IsValid())
+	{
+		TSharedPtr<FString> SizeInStr =
+		UConfigManager::Get().FindInSectionStructArray(
+			**TextureCategoryStrictConfigSection,
+			"SuffixStandard",
+			"Suffix",
+			*suffixCurrent,
+			"MaxSize");
+
+		if(SizeInStr)
+		{
+			return UConfigManager::Get().SToD(*SizeInStr);
+		}
+	}
+
+	if (TextureCategoryCommonConfigSection.IsValid())
+	{
+		TSharedPtr<FString> SizeInStr =
+			UConfigManager::Get().FindInSectionStructArray(
+				**TextureCategoryCommonConfigSection,
+				"SuffixStandard",
+				"Suffix",
+				*suffixCurrent,
+				"MaxSize");
+
+		if (SizeInStr)
+		{
+			return UConfigManager::Get().SToD(*SizeInStr);
+		}
+	}
+	
+	if (TextureGlobalConfigSection.IsValid())
+	{
+		TSharedPtr<FString> SizeInStr =
+			UConfigManager::Get().FindInSectionStructArray(
+				**TextureGlobalConfigSection,
+				"SuffixStandard",
+				"Suffix",
+				*suffixCurrent,
+				"MaxSize");
+
+		if (SizeInStr)
+		{
+			return UConfigManager::Get().SToD(*SizeInStr);
+		}
+	}
+
+	return GetStandardMaxSize();
+}
+
+FCustomStandardTexture2DData::CompressionSettingsInfo 
+FCustomStandardTexture2DData::ConstructCompressionConfigPairs(
+	FString ConfigName, 
+	TextureCompressionSettings Setting, 
+	FString DisplayName)
+{
+	FCustomStandardTexture2DData::CompressionSettingsInfo Info;
+
+	Info.ConfigName = ConfigName;
+	Info.Setting = Setting;
+	Info.DisplayName = DisplayName;
+	
+	return Info;
 }

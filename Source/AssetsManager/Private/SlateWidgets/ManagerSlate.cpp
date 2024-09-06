@@ -1009,6 +1009,17 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetDebugButtonBox(
 FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
+	FString a = "2048.0";
+
+	if (a.IsNumeric())
+	{
+		NtfyMsg("Yes");
+	}
+	else
+	{
+		NtfyMsg("No");
+	}
+
 	return FReply::Handled();
 }
 
@@ -2254,6 +2265,12 @@ void SManagerSlateTab::OnTextureSizeStrictCheckBoxStateChanged(
 		if (bTextureSizeCheckStrictMode)
 		{
 			bTextureSizeCheckStrictMode = false;
+
+			if (ReverseConditionCheckBox->GetCheckedState() == ECheckBoxState::Checked)
+			{
+				ReverseConditionCheckBox->ToggleCheckedState();
+			}
+
 			UpdateUsageFilterAssetData(this->UsageFilterCurrent);
 			RefreshAssetsListView(false);
 		}
@@ -2264,6 +2281,12 @@ void SManagerSlateTab::OnTextureSizeStrictCheckBoxStateChanged(
 		if (!bTextureSizeCheckStrictMode)
 		{
 			bTextureSizeCheckStrictMode = true;
+
+			if (ReverseConditionCheckBox->GetCheckedState() == ECheckBoxState::Checked)
+			{
+				ReverseConditionCheckBox->ToggleCheckedState();
+			}
+
 			UpdateUsageFilterAssetData(this->UsageFilterCurrent);
 			RefreshAssetsListView(false);
 		}

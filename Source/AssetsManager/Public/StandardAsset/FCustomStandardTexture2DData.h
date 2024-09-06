@@ -9,96 +9,41 @@
  */
 class ASSETSMANAGER_API FCustomStandardTexture2DData: public FCustomStandardAssetData
 {
+
 public:
-	FCustomStandardTexture2DData(const FAssetData& AssetData);
+	FCustomStandardTexture2DData(
+		const FAssetData& AssetData, 
+		bool StrictCheckMode = false);
 	virtual ~FCustomStandardTexture2DData();
+
+	struct CompressionSettingsInfo
+	{
+		FString ConfigName;
+		TextureCompressionSettings Setting;
+		FString DisplayName;
+	};
+
+	static CompressionSettingsInfo ConstructCompressionConfigPairs(
+		FString ConfigName,
+		TextureCompressionSettings Setting,
+		FString DisplayName);
 
 	bool isTexture2D();
 
-	bool isTextureMaxInGameOverSize(bool bStrict = false);
-	bool isTextureSourceOverSize(bool bStrict = false);
+	bool IsTextureMaxInGameOverSize();
+	bool IsTextureSourceOverSize();
 
 	FVector2D GetSourceSize();
 	FVector2D GetMaxInGameSize();
 
-	TSharedPtr<TextureCompressionSettings> GetCompressionSettings();
-
 	double GetStandardMaxSize();
 	double GetStandardMaxSizeStrict();
 
-protected:
-	const TMap<FString, TextureGroup> TextureGroupMap
-	{
-		{VNAME(TEXTUREGROUP_World),TEXTUREGROUP_World},
-		{VNAME(TEXTUREGROUP_WorldNormalMap),TEXTUREGROUP_WorldNormalMap},
-		{VNAME(TEXTUREGROUP_WorldSpecular),TEXTUREGROUP_WorldSpecular},
-		{VNAME(TEXTUREGROUP_Character),TEXTUREGROUP_Character},
-		{VNAME(TEXTUREGROUP_CharacterNormalMap),TEXTUREGROUP_CharacterNormalMap},
-		{VNAME(TEXTUREGROUP_CharacterSpecular),TEXTUREGROUP_CharacterSpecular},
-		{VNAME(TEXTUREGROUP_Weapon),TEXTUREGROUP_Weapon},
-		{VNAME(TEXTUREGROUP_WeaponNormalMap),TEXTUREGROUP_WeaponNormalMap},
-		{VNAME(TEXTUREGROUP_WeaponSpecular),TEXTUREGROUP_WeaponSpecular},
-		{VNAME(TEXTUREGROUP_Vehicle),TEXTUREGROUP_Vehicle},
-		{VNAME(TEXTUREGROUP_VehicleNormalMap),TEXTUREGROUP_VehicleNormalMap},
-		{VNAME(TEXTUREGROUP_VehicleSpecular),TEXTUREGROUP_VehicleSpecular},
-		{VNAME(TEXTUREGROUP_Cinematic),TEXTUREGROUP_Cinematic},
-		{VNAME(TEXTUREGROUP_Effects),TEXTUREGROUP_Effects},
-		{VNAME(TEXTUREGROUP_EffectsNotFiltered),TEXTUREGROUP_EffectsNotFiltered},
-		{VNAME(TEXTUREGROUP_Skybox),TEXTUREGROUP_Skybox},
-		{VNAME(TEXTUREGROUP_UI),TEXTUREGROUP_UI},
-		{VNAME(TEXTUREGROUP_Lightmap),TEXTUREGROUP_Lightmap},
-		{VNAME(TEXTUREGROUP_RenderTarget),TEXTUREGROUP_RenderTarget},
-		{VNAME(TEXTUREGROUP_MobileFlattened),TEXTUREGROUP_MobileFlattened},
-		{VNAME(TEXTUREGROUP_ProcBuilding_Face),TEXTUREGROUP_ProcBuilding_Face},
-		{VNAME(TEXTUREGROUP_ProcBuilding_LightMap),TEXTUREGROUP_ProcBuilding_LightMap},
-		{VNAME(TEXTUREGROUP_Shadowmap),TEXTUREGROUP_Shadowmap},
-		{VNAME(TEXTUREGROUP_ColorLookupTable),TEXTUREGROUP_ColorLookupTable},
-		{VNAME(TEXTUREGROUP_Terrain_Heightmap),TEXTUREGROUP_Terrain_Heightmap},
-		{VNAME(TEXTUREGROUP_Terrain_Weightmap),TEXTUREGROUP_Terrain_Weightmap},
-		{VNAME(TEXTUREGROUP_Bokeh),TEXTUREGROUP_Bokeh},
-		{VNAME(TEXTUREGROUP_IESLightProfile),TEXTUREGROUP_IESLightProfile},
-		{VNAME(TEXTUREGROUP_Pixels2D),TEXTUREGROUP_Pixels2D},
-		{VNAME(TEXTUREGROUP_HierarchicalLOD),TEXTUREGROUP_HierarchicalLOD},
-		{VNAME(TEXTUREGROUP_Impostor),TEXTUREGROUP_Impostor},
-		{VNAME(TEXTUREGROUP_ImpostorNormalDepth),TEXTUREGROUP_ImpostorNormalDepth},
-		{VNAME(TEXTUREGROUP_8BitData),TEXTUREGROUP_8BitData},
-		{VNAME(TEXTUREGROUP_16BitData),TEXTUREGROUP_16BitData},
-		{VNAME(TEXTUREGROUP_Project01),TEXTUREGROUP_Project01},
-		{VNAME(TEXTUREGROUP_Project02),TEXTUREGROUP_Project02},
-		{VNAME(TEXTUREGROUP_Project03),TEXTUREGROUP_Project03},
-		{VNAME(TEXTUREGROUP_Project04),TEXTUREGROUP_Project04},
-		{VNAME(TEXTUREGROUP_Project05),TEXTUREGROUP_Project05},
-		{VNAME(TEXTUREGROUP_Project06),TEXTUREGROUP_Project06},
-		{VNAME(TEXTUREGROUP_Project07),TEXTUREGROUP_Project07},
-		{VNAME(TEXTUREGROUP_Project08),TEXTUREGROUP_Project08},
-		{VNAME(TEXTUREGROUP_Project09),TEXTUREGROUP_Project09},
-		{VNAME(TEXTUREGROUP_Project10),TEXTUREGROUP_Project10},
-		{VNAME(TEXTUREGROUP_Project11),TEXTUREGROUP_Project11},
-		{VNAME(TEXTUREGROUP_Project12),TEXTUREGROUP_Project12},
-		{VNAME(TEXTUREGROUP_Project13),TEXTUREGROUP_Project13},
-		{VNAME(TEXTUREGROUP_Project14),TEXTUREGROUP_Project14},
-		{VNAME(TEXTUREGROUP_Project15),TEXTUREGROUP_Project15},
-		{VNAME(TEXTUREGROUP_Project16),TEXTUREGROUP_Project16},
-		{VNAME(TEXTUREGROUP_Project17),TEXTUREGROUP_Project17},
-		{VNAME(TEXTUREGROUP_Project18),TEXTUREGROUP_Project18},
-		{VNAME(TEXTUREGROUP_Project19),TEXTUREGROUP_Project19},
-		{VNAME(TEXTUREGROUP_Project20),TEXTUREGROUP_Project20},
-		{VNAME(TEXTUREGROUP_Project21),TEXTUREGROUP_Project21},
-		{VNAME(TEXTUREGROUP_Project22),TEXTUREGROUP_Project22},
-		{VNAME(TEXTUREGROUP_Project23),TEXTUREGROUP_Project23},
-		{VNAME(TEXTUREGROUP_Project24),TEXTUREGROUP_Project24},
-		{VNAME(TEXTUREGROUP_Project25),TEXTUREGROUP_Project25},
-		{VNAME(TEXTUREGROUP_Project26),TEXTUREGROUP_Project26},
-		{VNAME(TEXTUREGROUP_Project27),TEXTUREGROUP_Project27},
-		{VNAME(TEXTUREGROUP_Project28),TEXTUREGROUP_Project28},
-		{VNAME(TEXTUREGROUP_Project29),TEXTUREGROUP_Project29},
-		{VNAME(TEXTUREGROUP_Project30),TEXTUREGROUP_Project30},
-		{VNAME(TEXTUREGROUP_Project31),TEXTUREGROUP_Project31},
-		{VNAME(TEXTUREGROUP_Project32),TEXTUREGROUP_Project32},
-		{VNAME(TEXTUREGROUP_MAX),TEXTUREGROUP_MAX}
-	};
+	TSharedPtr<TextureCompressionSettings> GetCompressionSettings();
+	CompressionSettingsInfo GetCompressionSettingsInfo() const;
 
 protected:
+
 	TSharedPtr<FString> TextureGlobalConfigSection;
 	TSharedPtr<FString> TextureCategoryCommonConfigSection;
 	TSharedPtr<FString> TextureCategoryStrictConfigSection;
@@ -112,5 +57,99 @@ protected:
 	double SourceSizeX;
 	double SourceSizeY;
 
+	CompressionSettingsInfo CompressionSettings;
 
+};
+
+static const TArray<FCustomStandardTexture2DData::CompressionSettingsInfo> ValidCompressionConfig =
+{
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Default),"Default (BC1 or BC3 with A)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Normalmap),"NormalMap (BC5)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Masks),"Masks (no sRGB)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Grayscale),"Grayscale (G8/16, RGB8 sRGB)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Displacementmap),"DisplacementMap (G8/16)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_VectorDisplacementmap),"VectorDisplacementmap (RGBA8)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_HDR),"HDR (RGBA16F, no sRGB)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_EditorIcon),"UserInterface2D (RGBA8)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Alpha),"Alpha (no sRGB, BC4)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_DistanceFieldFont),"DistanceFieldFont (G8)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_HDR_Compressed),"HDR Compressed (RGB, BC6H)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_BC7),"BC7 (RGBA)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_HalfFloat),"Half Float (R16F)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_LQ),"Low Quality (BGR565/BGR555A1)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_EncodedReflectionCapture),"EncodedReflectionCapture"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_SingleFloat),"Single Float (R32F)"),
+	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_HDR_F32),"HDR High Precision (RGBA32F)")
+	//ConstructCompressionConfigPairs(VNAME_STRUCT(TC_MAX),"TC_MAX")
+};
+
+static const TMap<FString, TextureGroup> TextureGroupNameMap =
+{
+	{VNAME_STRUCT(TEXTUREGROUP_World)},
+	{VNAME_STRUCT(TEXTUREGROUP_WorldNormalMap)},
+	{VNAME_STRUCT(TEXTUREGROUP_WorldSpecular)},
+	{VNAME_STRUCT(TEXTUREGROUP_Character)},
+	{VNAME_STRUCT(TEXTUREGROUP_CharacterNormalMap)},
+	{VNAME_STRUCT(TEXTUREGROUP_CharacterSpecular)},
+	{VNAME_STRUCT(TEXTUREGROUP_Weapon)},
+	{VNAME_STRUCT(TEXTUREGROUP_WeaponNormalMap)},
+	{VNAME_STRUCT(TEXTUREGROUP_WeaponSpecular)},
+	{VNAME_STRUCT(TEXTUREGROUP_Vehicle)},
+	{VNAME_STRUCT(TEXTUREGROUP_VehicleNormalMap)},
+	{VNAME_STRUCT(TEXTUREGROUP_VehicleSpecular)},
+	{VNAME_STRUCT(TEXTUREGROUP_Cinematic)},
+	{VNAME_STRUCT(TEXTUREGROUP_Effects)},
+	{VNAME_STRUCT(TEXTUREGROUP_EffectsNotFiltered)},
+	{VNAME_STRUCT(TEXTUREGROUP_Skybox)},
+	{VNAME_STRUCT(TEXTUREGROUP_UI)},
+	{VNAME_STRUCT(TEXTUREGROUP_Lightmap)},
+	{VNAME_STRUCT(TEXTUREGROUP_RenderTarget)},
+	{VNAME_STRUCT(TEXTUREGROUP_MobileFlattened)},
+	{VNAME_STRUCT(TEXTUREGROUP_ProcBuilding_Face)},
+	{VNAME_STRUCT(TEXTUREGROUP_ProcBuilding_LightMap)},
+	{VNAME_STRUCT(TEXTUREGROUP_Shadowmap)},
+	{VNAME_STRUCT(TEXTUREGROUP_ColorLookupTable)},
+	{VNAME_STRUCT(TEXTUREGROUP_Terrain_Heightmap)},
+	{VNAME_STRUCT(TEXTUREGROUP_Terrain_Weightmap)},
+	{VNAME_STRUCT(TEXTUREGROUP_Bokeh)},
+	{VNAME_STRUCT(TEXTUREGROUP_IESLightProfile)},
+	{VNAME_STRUCT(TEXTUREGROUP_Pixels2D)},
+	{VNAME_STRUCT(TEXTUREGROUP_HierarchicalLOD)},
+	{VNAME_STRUCT(TEXTUREGROUP_Impostor)},
+	{VNAME_STRUCT(TEXTUREGROUP_ImpostorNormalDepth)},
+	{VNAME_STRUCT(TEXTUREGROUP_8BitData)},
+	{VNAME_STRUCT(TEXTUREGROUP_16BitData)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project01)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project02)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project03)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project04)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project05)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project06)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project07)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project08)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project09)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project10)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project11)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project12)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project13)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project14)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project15)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project16)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project17)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project18)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project19)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project20)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project21)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project22)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project23)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project24)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project25)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project26)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project27)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project28)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project29)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project30)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project31)},
+	{VNAME_STRUCT(TEXTUREGROUP_Project32)},
+	{VNAME_STRUCT(TEXTUREGROUP_MAX)}
 };

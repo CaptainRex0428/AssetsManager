@@ -29,6 +29,12 @@ FStructLikeString::FStructLikeString(
 					FString RightS;
 					StringLikePair.Split("=", &LeftS, &RightS);
 
+					LeftS.RemoveFromStart("\"");
+					LeftS.RemoveFromEnd("\"");
+
+					RightS.RemoveFromStart("\"");
+					RightS.RemoveFromEnd("\"");
+
 					this->Map.Add(LeftS, RightS);
 				}
 			}

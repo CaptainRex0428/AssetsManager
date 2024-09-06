@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Misc/ConfigCacheIni.h"
+#include "StandardAsset/FStructLikeString.h"
 
 #define VNAME(value) (#value)
 
@@ -45,6 +46,18 @@ public:
 	TArray<FConfigValue> GetSectionValuesArray(
 		const TCHAR* SectionTag,
 		const FName& KeyTag);
+
+	TArray<FString> GenerateStructKeyValueArray(
+		const TCHAR* SectionTag,
+		const FName& ArrayKeyTag,
+		const FString& SearchKey);
+
+	TSharedPtr<FString> FindInSectionStructArray(
+		const TCHAR* SectionTag,
+		const FName& ArrayKeyTag,
+		const FString& SearchKey,
+		const FString& ConditionKey,
+		const FString& ToFindKey);
 
 private:
 	UConfigManager();

@@ -124,6 +124,85 @@ TArray<FConfigValue> UConfigManager::GetSectionValuesArray(
 	return OutArr;
 }
 
+TArray<FString> UConfigManager::GenerateStructKeyValueArray(
+	const TCHAR* SectionTag,
+	const FName& ArrayKeyTag,
+	const FString& SearchKey)
+{
+	TArray<FConfigValue> StructLikeValueArray =
+		GetSectionValuesArray(SectionTag, ArrayKeyTag);
+
+	if (StructLikeValueArray.Num() == 0)
+	{
+		return TArray<FString>();
+	}
+
+	TArray<FString> OutArr;
+
+	for (FConfigValue& value : StructLikeValueArray)
+	{
+		FStructLikeString JudgeString(value.GetValue());
+
+		if(JudgeString.IsStructLike())
+		{
+			const FString * FoundValue 
+				= JudgeString.GetMap().Find(SearchKey);
+
+			if (FoundValue && !FoundValue->IsEmpty())
+			{
+				OutArr.Add(*FoundValue);
+			}
+		}
+	}
+
+	return OutArr;
+}
+	
+
+TSharedPtr<FString> UConfigManager::FindInSectionStructArray(
+	const TCHAR* SectionTag, 
+	const FName& ArrayKeyTag, 
+	const FString& SearchKey, 
+	const FString& ConditionKey, 
+	const FString& ToFindKey)
+{
+	TArray<FConfigValue> StructLikeValueArray = 
+		GetSectionValuesArray(SectionTag, ArrayKeyTag);
+
+	if (StructLikeValueArray.Num() == 0)
+	{
+		return nullptr;
+	}
+	
+	for (FConfigValue& value : StructLikeValueArray)
+	{
+		FStructLikeString JudgeString(value.GetValue());
+		
+		if(!JudgeString.IsStructLike())
+		{
+			continue;
+		}
+
+		TMap<FString, FString> JudgeMap = JudgeString.GetMap();
+
+		const FString * KeyFound = JudgeMap.Find(SearchKey);
+		const FString * ValueFound = JudgeMap.Find(ToFindKey);
+
+		if(!KeyFound || !ValueFound)
+		{
+			continue;
+		}
+
+		if(ConditionKey == *KeyFound)
+		{
+			
+			return MakeShared<FString>(*ValueFound);
+		}
+	}
+
+	return nullptr;
+}
+
 UConfigManager::UConfigManager()
 	:ConfigPath(ASSETSMANAGER_CONFIGFOLDER + "AssetsManager.ini"),
 	DefaultConfigPath(ASSETSMANAGER_CONFIGFOLDER + "AssetsManager.ini")

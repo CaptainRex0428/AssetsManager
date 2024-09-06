@@ -6,11 +6,14 @@
 #include "AssetsManagerConfig.h"
 #include "ManagerLogger.h"
 
-FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData)
+FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData, bool StrictCheckMode)
 	:FAssetData(AssetData), 
+	bStrictCheckMode(StrictCheckMode),
 	m_CommonAssetCategoryTag(nullptr),
 	m_StrictAssetCategoryTag(nullptr),
-	AssetConfigGlobalSection(nullptr)
+	AssetConfigGlobalSection(nullptr),
+	bHasStandardPrefix(false),
+	m_AssetNameInfoStartIndex(0)
 {
 	/*
 	* Get AssetsManager global settings section name
@@ -35,18 +38,35 @@ FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData)
 	* Judge if the asset has standard prefix
 	*/
 
-	const FString * StandardPrefixPtr 
-		= PrefixMap.Find(this->GetAsset()->GetClass());
+	const FString * StandardClassName
+		= UClassNameMap.Find(this->GetAsset()->GetClass());
+	if (StandardClassName)
+	{
+		TSharedPtr<FString> StandardPrefixPtr =
+			UConfigManager::Get().FindInSectionStructArray(
+				**AssetConfigGlobalSection, 
+				"UClassPrefix",
+				"UClassName",
+				*StandardClassName,
+				"Prefix");
 
-	if (StandardPrefixPtr && *StandardPrefixPtr == m_AssetNameInfoList[0])
-	{
-		bHasStandardPrefix = true;
-		m_AssetNameInfoStartIndex = 1;
-	}
-	else
-	{
-		bHasStandardPrefix = false;
-		m_AssetNameInfoStartIndex = 0;
+		if(StandardPrefixPtr.IsValid())
+		{
+			if(*StandardPrefixPtr == m_AssetNameInfoList[0])
+			{
+				bHasStandardPrefix = true;
+				m_AssetNameInfoStartIndex = 1;
+			}
+		}
+		else
+		{
+			if(!this->bStrictCheckMode)
+			{
+				bHasStandardPrefix = true;
+				m_AssetNameInfoStartIndex = 1;
+			}
+		}
+		
 	}
 
 	/*
@@ -204,6 +224,11 @@ const TSharedPtr<FString> FCustomStandardAssetData::GetAssetSuffix()
 const uint32 FCustomStandardAssetData::GetAssetNameInfoCount() const
 {
 	return m_AssetNameInfoList.Num();
+}
+
+bool FCustomStandardAssetData::IsStandardPrefix() const
+{
+	return bHasStandardPrefix;
 }
 
 const FCustomStandardAssetData::Category& FCustomStandardAssetData::GetCommonAssetCategory()

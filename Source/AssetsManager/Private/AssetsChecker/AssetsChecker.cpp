@@ -529,7 +529,13 @@ TSharedPtr<TextureCompressionSettings> UAssetsChecker::EGetTextureAssetCompressi
 {
 	FCustomStandardTexture2DData AsTextureData(AssetData);
 
-	return AsTextureData.GetCompressionSettings();
+	if(AsTextureData.isTexture2D())
+	{
+		return MakeShared<TextureCompressionSettings>(
+			AsTextureData.GetCompressionSettingsInfo().Setting);
+	}
+
+	return nullptr;
 }
 
 TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureAssetTextureGroup(const FAssetData& AssetData)
@@ -710,14 +716,9 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 
 	for(const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
-		const FString* prefix = EGetPrefixMap().Find(AssetDPtr->GetClass());
+		FCustomStandardAssetData StandardAsset(*AssetDPtr);
 
-		if (!prefix || prefix->IsEmpty())
-		{
-			continue;
-		}
-
-		if (!AssetDPtr->AssetName.ToString().StartsWith(*prefix))
+		if (!StandardAsset.IsStandardPrefix())
 		{
 			if (isAdditiveMode)
 			{
@@ -725,7 +726,7 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 			}
 
 			OutList.Add(AssetDPtr);
-		};
+		}
 	}
 }
 
@@ -787,9 +788,9 @@ void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
 	
 	for (const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
-		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr);
+		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr, bStrictMode);
 
-		if (CustomStandardAsset.isTextureMaxInGameOverSize(bStrictMode))
+		if (CustomStandardAsset.IsTextureMaxInGameOverSize())
 		{
 			OutList.Add(AssetDPtr);
 		}
@@ -809,9 +810,9 @@ void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 
 	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
-		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr);
+		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr,bStrictMode);
 
-		if (CustomStandardAsset.isTextureSourceOverSize(bStrictMode))
+		if (CustomStandardAsset.IsTextureSourceOverSize())
 		{
 			OutList.Add(AssetDPtr);
 		}
