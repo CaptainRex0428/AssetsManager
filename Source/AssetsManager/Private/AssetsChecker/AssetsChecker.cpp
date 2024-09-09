@@ -3,6 +3,7 @@
 #pragma warning(disable: 5103)
 
 #include "AssetsChecker/AssetsChecker.h"
+
 #include "ManagerLogger.h"
 #include "StandardAsset/FCustomStandardAssetData.h"
 #include "StandardAsset/FCustomStandardTexture2DData.h"
@@ -10,7 +11,7 @@
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
 
-#include "AssetsManagerConfig.h"
+#include "ConfigManager.h"
 
 #include "ObjectTools.h"
 #include "AssetToolsModule.h"
@@ -128,20 +129,16 @@ bool UAssetsChecker::EConfirmPrefixes(
 	{
 		if (!selectedObj->GetAsset()) continue;
 
-		const FString* prefix = EGetPrefixMap().Find(selectedObj->GetAsset()->GetClass());
+		FCustomStandardAssetData StandardAsset(*selectedObj);
 
-		if (!prefix || prefix->IsEmpty())
+		if (StandardAsset.IsPrefixStandarized() || !StandardAsset.GetAssetStandardPrefix())
 		{
 			continue;
-		}
-
-		FString OldName = selectedObj->GetAsset()->GetName();
-		if (OldName.StartsWith(*prefix))
-		{
-			continue;
-		}
+		};
 
 		ReadyToFixAssets.Add(selectedObj);
+
+		FString OldName = selectedObj->AssetName.ToString();
 
 		// clear the prefix & subfix for material instance created by default editor.
 		if (selectedObj->GetAsset()->IsA<UMaterialInstanceConstant>())
@@ -150,7 +147,7 @@ bool UAssetsChecker::EConfirmPrefixes(
 			OldName.RemoveFromEnd("_Inst");
 		}
 
-		const FString NewName = *prefix + "_" + OldName;
+		const FString NewName = *StandardAsset.GetAssetStandardPrefix() + "_" + OldName;
 
 		NewAssetsName.Append(NewName + "\n");
 
@@ -187,20 +184,27 @@ void UAssetsChecker::EAddPrefixes(
 	{
 		if (!selectedAsset.GetAsset()) continue;
 
-		const FString* prefix = EGetPrefixMap().Find(selectedAsset.GetClass());
+		FCustomStandardAssetData StandardAsset(selectedAsset);
 
-		if (!prefix || prefix->IsEmpty())
+		if (StandardAsset.IsPrefixStandarized())
+		{
+			continue;
+		};
+
+
+		if (!StandardAsset.GetAssetStandardPrefix())
 		{
 #ifdef ZH_CN
-			NtfyMsgLog(TEXT("找不到资产[") + selectedAsset.GetClass()->GetName()+ TEXT("]对应的前缀"));
+			NtfyMsgLog(TEXT("找不到资产[") + StandardAsset.GetClass()->GetName()+ TEXT("]对应的前缀"));
 #else
 			NtfyMsgLog(TEXT("Can not find prefix for class ") + selectedAsset.GetClass()->GetName());
 #endif
 			continue;
 		}
 
-		FString OldName = selectedAsset.AssetName.ToString();
-		if (OldName.StartsWith(*prefix))
+		FString OldName = StandardAsset.AssetName.ToString();
+
+		if (StandardAsset.IsPrefixStandarized())
 		{
 #ifdef ZH_CN
 			NtfyMsgLog(OldName + TEXT("已有正确的命名前缀"));
@@ -212,15 +216,15 @@ void UAssetsChecker::EAddPrefixes(
 		}
 
 		// clear the prefix & subfix for material instance created by default editor.
-		if (selectedAsset.GetAsset()->IsA<UMaterialInstanceConstant>())
-		{
+		if (StandardAsset.GetAsset()->IsA<UMaterialInstanceConstant>())
+		{	
 			OldName.RemoveFromStart("M_");
 			OldName.RemoveFromEnd("_Inst");
 		}
 
-		const FString NewName = *prefix + "_" + OldName;
+		const FString NewName = *StandardAsset.GetAssetStandardPrefix() + "_" + OldName;
 
-		UEditorUtilityLibrary::RenameAsset(selectedAsset.GetAsset(), NewName);
+		UEditorUtilityLibrary::RenameAsset(StandardAsset.GetAsset(), NewName);
 
 		++SuccessCounter;
 	}
@@ -243,39 +247,61 @@ void UAssetsChecker::EAddPrefixes(
 	for (UObject* selectedObj : AssetsSelected)
 	{
 		if (!selectedObj) continue;
+		
+		FAssetData AssetDataIn(selectedObj);
 
-		const FString* prefix = EGetPrefixMap().Find(selectedObj->GetClass());
+		FCustomStandardAssetData StandardAsset(AssetDataIn);
 
-		if (!prefix || prefix->IsEmpty())
+		if (StandardAsset.IsPrefixStandarized())
 		{
-			ScreenMsgLog("Can not find prefix for class " + selectedObj->GetClass()->GetName(), FColor::Red);
+			continue;
+		};
+
+
+		if (!StandardAsset.GetAssetStandardPrefix())
+		{
+#ifdef ZH_CN
+			NtfyMsgLog(TEXT("找不到资产[") + StandardAsset.GetClass()->GetName() + TEXT("]对应的前缀"));
+#else
+			NtfyMsgLog(TEXT("Can not find prefix for class ") + selectedAsset.GetClass()->GetName());
+#endif
 			continue;
 		}
 
-		FString OldName = selectedObj->GetName();
-		if (OldName.StartsWith(*prefix))
+		FString OldName = StandardAsset.AssetName.ToString();
+
+		if (StandardAsset.IsPrefixStandarized())
 		{
-			ScreenMsgLog(OldName + " already has prefix added", FColor::Red);
+#ifdef ZH_CN
+			NtfyMsgLog(OldName + TEXT("已有正确的命名前缀"));
+#else
+			NtfyMsgLog(OldName + TEXT(" alreay has prefix added"));
+#endif
 			++AlreadyCounter;
 			continue;
 		}
 
 		// clear the prefix & subfix for material instance created by default editor.
-		if (selectedObj->IsA<UMaterialInstanceConstant>())
+		if (StandardAsset.GetAsset()->IsA<UMaterialInstanceConstant>())
 		{
 			OldName.RemoveFromStart("M_");
 			OldName.RemoveFromEnd("_Inst");
 		}
 
-		const FString NewName = *prefix + "_" + OldName;
+		const FString NewName = *StandardAsset.GetAssetStandardPrefix() + "_" + OldName;
 
-		UEditorUtilityLibrary::RenameAsset(selectedObj, NewName);
+		UEditorUtilityLibrary::RenameAsset(StandardAsset.GetAsset(), NewName);
+
 		++SuccessCounter;
 	}
 
-
-	if (SuccessCounter > 0)	NtfyMsgLog("Successfully renamed " + FString::FromInt(SuccessCounter) + " asset" + (SuccessCounter > 1 ? "s" : ""));
-	if (AlreadyCounter > 0) NtfyMsgLog(FString::FromInt(AlreadyCounter) + " asset" + (AlreadyCounter > 1 ? "s" : "") + " already ha" + (AlreadyCounter > 1 ? "ve" : "s") + " prefix");
+#ifdef ZH_CN
+	if (SuccessCounter > 0)	NtfyMsgLog(TEXT("成功重命名") + FString::FromInt(SuccessCounter) + TEXT("个资产"));
+	if (AlreadyCounter > 0) NtfyMsgLog(FString::FromInt(AlreadyCounter) + TEXT("个资产已有正确命名前缀"));
+#else
+	if (SuccessCounter > 0)	NtfyMsgLog(TEXT("Successfully renamed ") + FString::FromInt(SuccessCounter) + TEXT(" asset") + (SuccessCounter > 1 ? TEXT("s") : ""));
+	if (AlreadyCounter > 0) NtfyMsgLog(FString::FromInt(AlreadyCounter) + TEXT(" asset") + (AlreadyCounter > 1 ? TEXT("s") : "") + TEXT(" already ha") + (AlreadyCounter > 1 ? TEXT("ve") : TEXT("s")) + TEXT(" prefix"));
+#endif
 }
 
 bool UAssetsChecker::EFixTextureMaxSizeInGame(
@@ -329,11 +355,11 @@ bool UAssetsChecker::ESetTextureSize(
 
 bool UAssetsChecker::ESetTextureStandardSettings(FAssetData& ClickedAssetData)
 {
-	FCustomStandardAssetData SAsset(ClickedAssetData);
+	FCustomStandardTexture2DData SAsset(ClickedAssetData);
 
-	TSharedPtr<FString> subfix = SAsset.GetAssetSubfix();
+	TSharedPtr<FString> subfix = SAsset.GetAssetSuffix();
 
-	if (!subfix.IsValid())
+	if (!SAsset.GetAssetSuffix().IsValid())
 	{
 #ifdef ZH_CN
 		NtfyMsgLog(TEXT("资产后缀错误\n") + ClickedAssetData.AssetName.ToString());
@@ -343,13 +369,8 @@ bool UAssetsChecker::ESetTextureStandardSettings(FAssetData& ClickedAssetData)
 		return false;
 	}
 
-	const TextureCompressionSettings* StandardCompressionSettings
-		= TextureSubfixCompressionSettingsMap.Find(*subfix);
-
-	const bool* StandardSRGBSettings
-		= TextureSubfixSRGBSettingsMap.Find(*subfix);
-
-	if (!StandardCompressionSettings || !StandardSRGBSettings)
+	if (!SAsset.GetStandardCompressionSettings(true).IsValid() || 
+		!SAsset.GetStandardsRGBSettings(true).IsValid())
 	{
 #ifdef ZH_CN
 		NtfyMsgLog(TEXT("找不到资产对应的正确配置\n") + ClickedAssetData.AssetName.ToString());
@@ -359,8 +380,12 @@ bool UAssetsChecker::ESetTextureStandardSettings(FAssetData& ClickedAssetData)
 		return false;
 	}
 
-	bool StandardResult_Compression = ESetTextureAssetCompressionSettings(ClickedAssetData, *StandardCompressionSettings);
-	bool StandardResult_sRGB = ESetTextureSRGBSettings(ClickedAssetData, *StandardSRGBSettings);
+	bool StandardResult_Compression = ESetTextureAssetCompressionSettings(
+		ClickedAssetData, *SAsset.GetStandardCompressionSettings(true));
+
+	bool StandardResult_sRGB = ESetTextureSRGBSettings(
+		ClickedAssetData, 
+		*SAsset.GetStandardsRGBSettings(true));
 
 	return  StandardResult_Compression && StandardResult_sRGB;
 }
@@ -384,65 +409,6 @@ TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureLODGroup(const FAssetData& A
 	if (STexture)
 	{
 		return MakeShared<TextureGroup>(STexture->LODGroup);
-	}
-
-	return nullptr;
-}
-
-TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureLODStandardGroup(
-	const FAssetData& AssetData, 
-	bool bIsCategoryStrict)
-{
-	UObject* AssetOBJ = AssetData.GetAsset();
-
-	if (!AssetOBJ)
-	{
-		return nullptr;
-	}
-
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return nullptr;
-	}
-
-	UTexture2D* STexture = Cast<UTexture2D>(AssetOBJ);
-
-	if (STexture) {
-		FCustomStandardAssetData SAsset(AssetData);
-		
-		FCustomStandardAssetData::Category AssetStrictCategory = SAsset.GetCommonAssetCategory();
-
-		if( bIsCategoryStrict)
-		{
-			AssetStrictCategory = SAsset.GetStrictAssetCategory();
-		}
-	
-		if (AssetStrictCategory == FCustomStandardAssetData::Category::Character)
-		{
-			const TSharedPtr<FString> subfixCurrent = SAsset.GetAssetSubfix();
-
-			if (!subfixCurrent.IsValid() || !TextureLODGroupForCharacterBySubfix.Find(*subfixCurrent))
-			{
-				return MakeShared<TextureGroup>(*TextureLODGroupForCategroyDefault.Find(AssetStrictCategory));
-			}
-
-			return MakeShared<TextureGroup>(*TextureLODGroupForCharacterBySubfix.Find(*subfixCurrent));
-		}
-		else if (AssetStrictCategory == FCustomStandardAssetData::Category::Undefined)
-		{
-			if (STexture->CompressionSettings == TextureCompressionSettings::TC_Normalmap)
-			{
-				return MakeShared<TextureGroup>(TEXTUREGROUP_WorldNormalMap);
-			}
-
-			return MakeShared<TextureGroup>(TEXTUREGROUP_World);
-		}
-		else
-		{
-			return MakeShared<TextureGroup>(*TextureLODGroupForCategroyDefault.Find(AssetStrictCategory));
-		}
-
-		return MakeShared<TextureGroup>(TEXTUREGROUP_World);
 	}
 
 	return nullptr;
@@ -503,7 +469,7 @@ FVector2D UAssetsChecker::EGetTextureAssetSourceSize(
 {
 	FCustomStandardTexture2DData AsTextureData(AssetData);
 
-	if (AsTextureData.isTexture2D())
+	if (AsTextureData.IsTexture2D())
 	{
 		return AsTextureData.GetSourceSize();
 	}
@@ -516,7 +482,7 @@ FVector2D UAssetsChecker::EGetTextureAssetMaxInGameSize(
 {
 	FCustomStandardTexture2DData AsTextureData(AssetData);
 
-	if(AsTextureData.isTexture2D())
+	if(AsTextureData.IsTexture2D())
 	{
 		return AsTextureData.GetMaxInGameSize();
 	}
@@ -529,7 +495,13 @@ TSharedPtr<TextureCompressionSettings> UAssetsChecker::EGetTextureAssetCompressi
 {
 	FCustomStandardTexture2DData AsTextureData(AssetData);
 
-	return AsTextureData.GetCompressionSettings();
+	if(AsTextureData.IsTexture2D())
+	{
+		return MakeShared<TextureCompressionSettings>(
+			AsTextureData.GetCompressionSettingsInfo().Setting);
+	}
+
+	return nullptr;
 }
 
 TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureAssetTextureGroup(const FAssetData& AssetData)
@@ -580,11 +552,20 @@ bool UAssetsChecker::ESetTextureAssetCompressionSettings(
 		AssetT->CompressionSettings = CompressionSetting;
 		AssetT->UpdateResource();
 
-		
+		FString DisplayInfo;
+
+		for (FCustomStandardTexture2DData::CompressionSettingsInfo info :ValidCompressionConfig)
+		{
+			if (info.Setting == CompressionSetting)
+			{
+				DisplayInfo = info.DisplayName;
+				break;
+			}
+		}
 
 #ifdef ZH_CN
 		NtfyMsgLog(TEXT("成功设置贴图压缩格式为\n") 
-			+ *TextureCompressionMap.Find(CompressionSetting) + "\n"
+			+ DisplayInfo + "\n"
 			+ AssetData.AssetName.ToString());
 #else
 		NtfyMsgLog(TEXT("Successfully set the compression settings as\n")
@@ -710,14 +691,9 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 
 	for(const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
-		const FString* prefix = EGetPrefixMap().Find(AssetDPtr->GetClass());
+		FCustomStandardAssetData StandardAsset(*AssetDPtr);
 
-		if (!prefix || prefix->IsEmpty())
-		{
-			continue;
-		}
-
-		if (!AssetDPtr->AssetName.ToString().StartsWith(*prefix))
+		if (!StandardAsset.IsPrefixStandarized())
 		{
 			if (isAdditiveMode)
 			{
@@ -725,7 +701,7 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 			}
 
 			OutList.Add(AssetDPtr);
-		};
+		}
 	}
 }
 
@@ -787,9 +763,9 @@ void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
 	
 	for (const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
-		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr);
+		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr, bStrictMode);
 
-		if (CustomStandardAsset.isTextureMaxInGameOverSize(bStrictMode))
+		if (CustomStandardAsset.IsTextureMaxInGameOverSize())
 		{
 			OutList.Add(AssetDPtr);
 		}
@@ -809,9 +785,9 @@ void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 
 	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
-		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr);
+		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr,bStrictMode);
 
-		if (CustomStandardAsset.isTextureSourceOverSize(bStrictMode))
+		if (CustomStandardAsset.IsTextureSourceOverSize())
 		{
 			OutList.Add(AssetDPtr);
 		}
@@ -835,18 +811,9 @@ void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
 			continue;
 		}
 
-		FCustomStandardAssetData Asset(*AssetDPtr);
+		FCustomStandardTexture2DData Asset(*AssetDPtr);
 
-		if (!Asset.GetAssetSubfix().IsValid())
-		{
-			OutList.Add(AssetDPtr);
-			continue;
-		}
-
-		const TextureCompressionSettings * result = 
-			TextureSubfixCompressionSettingsMap.Find(*Asset.GetAssetSubfix());
-
-		if (!result)
+		if (!Asset.IsSuffixStandarized())
 		{
 			if (isAdditiveMode)
 			{
@@ -875,45 +842,17 @@ void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
 			continue;
 		}
 
-		TSharedPtr<TextureCompressionSettings> CompressionS =
-			EGetTextureAssetCompressionSettings(*AssetDPtr);
+		FCustomStandardTexture2DData TextureAsset(*AssetDPtr);
 
-		TSharedPtr<bool> SRGBS =
-			EGetTextureAssetSRGBSettings(*AssetDPtr);
-
-		FCustomStandardAssetData Asset(*AssetDPtr);
-
-		TSharedPtr<FString> subfix = Asset.GetAssetSubfix();
-
-		if (!subfix.IsValid())
+		if (!TextureAsset.IsTextureSettingsStandarized())
 		{
-			continue;
-		}
+			if (isAdditiveMode)
+			{
+				if (OutList.Contains(AssetDPtr)) continue;
+			}
 
-		const TextureCompressionSettings * standardCompressionSettings
-			= TextureSubfixCompressionSettingsMap.Find(*subfix);
-
-		const bool * standardSRGB
-			= TextureSubfixSRGBSettingsMap.Find(*subfix);
-
-
-		if (!(standardCompressionSettings && standardSRGB))
-		{
-			continue;
-		}
-		
-		if(*CompressionS == *standardCompressionSettings &&  *SRGBS == *standardSRGB)
-		{
-			continue;
-		}
-
-		if (isAdditiveMode)
-		{
-			if (OutList.Contains(AssetDPtr)) continue;
-		}
-
-		OutList.Add(AssetDPtr);
-		
+			OutList.Add(AssetDPtr);
+		};		
 	}
 }
 
@@ -929,29 +868,17 @@ void UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(
 
 	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
-		FCustomStandardAssetData SAsset(*AssetDPtr);
+		FCustomStandardTexture2DData SAsset(*AssetDPtr);
 
-		if (!SAsset.GetAsset()->IsA<UTexture2D>())
+		if (!SAsset.IsTextureLODGroupStandarized())
 		{
-			continue;
-		}
-		
-		UTexture2D* STexture = Cast<UTexture2D>(SAsset.GetAsset());
-		TextureGroup CurrentLODGroup = STexture->LODGroup;
-
-		TSharedPtr<TextureGroup> StandardLODGroup = EGetTextureLODStandardGroup(*AssetDPtr,false);
-
-		if(StandardLODGroup.IsValid())
-		{
-			if (CurrentLODGroup != *StandardLODGroup)
+			if (isAdditiveMode)
 			{
-				if (isAdditiveMode)
-				{
-					if (OutList.Contains(AssetDPtr)) continue;
-				}
-
-				OutList.Add(AssetDPtr);
+				if (OutList.Contains(AssetDPtr)) continue;
 			}
+
+			OutList.Add(AssetDPtr);
+
 		}
 	}
 }
@@ -1294,7 +1221,7 @@ TSharedPtr<FString> UAssetsChecker::EGetAssetNameSubfix(const FAssetData& AssetS
 {
 	FCustomStandardAssetData AssetS(AssetSelected);
 
-	return AssetS.GetAssetSubfix();
+	return AssetS.GetAssetSuffix();
 }
 
 void UAssetsChecker::ReplaceName(
@@ -1424,9 +1351,3 @@ void UAssetsChecker::CheckCheck()
 	}
 	
 }
-	
-const TMap<UClass*, FString>& UAssetsChecker::EGetPrefixMap()
-{
-	return PrefixMap;
-}
-

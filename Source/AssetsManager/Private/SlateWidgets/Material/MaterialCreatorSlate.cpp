@@ -8,7 +8,7 @@
 #include "ManagerLogger.h"
 #include "SlateBasics.h"
 
-#include "AssetsManagerConfig.h"
+#include "ConfigManager.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
 

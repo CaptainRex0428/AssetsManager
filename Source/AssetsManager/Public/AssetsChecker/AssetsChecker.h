@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "AssetActionUtility.h"
 
-#include "AssetsManagerConfig.h"
+#include "ConfigManager.h"
 
 #include "AssetsChecker.generated.h"
 
@@ -112,10 +112,6 @@ public:
 
 	static TSharedPtr<TextureGroup> EGetTextureLODGroup(
 		const FAssetData& AssetData);
-
-	static TSharedPtr<TextureGroup> EGetTextureLODStandardGroup(
-		const FAssetData& AssetData,
-		bool bIsCategoryStrict = false);
 
 	static bool ESetTextureLODGroup(
 		FAssetData& AssetData,
@@ -240,7 +236,5 @@ public:
 #pragma endregion
 
 #pragma endregion
-
-protected:
-	static const TMap<UClass*, FString>& EGetPrefixMap();
+	
 };
