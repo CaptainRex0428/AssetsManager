@@ -3,96 +3,169 @@
 
 #include "StandardAsset/FCustomStandardAssetData.h"
 #include "AssetsChecker/AssetsChecker.h"
-#include "AssetsManagerConfig.h"
+#include "ConfigManager.h"
+#include "ManagerLogger.h"
 
-FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData)
-	:FAssetData(AssetData)
+FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData, bool StrictCheckMode)
+	:FAssetData(AssetData), 
+	bStrictCheckMode(StrictCheckMode),
+	m_CommonAssetCategoryTag(nullptr),
+	m_StrictAssetCategoryTag(nullptr),
+	AssetConfigGlobalSection(nullptr),
+	bHasStandardPrefix(false),
+	m_AssetNameInfoStartIndex(0)
 {
+	/*
+	* Get AssetsManager global settings section name
+	*/
+	FString GlobalSection = FPaths::Combine(ModuleConfigMaster, TEXT("Global"));
+
+	if(UConfigManager::Get().GetSection(*GlobalSection))
+	{
+		AssetConfigGlobalSection = MakeShareable(new FString(GlobalSection));
+	}
+
+	/*
+	* Split asset's name into TArray<FString>
+	*/
+
 	FString AssetSelectedName = AssetData.AssetName.ToString();
 
 	m_AssetNameInfoList.Empty();
 	m_AssetNameInfoList = SplitStringRecursive(AssetSelectedName, "_");
 
-	const FString * StandardPrefixPtr 
-		= PrefixMap.Find(this->GetAsset()->GetClass());
+	/*
+	* Judge if the asset has standard prefix
+	*/
 
-	if (StandardPrefixPtr && *StandardPrefixPtr == m_AssetNameInfoList[0])
+	const FString * StandardClassName
+		= UClassNameMap.Find(this->GetAsset()->GetClass());
+	if (StandardClassName)
 	{
-		bHasStandardPrefix = true;
-		m_AssetNameInfoStartIndex = 1;
+		TSharedPtr<FString> StandardPrefixPtr =
+			UConfigManager::Get().FindInSectionStructArray(
+				**AssetConfigGlobalSection, 
+				"UClassPrefix",
+				"UClassName",
+				*StandardClassName,
+				"Prefix");
+
+		if(StandardPrefixPtr.IsValid())
+		{
+			if(*StandardPrefixPtr == m_AssetNameInfoList[0])
+			{
+				bHasStandardPrefix = true;
+				m_AssetNameInfoStartIndex = 1;
+			}
+		}
+		else
+		{
+			if(!this->bStrictCheckMode)
+			{
+				bHasStandardPrefix = true;
+				m_AssetNameInfoStartIndex = 1;
+			}
+		}
+		
 	}
-	else
-	{
-		bHasStandardPrefix = false;
-		m_AssetNameInfoStartIndex = 0;
-	}
+
+	/*
+	* Judge if the asset has common standard category tag\
+	* This judgment rule is loose
+	* Any part of the name matches any member in an array will be treated as a category tag
+	*/
+
+	/*
+	* Judge if the asset has strict standard category tag
+	* This judgment rule is strict
+	* Only the first or second part of the name matches any member in an array will be treated as a category tag
+	*/
 
 	m_CommonAssetCategory = Undefined;
+	m_StrictAssetCategory = Undefined;
 
-	TArray<FString> ValidCategoryInFString;
-	ValidCategoryInFString.Empty();
+	Category AssetValidCategory;
 
-	for (TPair<FString, FCustomStandardAssetData::Category> Pair :AssetCategoryMap)
+	bool ShouldBreak = false;
+
+	for (AssetValidCategory = Undefined; 
+		AssetValidCategory < LastCatergory; 
+		AssetValidCategory = (Category)(AssetValidCategory+1))
 	{
-		ValidCategoryInFString.Add(Pair.Key);
-	}
+		TArray<FString> ValidCategoryTags = GetValidCategoryTag(AssetValidCategory);
 
-	
-	for (int InfoIndex = 0; InfoIndex < m_AssetNameInfoList.Num(); ++InfoIndex)
-	{
-		bool ShouldBreak = false;
-
-		FString JudgeInfo = m_AssetNameInfoList[InfoIndex];
-
-		for (FString key : ValidCategoryInFString)
+		for (int InfoIndex = 0; InfoIndex < m_AssetNameInfoList.Num(); ++InfoIndex)
 		{
-			if (JudgeInfo.StartsWith(key))
-			{
-				m_CommonAssetCategory = *AssetCategoryMap.Find(key);
+			FString JudgeInfo = m_AssetNameInfoList[InfoIndex];
 
-				break;
+			for (FString & Tag: ValidCategoryTags)
+			{
+				if(JudgeInfo.StartsWith(Tag))
+				{
+					m_CommonAssetCategory = AssetValidCategory;
+
+					switch (m_CommonAssetCategory)
+					{
+					case FCustomStandardAssetData::Character:
+						m_CommonAssetCategoryTag = MakeShared<FString>("Character");
+						break;
+					case FCustomStandardAssetData::Effect:
+						m_CommonAssetCategoryTag = MakeShared<FString>("Effect");
+						break;
+					case FCustomStandardAssetData::Scene:
+						m_CommonAssetCategoryTag = MakeShared<FString>("Scene");
+						break;
+					case FCustomStandardAssetData::UI:
+						m_CommonAssetCategoryTag = MakeShared<FString>("UI");
+						break;
+					case FCustomStandardAssetData::Hair:
+						m_CommonAssetCategoryTag = MakeShared<FString>("Hair");
+						break;
+					case FCustomStandardAssetData::Undefined:
+					case FCustomStandardAssetData::LastCatergory:
+					default:
+						break;
+					}
+
+					if (bHasStandardPrefix ? (InfoIndex == 1) : (InfoIndex<=1))
+					{
+						m_StrictAssetCategory = AssetValidCategory;
+
+						switch (m_StrictAssetCategory)
+						{
+						case FCustomStandardAssetData::Character:
+							m_StrictAssetCategoryTag = MakeShared<FString>("Character");
+							break;
+						case FCustomStandardAssetData::Effect:
+							m_StrictAssetCategoryTag = MakeShared<FString>("Effect");
+							break;
+						case FCustomStandardAssetData::Scene:
+							m_StrictAssetCategoryTag = MakeShared<FString>("Scene");
+							break;
+						case FCustomStandardAssetData::UI:
+							m_StrictAssetCategoryTag = MakeShared<FString>("UI");
+							break;
+						case FCustomStandardAssetData::Hair:
+							m_StrictAssetCategoryTag = MakeShared<FString>("Hair");
+							break;
+						case FCustomStandardAssetData::Undefined:
+						case FCustomStandardAssetData::LastCatergory:
+						default:
+							break;
+						}
+
+						ShouldBreak = true;
+					}
+				}
 			}
 		}
 
-		if (ShouldBreak) 
+		if (ShouldBreak)
 		{
 			break;
 		}
 	}
 
-	m_StrictAssetCategory = Undefined;
-
-	if (bHasStandardPrefix)
-	{
-		const FCustomStandardAssetData::Category* CategoryFound =
-			AssetCategoryMap.Find(m_AssetNameInfoList[1]);
-
-		if (CategoryFound)
-		{
-			m_StrictAssetCategory = *CategoryFound;
-		}
-	}
-	else
-	{
-		const FCustomStandardAssetData::Category* CategoryFoundLoc0 =
-			AssetCategoryMap.Find(m_AssetNameInfoList[0]);
-
-		if (CategoryFoundLoc0)
-		{
-			m_StrictAssetCategory = *CategoryFoundLoc0;
-		}
-		
-		if (m_AssetNameInfoList.Num() > 1) 
-		{
-			const FCustomStandardAssetData::Category* CategoryFoundLoc1 =
-				AssetCategoryMap.Find(m_AssetNameInfoList[1]);
-
-			if (CategoryFoundLoc1)
-			{
-				m_StrictAssetCategory = *CategoryFoundLoc1;
-			}
-		}
-	}
 }
 
 FCustomStandardAssetData::~FCustomStandardAssetData()
@@ -128,7 +201,7 @@ TSharedPtr<FString> FCustomStandardAssetData::GetAssetNameInfoByIndex(
 	return MakeShared<FString>(m_AssetNameInfoList[SearchIndex]);
 }
 
-const TSharedPtr<FString> FCustomStandardAssetData::GetAssetStandardPrefix() const
+const TSharedPtr<FString> FCustomStandardAssetData::GetAssetPrefix() const
 {
 	if(bHasStandardPrefix)
 	{
@@ -138,7 +211,7 @@ const TSharedPtr<FString> FCustomStandardAssetData::GetAssetStandardPrefix() con
 	return nullptr;
 }
 
-const TSharedPtr<FString> FCustomStandardAssetData::GetAssetSubfix()
+const TSharedPtr<FString> FCustomStandardAssetData::GetAssetSuffix()
 {
 	if (GetAssetNameInfoCount() <= 1)
 	{
@@ -151,6 +224,41 @@ const TSharedPtr<FString> FCustomStandardAssetData::GetAssetSubfix()
 const uint32 FCustomStandardAssetData::GetAssetNameInfoCount() const
 {
 	return m_AssetNameInfoList.Num();
+}
+
+bool FCustomStandardAssetData::IsPrefixStandarized() const
+{
+	return bHasStandardPrefix;
+}
+
+const TSharedPtr<FString> FCustomStandardAssetData::GetAssetStandardPrefix()
+{
+	if (bHasStandardPrefix)
+	{
+		return GetAssetPrefix();
+	}
+
+	const FString * ClassFullName = UClassNameMap.Find(this->GetAsset()->GetClass());
+
+	if (!ClassFullName)
+	{
+		return nullptr;
+	}
+
+	TSharedPtr<FString> PrefixFound = 
+		UConfigManager::Get().FindInSectionStructArray(
+		**AssetConfigGlobalSection,
+		"UClassPrefix",
+		"UClassName",
+		*ClassFullName,
+		"Prefix");
+
+	if (!PrefixFound)
+	{
+		return nullptr;
+	}
+
+	return PrefixFound;
 }
 
 const FCustomStandardAssetData::Category& FCustomStandardAssetData::GetCommonAssetCategory()
@@ -173,7 +281,7 @@ const FCustomStandardAssetData::Category FCustomStandardAssetData::GetConfirmAss
 	return FCustomStandardAssetData::Undefined;
 }
 
-bool FCustomStandardAssetData::IsStandardCatogry()
+bool FCustomStandardAssetData::IsCatogryStandarized()
 {
 	return !(m_StrictAssetCategory == FCustomStandardAssetData::Undefined);
 }
@@ -205,6 +313,74 @@ TArray<FString> FCustomStandardAssetData::SplitStringRecursive(
 	}	
 
 	return OutList;
+}
+
+TArray<FString> FCustomStandardAssetData::GetValidCategoryTag(
+	Category Cate)
+{
+	if (AssetConfigGlobalSection) 
+	{
+		TArray<FConfigValue> TagValue;
+		TagValue.Empty();
+
+		switch (Cate)
+		{
+		
+		case FCustomStandardAssetData::Character:
+		{
+			TagValue = UConfigManager::Get().GetSectionValuesArray(
+				**AssetConfigGlobalSection,
+				"CharacterCategoryTag");
+			break;
+		}
+		case FCustomStandardAssetData::Effect:
+		{
+			TagValue=UConfigManager::Get().GetSectionValuesArray(
+				**AssetConfigGlobalSection,
+				"EffectCategoryTag");
+			break;
+		}
+		case FCustomStandardAssetData::Scene:
+		{
+			TagValue = UConfigManager::Get().GetSectionValuesArray(
+				**AssetConfigGlobalSection,
+				"SceneCategoryTag");
+			break;
+		}
+		case FCustomStandardAssetData::UI:
+		{
+			TagValue = UConfigManager::Get().GetSectionValuesArray(
+				**AssetConfigGlobalSection,
+				"UICategoryTag");
+			break;
+		}
+		case FCustomStandardAssetData::Hair:
+		{
+			TagValue = UConfigManager::Get().GetSectionValuesArray(
+				**AssetConfigGlobalSection,
+				"HairCategoryTag");
+			break;
+		}
+		case FCustomStandardAssetData::Undefined:
+		case FCustomStandardAssetData::LastCatergory:
+		default:
+		{
+			break;
+		}
+		}
+
+		TArray<FString> Tags;
+		Tags.Empty();
+
+		for(FConfigValue & value : TagValue)
+		{
+			Tags.Add(value.GetValue());
+		}
+
+		return Tags;
+	}
+
+	return TArray<FString>();	
 }
 
 
