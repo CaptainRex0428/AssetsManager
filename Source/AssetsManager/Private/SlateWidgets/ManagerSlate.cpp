@@ -102,7 +102,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	FString AssetGlobalSection = "/AssetsManager/Global";
 	TArray<FString> Keys = 
-	UConfigManager::Get().GenerateStructKeyValueArray(
+	FConfigManager::Get().GenerateStructKeyValueArray(
 		*AssetGlobalSection,
 		"UClassPrefix",
 		"UClassName");
@@ -994,16 +994,6 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetDebugButtonBox(
 FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	FString a = "2048.0";
-
-	if (a.IsNumeric())
-	{
-		NtfyMsg("Yes");
-	}
-	else
-	{
-		NtfyMsg("No");
-	}
 
 	return FReply::Handled();
 }

@@ -26,7 +26,7 @@ FCustomStandardTexture2DData::FCustomStandardTexture2DData(
 
 	FString TGlobalSection = FPaths::Combine(ModuleConfigMaster, TEXT("Global"),TEXT("Texture"));
 
-	if (UConfigManager::Get().GetSection(*TGlobalSection))
+	if (FConfigManager::Get().GetSection(*TGlobalSection))
 	{
 		this->TextureGlobalConfigSection = MakeShareable(new FString(TGlobalSection));
 	}
@@ -212,7 +212,7 @@ TSharedPtr<TextureCompressionSettings> FCustomStandardTexture2DData::GetStandard
 	{
 		FString ValidSection = GetTextureVaidSection();
 
-		TSharedPtr<FString> DisplayCompression = UConfigManager::Get().FindInSectionStructArray(
+		TSharedPtr<FString> DisplayCompression = FConfigManager::Get().FindInSectionStructArray(
 			*ValidSection,
 			"SuffixStandard",
 			"Suffix",
@@ -291,7 +291,7 @@ TSharedPtr<bool> FCustomStandardTexture2DData::GetStandardsRGBSettings(
 	{
 		FString ValidSection = GetTextureVaidSection();
 
-		TSharedPtr<FString> DisplaySRGB = UConfigManager::Get().FindInSectionStructArray(
+		TSharedPtr<FString> DisplaySRGB = FConfigManager::Get().FindInSectionStructArray(
 			*ValidSection,
 			"SuffixStandard",
 			"Suffix",
@@ -363,7 +363,7 @@ TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetStandardLODGroup(
 	{
 		FString ValidSection = GetTextureVaidSection();
 
-		TSharedPtr<FString> LODGroup = UConfigManager::Get().FindInSectionStructArray(
+		TSharedPtr<FString> LODGroup = FConfigManager::Get().FindInSectionStructArray(
 			*ValidSection,
 			"SuffixStandard",
 			"Suffix",
@@ -417,7 +417,7 @@ TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetStandardLODGroup(
 		break;
 	}
 
-	TSharedPtr<FString> LODGroup = UConfigManager::Get().FindInSectionStructArray(
+	TSharedPtr<FString> LODGroup = FConfigManager::Get().FindInSectionStructArray(
 		*ValidSection,
 		"SuffixStandard",
 		"Suffix",
@@ -482,12 +482,12 @@ double FCustomStandardTexture2DData::GetStandardMaxSize()
 {
 	FString ValidSection = GetTextureVaidSection();
 
-	const FConfigValue* value = UConfigManager::Get().GetSectionValue(
+	const FConfigValue* value = FConfigManager::Get().GetSectionValue(
 		*ValidSection, "MaxSize");
 
 	if (value)
 	{
-		return UConfigManager::Get().SToD(value->GetValue());
+		return FConfigManager::Get().SToD(value->GetValue());
 	}
 
 	return 2048.f;
@@ -505,7 +505,7 @@ double FCustomStandardTexture2DData::GetStandardMaxSizeStrict()
 	FString ValidSection = GetTextureVaidSection();
 
 	TSharedPtr<FString> SizeInStr =
-		UConfigManager::Get().FindInSectionStructArray(
+		FConfigManager::Get().FindInSectionStructArray(
 			*ValidSection,
 			"SuffixStandard",
 			"Suffix",
@@ -514,7 +514,7 @@ double FCustomStandardTexture2DData::GetStandardMaxSizeStrict()
 
 	if (SizeInStr)
 	{
-		return UConfigManager::Get().SToD(*SizeInStr);
+		return FConfigManager::Get().SToD(*SizeInStr);
 	}
 
 	return GetStandardMaxSize();
@@ -548,7 +548,7 @@ bool FCustomStandardTexture2DData::IsSuffixStandarized()
 	FString ValidSection = GetTextureVaidSection();
 
 	TArray<FString> ValidSuffixArray =
-		UConfigManager::Get().GenerateStructKeyValueArray(
+		FConfigManager::Get().GenerateStructKeyValueArray(
 			*ValidSection,
 			"SuffixStandard",
 			"Suffix");

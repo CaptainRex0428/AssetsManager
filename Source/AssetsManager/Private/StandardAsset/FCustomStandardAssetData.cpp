@@ -20,7 +20,7 @@ FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData, 
 	*/
 	FString GlobalSection = FPaths::Combine(ModuleConfigMaster, TEXT("Global"));
 
-	if(UConfigManager::Get().GetSection(*GlobalSection))
+	if(FConfigManager::Get().GetSection(*GlobalSection))
 	{
 		AssetConfigGlobalSection = MakeShareable(new FString(GlobalSection));
 	}
@@ -43,7 +43,7 @@ FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData, 
 	if (StandardClassName)
 	{
 		TSharedPtr<FString> StandardPrefixPtr =
-			UConfigManager::Get().FindInSectionStructArray(
+			FConfigManager::Get().FindInSectionStructArray(
 				**AssetConfigGlobalSection, 
 				"UClassPrefix",
 				"UClassName",
@@ -246,7 +246,7 @@ const TSharedPtr<FString> FCustomStandardAssetData::GetAssetStandardPrefix()
 	}
 
 	TSharedPtr<FString> PrefixFound = 
-		UConfigManager::Get().FindInSectionStructArray(
+		FConfigManager::Get().FindInSectionStructArray(
 		**AssetConfigGlobalSection,
 		"UClassPrefix",
 		"UClassName",
@@ -328,35 +328,35 @@ TArray<FString> FCustomStandardAssetData::GetValidCategoryTag(
 		
 		case FCustomStandardAssetData::Character:
 		{
-			TagValue = UConfigManager::Get().GetSectionValuesArray(
+			TagValue = FConfigManager::Get().GetSectionValuesArray(
 				**AssetConfigGlobalSection,
 				"CharacterCategoryTag");
 			break;
 		}
 		case FCustomStandardAssetData::Effect:
 		{
-			TagValue=UConfigManager::Get().GetSectionValuesArray(
+			TagValue=FConfigManager::Get().GetSectionValuesArray(
 				**AssetConfigGlobalSection,
 				"EffectCategoryTag");
 			break;
 		}
 		case FCustomStandardAssetData::Scene:
 		{
-			TagValue = UConfigManager::Get().GetSectionValuesArray(
+			TagValue = FConfigManager::Get().GetSectionValuesArray(
 				**AssetConfigGlobalSection,
 				"SceneCategoryTag");
 			break;
 		}
 		case FCustomStandardAssetData::UI:
 		{
-			TagValue = UConfigManager::Get().GetSectionValuesArray(
+			TagValue = FConfigManager::Get().GetSectionValuesArray(
 				**AssetConfigGlobalSection,
 				"UICategoryTag");
 			break;
 		}
 		case FCustomStandardAssetData::Hair:
 		{
-			TagValue = UConfigManager::Get().GetSectionValuesArray(
+			TagValue = FConfigManager::Get().GetSectionValuesArray(
 				**AssetConfigGlobalSection,
 				"HairCategoryTag");
 			break;
