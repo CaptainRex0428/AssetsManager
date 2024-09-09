@@ -411,9 +411,10 @@ TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetStandardLODGroup(
 		ValidSection = "/AssetsManager/Hair/Texture";
 		break;
 	}
-	case FCustomStandardAssetData::LastCatergory: 
+	case FCustomStandardAssetData::LastCatergory:
 	case FCustomStandardAssetData::Undefined:
 	default:
+		ValidSection = "/AssetsManager/Global/Texture";
 		break;
 	}
 
@@ -436,7 +437,7 @@ TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetStandardLODGroup(
 
 	if (*GetCompressionSettings() == TC_Normalmap)
 	{
-		return MakeShared<TextureGroup>(TEXTUREGROUP_WeaponNormalMap);
+		return MakeShared<TextureGroup>(TEXTUREGROUP_WorldNormalMap);
 	}
 
 	return MakeShared<TextureGroup>(TEXTUREGROUP_World);

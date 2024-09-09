@@ -763,6 +763,11 @@ void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
 	
 	for (const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
+		if (!AssetDPtr->GetAsset()->IsA<UTexture2D>())
+		{
+			continue;
+		}
+
 		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr, bStrictMode);
 
 		if (CustomStandardAsset.IsTextureMaxInGameOverSize())
@@ -785,6 +790,11 @@ void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 
 	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
+		if (!AssetDPtr->GetAsset()->IsA<UTexture2D>())
+		{
+			continue;
+		}
+
 		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr,bStrictMode);
 
 		if (CustomStandardAsset.IsTextureSourceOverSize())
@@ -868,6 +878,11 @@ void UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(
 
 	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
+		if (!AssetDPtr->GetAsset()->IsA<UTexture2D>())
+		{
+			continue;
+		}
+
 		FCustomStandardTexture2DData SAsset(*AssetDPtr);
 
 		if (!SAsset.IsTextureLODGroupStandarized())

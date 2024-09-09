@@ -998,6 +998,9 @@ FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 {
 	FCustomStandardSkeletalMeshData SKAsset(*ClickedAssetData);
 
+	NtfyMsg(FString::FromInt(SKAsset.GetLODVertexNum(0)));
+	NtfyMsg(FString::FromInt(SKAsset.GetLODTrianglesNum(0)));
+
 	return FReply::Handled();
 }
 
