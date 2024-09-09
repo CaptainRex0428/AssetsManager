@@ -10,8 +10,10 @@
 
 #include "AssetsChecker/AssetsChecker.h"
 
+#include "StandardAsset/FCustomStandardSkeletalMeshData.h"
 #include "StandardAsset/FCustomStandardTexture2DData.h"
 #include "StandardAsset/FCustomStandardAssetData.h"
+
 
 #include "ConfigManager.h"
 
@@ -994,6 +996,7 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetDebugButtonBox(
 FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
+	FCustomStandardSkeletalMeshData SKAsset(*ClickedAssetData);
 
 	return FReply::Handled();
 }
