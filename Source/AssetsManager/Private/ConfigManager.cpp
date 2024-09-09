@@ -208,5 +208,6 @@ UConfigManager::UConfigManager()
 	DefaultConfigPath(ASSETSMANAGER_CONFIGFOLDER + "AssetsManager.ini")
 {
 	GConfig->LoadFile(ConfigPath);
+	GConfig->NormalizeConfigIniPath(ConfigPath);
 	ConfigPath = FConfigCacheIni::NormalizeConfigIniPath(ConfigPath);
 }

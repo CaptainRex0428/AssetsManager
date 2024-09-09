@@ -3,7 +3,7 @@
 
 #include "StandardAsset/FCustomStandardAssetData.h"
 #include "AssetsChecker/AssetsChecker.h"
-#include "AssetsManagerConfig.h"
+#include "ConfigManager.h"
 #include "ManagerLogger.h"
 
 FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData, bool StrictCheckMode)
@@ -201,7 +201,7 @@ TSharedPtr<FString> FCustomStandardAssetData::GetAssetNameInfoByIndex(
 	return MakeShared<FString>(m_AssetNameInfoList[SearchIndex]);
 }
 
-const TSharedPtr<FString> FCustomStandardAssetData::GetAssetStandardPrefix() const
+const TSharedPtr<FString> FCustomStandardAssetData::GetAssetPrefix() const
 {
 	if(bHasStandardPrefix)
 	{
@@ -226,9 +226,39 @@ const uint32 FCustomStandardAssetData::GetAssetNameInfoCount() const
 	return m_AssetNameInfoList.Num();
 }
 
-bool FCustomStandardAssetData::IsStandardPrefix() const
+bool FCustomStandardAssetData::IsPrefixStandarized() const
 {
 	return bHasStandardPrefix;
+}
+
+const TSharedPtr<FString> FCustomStandardAssetData::GetAssetStandardPrefix()
+{
+	if (bHasStandardPrefix)
+	{
+		return GetAssetPrefix();
+	}
+
+	const FString * ClassFullName = UClassNameMap.Find(this->GetAsset()->GetClass());
+
+	if (!ClassFullName)
+	{
+		return nullptr;
+	}
+
+	TSharedPtr<FString> PrefixFound = 
+		UConfigManager::Get().FindInSectionStructArray(
+		**AssetConfigGlobalSection,
+		"UClassPrefix",
+		"UClassName",
+		*ClassFullName,
+		"Prefix");
+
+	if (!PrefixFound)
+	{
+		return nullptr;
+	}
+
+	return PrefixFound;
 }
 
 const FCustomStandardAssetData::Category& FCustomStandardAssetData::GetCommonAssetCategory()
@@ -251,7 +281,7 @@ const FCustomStandardAssetData::Category FCustomStandardAssetData::GetConfirmAss
 	return FCustomStandardAssetData::Undefined;
 }
 
-bool FCustomStandardAssetData::IsStandardCatogry()
+bool FCustomStandardAssetData::IsCatogryStandarized()
 {
 	return !(m_StrictAssetCategory == FCustomStandardAssetData::Undefined);
 }

@@ -28,7 +28,9 @@ public:
 		TextureCompressionSettings Setting,
 		FString DisplayName);
 
-	bool isTexture2D();
+	bool IsSuffixStandarized();
+
+	bool IsTexture2D();
 
 	bool IsTextureMaxInGameOverSize();
 	bool IsTextureSourceOverSize();
@@ -39,8 +41,23 @@ public:
 	double GetStandardMaxSize();
 	double GetStandardMaxSizeStrict();
 
+
 	TSharedPtr<TextureCompressionSettings> GetCompressionSettings();
+	TSharedPtr<TextureCompressionSettings> GetStandardCompressionSettings(bool forced = false);
 	CompressionSettingsInfo GetCompressionSettingsInfo() const;
+
+	TSharedPtr<bool> GetsRGBSettings();
+	TSharedPtr<bool> GetStandardsRGBSettings(bool forced = false);
+
+	bool IsTextureSettingsStandarized();
+
+	TSharedPtr<TextureGroup> GetLODGroup();
+	TSharedPtr<TextureGroup> GetStandardLODGroup(bool forced = false);
+
+	bool IsTextureLODGroupStandarized();
+
+protected:
+	FString GetTextureVaidSection();
 
 protected:
 

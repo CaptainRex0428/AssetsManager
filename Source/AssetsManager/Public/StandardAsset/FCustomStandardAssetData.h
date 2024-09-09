@@ -40,15 +40,17 @@ public:
 		const int32 & index,
 		bool bContainsInfoStartIndex = false);
 
-	const TSharedPtr<FString> GetAssetStandardPrefix() const;
+	const TSharedPtr<FString> GetAssetPrefix() const;
 	const TSharedPtr<FString> GetAssetSuffix();
 	const uint32 GetAssetNameInfoCount() const;
-	bool IsStandardPrefix() const;
+	
+	bool IsPrefixStandarized() const;
+	const TSharedPtr<FString> GetAssetStandardPrefix();
 
 	const FCustomStandardAssetData::Category& GetCommonAssetCategory();
 	const FCustomStandardAssetData::Category& GetStrictAssetCategory();
 	const FCustomStandardAssetData::Category GetConfirmAssetCategory();
-	bool IsStandardCatogry();
+	bool IsCatogryStandarized();
 
 private:
 	TArray<FString> SplitStringRecursive(
@@ -60,8 +62,7 @@ private:
 
 protected:
 	bool bStrictCheckMode;
-
-	bool bHasStandardPrefix;
+	
 	TArray<FString> m_AssetNameInfoList;
 
 	uint32 m_AssetNameInfoStartIndex;
@@ -73,7 +74,8 @@ protected:
 	TSharedPtr<FString> m_StrictAssetCategoryTag;
 
 	TSharedPtr<FString> AssetConfigGlobalSection;
-	
+
+	bool bHasStandardPrefix;
 };
 
 static const TMap<UClass*, FString> UClassNameMap =

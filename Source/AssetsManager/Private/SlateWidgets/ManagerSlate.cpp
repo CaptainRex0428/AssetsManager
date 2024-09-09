@@ -2,20 +2,22 @@
 
 #include "SlateWidgets/ManagerSlate.h"
 #include "SlateWidgets/SCustomTableRow.h"
-#include "AssetsManagerStyle.h"
-#include "ConfigManager.h"
 
+#include "ManagerLogger.h"
 
 #include "AssetsManager.h"
+#include "AssetsManagerStyle.h"
+
 #include "AssetsChecker/AssetsChecker.h"
-#include "ManagerLogger.h"
+
+#include "StandardAsset/FCustomStandardTexture2DData.h"
+#include "StandardAsset/FCustomStandardAssetData.h"
+
+#include "ConfigManager.h"
+
 #include "SlateBasics.h"
 
-#include "AssetsManagerConfig.h"
-
 #include "AssetRegistry/AssetRegistryModule.h"
-
-#include "StandardAsset/FCustomStandardAssetData.h"
 
 #include "EditorReimportHandler.h"
 
@@ -43,23 +45,6 @@
 
 #pragma region ClassFilterComboSourceItems
 #define CLASS_LISTALL TEXT("All")
-#define CLASS_BLUEPRINT TEXT("Blueprint")
-#define CLASS_STATICMESH TEXT("StaticMesh")
-#define CLASS_MATERIAL TEXT("Material")
-#define CLASS_MATERIALINSTSNCECONST TEXT("MaterialInstance")
-#define CLASS_MATERIALFUNCTION TEXT("MaterialFunction")
-#define CLASS_PARTICLESYSTEM TEXT("ParticleSystem")
-#define CLASS_SOUNDCUE TEXT("SoundCue")
-#define CLASS_SOUNDWAVE TEXT("SoundWave")
-#define CLASS_TEXTURE TEXT("Texture")
-#define CLASS_TEXTUREARRAY TEXT("TextureArray")
-#define CLASS_USERWIDGET TEXT("UserWidget")
-#define CLASS_SKELETALMESH TEXT("SkeletalMesh")
-#define CLASS_NIAGARASYSTEM TEXT("NiagaraSystem")
-#define CLASS_NIAGARAEMITTER TEXT("NiagaraEmitter")
-#define CLASS_ANIMATION TEXT("Animation")
-#define CLASS_ANIMATIONMONTAGE TEXT("AnimationMontage")
-#define CLASS_PHYSICSASSET TEXT("PhysicsAsset")
 #pragma endregion
 
 #pragma region UsageFilterComboSourceItems
@@ -113,25 +98,19 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	ClassFilterDefault = MakeShared<FString>(CLASS_LISTALL);
 	ClassFilterCurrent = ClassFilterDefault;
-	
 	ClassFilterComboSourceItems.Add(ClassFilterDefault);
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_BLUEPRINT));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_STATICMESH));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_MATERIAL));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_MATERIALINSTSNCECONST));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_MATERIALFUNCTION));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_PARTICLESYSTEM));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_SOUNDCUE));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_SOUNDWAVE));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_TEXTURE));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_TEXTUREARRAY));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_USERWIDGET));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_SKELETALMESH));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_NIAGARASYSTEM));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_NIAGARAEMITTER));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_ANIMATION));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_ANIMATIONMONTAGE));
-	ClassFilterComboSourceItems.Add(MakeShared<FString>(CLASS_PHYSICSASSET));
+
+	FString AssetGlobalSection = "/AssetsManager/Global";
+	TArray<FString> Keys = 
+	UConfigManager::Get().GenerateStructKeyValueArray(
+		*AssetGlobalSection,
+		"UClassPrefix",
+		"UClassName");
+
+	for (FString Key: Keys)
+	{
+		ClassFilterComboSourceItems.Add(MakeShared<FString>(Key));
+	}
 
 	UsageSelectedDefault = MakeShared<FString>(USAGE_NONE);
 	UsageSelectionMaxInGameSizeError = MakeShared<FString>(USAGE_MAXINGAMESIZEERROR);
@@ -878,9 +857,15 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureCompressionSetting
 
 	if (CompressionSettings.IsValid())
 	{
-		const FString ShowString = *TextureCompressionMap.Find(*CompressionSettings);
-		TSharedRef<STextBlock> TextureCompressionSettinsBox = ConstructNormalTextBlock(ShowString, FontInfo);
-		return TextureCompressionSettinsBox;
+		for (FCustomStandardTexture2DData::CompressionSettingsInfo CompressionConfig :ValidCompressionConfig)
+		{
+			if (*CompressionSettings == CompressionConfig.Setting)
+			{
+				const FString ShowString = CompressionConfig.DisplayName;
+				TSharedRef<STextBlock> TextureCompressionSettinsBox = ConstructNormalTextBlock(ShowString, FontInfo);
+				return TextureCompressionSettinsBox;
+			}
+		}
 	};
 
 	const FString ShowString = "";
@@ -1316,7 +1301,10 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleTextureLODGroupStandardFixB
 FReply SManagerSlateTab::OnSingleTextureLODGroupStandardFixButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	TSharedPtr<TextureGroup> STLODGroup = UAssetsChecker::EGetTextureLODStandardGroup(*ClickedAssetData,false);
+	FCustomStandardTexture2DData TAsset(*ClickedAssetData);
+
+	TSharedPtr<TextureGroup> STLODGroup =
+		TAsset.GetStandardLODGroup();
 
 	if (STLODGroup)
 	{
@@ -1605,8 +1593,10 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 	{
 		for (TSharedPtr<FAssetData> AssetData : AssetsList)
 		{
-			TSharedPtr<TextureGroup> STLODGroup = 
-				UAssetsChecker::EGetTextureLODStandardGroup(*AssetData, false);
+			FCustomStandardTexture2DData TAsset(*AssetData);
+
+			TSharedPtr<TextureGroup> STLODGroup =
+				TAsset.GetStandardLODGroup();
 
 			if (STLODGroup)
 			{
@@ -1933,12 +1923,9 @@ void SManagerSlateTab::ConstuctClassFilterList(
 
 		for (TSharedPtr<FAssetData>& AssetD : StoredAssetsData)
 		{
-			FString assetName = AssetD->GetClass()->GetName();
+			FString assetClassName = AssetD->GetClass()->GetName();
 
-			UClass* selectClass = *AssetFullNameMap.Find(*SelectedOption.Get());
-			FString selectName = selectClass->GetName();
-
-			if (assetName == selectName)
+			if (assetClassName == *SelectedOption.Get())
 			{
 				if (!NewAssetViewList.Contains(AssetD))
 				{
@@ -1984,8 +1971,8 @@ void SManagerSlateTab::OnClassFilterButtonChanged(
 			UsageSelectionTextureLODGroupError
 		};
 
-		if (*SelectedOption.Get() == CLASS_TEXTURE ||
-			*SelectedOption.Get() == CLASS_TEXTUREARRAY)
+		if (*SelectedOption.Get() == UTexture2D::StaticClass()->GetName() ||
+			*SelectedOption.Get() == UTexture2DArray::StaticClass()->GetName())
 		{
 			m_ClassCheckState = Texture;
 

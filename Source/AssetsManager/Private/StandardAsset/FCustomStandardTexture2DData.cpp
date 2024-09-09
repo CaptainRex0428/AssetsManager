@@ -2,7 +2,6 @@
 
 
 #include "StandardAsset/FCustomStandardTexture2DData.h"
-#include "AssetsManagerConfig.h"
 #include "ConfigManager.h"
 #include "ManagerLogger.h"
 
@@ -145,8 +144,6 @@ FCustomStandardTexture2DData::FCustomStandardTexture2DData(
 			this->MaxInGameSizeX = size.X;
 			this->MaxInGameSizeY = size.Y;
 		}
-
-		
 	}
 
 }
@@ -155,7 +152,7 @@ FCustomStandardTexture2DData::~FCustomStandardTexture2DData()
 {
 }
 
-bool FCustomStandardTexture2DData::isTexture2D()
+bool FCustomStandardTexture2DData::IsTexture2D()
 {
 	return bTexture2D;
 }
@@ -201,45 +198,296 @@ TSharedPtr<TextureCompressionSettings> FCustomStandardTexture2DData::GetCompress
 	return nullptr;
 }
 
+TSharedPtr<TextureCompressionSettings> FCustomStandardTexture2DData::GetStandardCompressionSettings(
+	bool forced)
+{
+	if (!bTexture2D)
+	{
+		return nullptr;
+	}
+
+	TSharedPtr<FString> suffix = GetAssetSuffix();
+
+	if (suffix.IsValid())
+	{
+		FString ValidSection = GetTextureVaidSection();
+
+		TSharedPtr<FString> DisplayCompression = UConfigManager::Get().FindInSectionStructArray(
+			*ValidSection,
+			"SuffixStandard",
+			"Suffix",
+			*suffix,
+			"CompressionSettings");
+
+		if (DisplayCompression.IsValid())
+		{
+			for (CompressionSettingsInfo info : ValidCompressionConfig)
+			{
+				if (info.ConfigName == *DisplayCompression)
+				{
+					return MakeShared<TextureCompressionSettings>(info.Setting);
+				}
+			}
+		}
+	}
+
+
+	if (forced)
+	{
+		if (*GetLODGroup() == TEXTUREGROUP_WorldNormalMap ||
+			*GetLODGroup() == TEXTUREGROUP_CharacterNormalMap ||
+			*GetLODGroup() == TEXTUREGROUP_WeaponNormalMap ||
+			*GetLODGroup() == TEXTUREGROUP_VehicleNormalMap)
+		{
+			return MakeShared<TextureCompressionSettings>(TC_Normalmap);
+		}
+
+		return MakeShared<TextureCompressionSettings>(TC_Default);
+	}
+
+	return nullptr;
+	
+}
+
 FCustomStandardTexture2DData::CompressionSettingsInfo 
 FCustomStandardTexture2DData::GetCompressionSettingsInfo() const
 {
 	return this->CompressionSettings;
 }
 
-double FCustomStandardTexture2DData::GetStandardMaxSize()
+TSharedPtr<bool> FCustomStandardTexture2DData::GetsRGBSettings()
 {
-	if(TextureCategoryStrictConfigSection.IsValid())
+	if (!bTexture2D)
 	{
-		const FConfigValue * value = UConfigManager::Get().GetSectionValue(
-			**TextureCategoryStrictConfigSection, "MaxSize");
+		return nullptr;
+	}
 
-		if(value)
+	UTexture2D* AssetT = Cast<UTexture2D>(this->GetAsset());
+
+	if (AssetT)
+	{
+		if (AssetT->SRGB)
 		{
-			return UConfigManager::Get().SToD(value->GetValue());
+			return MakeShared<bool>(true);
 		}
+
+		return MakeShared<bool>(false);
+	}
+
+	return nullptr;
+}
+
+TSharedPtr<bool> FCustomStandardTexture2DData::GetStandardsRGBSettings(
+	bool forced)
+{
+	if (!bTexture2D)
+	{
+		return nullptr;
+	}
+
+	TSharedPtr<FString> suffix = GetAssetSuffix();
+
+	if (suffix.IsValid())
+	{
+		FString ValidSection = GetTextureVaidSection();
+
+		TSharedPtr<FString> DisplaySRGB = UConfigManager::Get().FindInSectionStructArray(
+			*ValidSection,
+			"SuffixStandard",
+			"Suffix",
+			*suffix,
+			"sRGB");
+
+		if (DisplaySRGB.IsValid())
+		{
+			if (*DisplaySRGB == "1" || DisplaySRGB->ToLower() == "true")
+			{
+				return MakeShared<bool>(true);
+			}
+
+			if (*DisplaySRGB == "0" || DisplaySRGB->ToLower() == "false")
+			{
+				return MakeShared<bool>(false);
+			}
+		}
+	}
+
+	if(forced)
+	{
+		return MakeShared<bool>(false);
+	}
+
+	return nullptr;
+}
+
+bool FCustomStandardTexture2DData::IsTextureSettingsStandarized()
+{
+	if (!bTexture2D)
+	{
+		return false;
+	}
+
+	TSharedPtr<TextureCompressionSettings> CurrentCS = GetCompressionSettings();
+	TSharedPtr<TextureCompressionSettings> StandardCS = GetStandardCompressionSettings(true);
+
+	TSharedPtr<bool> CurrentSRGB = GetsRGBSettings();
+	TSharedPtr<bool> StandardSRGB = GetStandardsRGBSettings(true);
+
+	return *CurrentCS == *StandardCS && *CurrentSRGB == *StandardSRGB;
+
+}
+
+TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetLODGroup()
+{
+	if (!bTexture2D)
+	{
+		return nullptr;
+	}
+
+	UTexture2D* TAsset = Cast<UTexture2D>(this->GetAsset());
+
+	return MakeShared<TextureGroup>(TAsset->LODGroup);
+}
+
+TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetStandardLODGroup(
+	bool forced)
+{
+	if (!bTexture2D)
+	{
+		return nullptr;
+	}
+
+	TSharedPtr<FString> suffix = GetAssetSuffix();
+
+	if (suffix.IsValid())
+	{
+		FString ValidSection = GetTextureVaidSection();
+
+		TSharedPtr<FString> LODGroup = UConfigManager::Get().FindInSectionStructArray(
+			*ValidSection,
+			"SuffixStandard",
+			"Suffix",
+			*suffix,
+			"LODGroup");
+
+		if (LODGroup.IsValid())
+		{
+			const TextureGroup* TGFound = TextureGroupNameMap.Find(*LODGroup);
+			
+			if (TGFound)
+			{
+				return MakeShared<TextureGroup>(*TGFound);
+			}
+		}
+	}
+
+	FString ValidSection;
+
+	switch (m_StrictAssetCategory)
+	{
+	
+	case FCustomStandardAssetData::Character:
+	{
+		ValidSection = "/AssetsManager/Character/Texture";
+		break;
+	}
+	case FCustomStandardAssetData::Effect:
+	{
+		ValidSection = "/AssetsManager/Effect/Texture";
+		break;
+	}
+	case FCustomStandardAssetData::Scene:
+	{
+		ValidSection = "/AssetsManager/Scene/Texture";
+		break;
+	}
+	case FCustomStandardAssetData::UI:
+	{
+		ValidSection = "/AssetsManager/UI/Texture";
+		break;
+	}
+	case FCustomStandardAssetData::Hair:
+	{
+		ValidSection = "/AssetsManager/Hair/Texture";
+		break;
+	}
+	case FCustomStandardAssetData::LastCatergory: 
+	case FCustomStandardAssetData::Undefined:
+	default:
+		break;
+	}
+
+	TSharedPtr<FString> LODGroup = UConfigManager::Get().FindInSectionStructArray(
+		*ValidSection,
+		"SuffixStandard",
+		"Suffix",
+		*suffix,
+		"LODGroup");
+
+	if (LODGroup.IsValid())
+	{
+		const TextureGroup* TGFound = TextureGroupNameMap.Find(*LODGroup);
+
+		if (TGFound)
+		{
+			return MakeShared<TextureGroup>(*TGFound);
+		}
+	}
+
+	if (*GetCompressionSettings() == TC_Normalmap)
+	{
+		return MakeShared<TextureGroup>(TEXTUREGROUP_WeaponNormalMap);
+	}
+
+	return MakeShared<TextureGroup>(TEXTUREGROUP_World);
+	
+}
+
+bool FCustomStandardTexture2DData::IsTextureLODGroupStandarized()
+{
+	if (!bTexture2D)
+	{
+		return false;
+	}
+
+	TSharedPtr<TextureGroup> CurrentTG = GetLODGroup();
+	TSharedPtr<TextureGroup> StandardTG = GetStandardLODGroup(true);
+
+	return *CurrentTG == *StandardTG;
+}
+
+FString FCustomStandardTexture2DData::GetTextureVaidSection()
+{
+	FString ValidSection = "/AssetsManager/Global/Texture";
+
+	if (TextureGlobalConfigSection.IsValid())
+	{
+		ValidSection = *TextureGlobalConfigSection;
 	}
 
 	if (TextureCategoryCommonConfigSection.IsValid())
 	{
-		const FConfigValue* value = UConfigManager::Get().GetSectionValue(
-			**TextureCategoryCommonConfigSection, "MaxSize");
-
-		if (value)
-		{
-			return UConfigManager::Get().SToD(value->GetValue());
-		}
+		ValidSection = *TextureCategoryCommonConfigSection;
 	}
 
-	if (TextureGlobalConfigSection.IsValid())
+	if (TextureCategoryStrictConfigSection.IsValid())
 	{
-		const FConfigValue* value = UConfigManager::Get().GetSectionValue(
-			**TextureGlobalConfigSection, "MaxSize");
+		ValidSection = *TextureCategoryStrictConfigSection;
+	}
 
-		if (value)
-		{
-			return UConfigManager::Get().SToD(value->GetValue());
-		}
+	return ValidSection;
+}
+
+double FCustomStandardTexture2DData::GetStandardMaxSize()
+{
+	FString ValidSection = GetTextureVaidSection();
+
+	const FConfigValue* value = UConfigManager::Get().GetSectionValue(
+		*ValidSection, "MaxSize");
+
+	if (value)
+	{
+		return UConfigManager::Get().SToD(value->GetValue());
 	}
 
 	return 2048.f;
@@ -254,52 +502,19 @@ double FCustomStandardTexture2DData::GetStandardMaxSizeStrict()
 		return GetStandardMaxSize();
 	}
 
-	if (TextureCategoryStrictConfigSection.IsValid())
-	{
-		TSharedPtr<FString> SizeInStr =
+	FString ValidSection = GetTextureVaidSection();
+
+	TSharedPtr<FString> SizeInStr =
 		UConfigManager::Get().FindInSectionStructArray(
-			**TextureCategoryStrictConfigSection,
+			*ValidSection,
 			"SuffixStandard",
 			"Suffix",
 			*suffixCurrent,
 			"MaxSize");
 
-		if(SizeInStr)
-		{
-			return UConfigManager::Get().SToD(*SizeInStr);
-		}
-	}
-
-	if (TextureCategoryCommonConfigSection.IsValid())
+	if (SizeInStr)
 	{
-		TSharedPtr<FString> SizeInStr =
-			UConfigManager::Get().FindInSectionStructArray(
-				**TextureCategoryCommonConfigSection,
-				"SuffixStandard",
-				"Suffix",
-				*suffixCurrent,
-				"MaxSize");
-
-		if (SizeInStr)
-		{
-			return UConfigManager::Get().SToD(*SizeInStr);
-		}
-	}
-	
-	if (TextureGlobalConfigSection.IsValid())
-	{
-		TSharedPtr<FString> SizeInStr =
-			UConfigManager::Get().FindInSectionStructArray(
-				**TextureGlobalConfigSection,
-				"SuffixStandard",
-				"Suffix",
-				*suffixCurrent,
-				"MaxSize");
-
-		if (SizeInStr)
-		{
-			return UConfigManager::Get().SToD(*SizeInStr);
-		}
+		return UConfigManager::Get().SToD(*SizeInStr);
 	}
 
 	return GetStandardMaxSize();
@@ -318,4 +533,30 @@ FCustomStandardTexture2DData::ConstructCompressionConfigPairs(
 	Info.DisplayName = DisplayName;
 	
 	return Info;
+}
+
+bool FCustomStandardTexture2DData::IsSuffixStandarized()
+{
+
+	TSharedPtr<FString> suffix = GetAssetSuffix();
+
+	if (!suffix.IsValid())
+	{
+		return false;
+	}
+
+	FString ValidSection = GetTextureVaidSection();
+
+	TArray<FString> ValidSuffixArray =
+		UConfigManager::Get().GenerateStructKeyValueArray(
+			*ValidSection,
+			"SuffixStandard",
+			"Suffix");
+
+	if (ValidSuffixArray.Contains(*suffix))
+	{
+		return true;
+	}
+
+	return false;
 }

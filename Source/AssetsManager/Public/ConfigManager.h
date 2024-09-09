@@ -4,9 +4,19 @@
 #include "Misc/ConfigCacheIni.h"
 #include "StandardAsset/FStructLikeString.h"
 
+#define ModuleLanguage_ZH 1
+
+#if ModuleLanguage_ZH
+#define ZH_CN
+#else
+#define EN
+#endif
+
 #define VNAME(value) (#value)
 
 #define ModuleConfigMaster TEXT("/AssetsManager")
+
+#define ASSETSMANAGER_LOGFOLDER FPaths::ProjectDir() + "/Saved/AssetsManager/"
 
 #define ASSETSMANAGER_CONFIGFOLDER FPaths::ProjectDir() + "/Plugins/AssetsManager/Config/"
 
