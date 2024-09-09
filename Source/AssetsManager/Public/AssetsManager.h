@@ -4,7 +4,7 @@
 
 #include "Modules/ModuleManager.h"
 
-#include "AssetsManagerConfig.h"
+#include "ConfigManager.h"
 
 
 

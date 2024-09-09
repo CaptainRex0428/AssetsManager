@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "SlateWidgets/SCommonSlate.h"
 #include "SlateWidgets/TCustomSlateDelegates.h"
-#include "AssetsManagerConfig.h"
+#include "ConfigManager.h"
 
 /**
  * 
