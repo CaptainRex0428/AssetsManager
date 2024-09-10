@@ -2,6 +2,7 @@
 
 #include "SlateWidgets/ManagerSlate.h"
 #include "SlateWidgets/SCustomTableRow.h"
+#include "SlateWidgets/BatchRenameSlate.h"
 
 #include "ManagerLogger.h"
 
@@ -86,6 +87,8 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	this->bTextureSizeCheckStrictMode = false;
 	this->bTextureSizeCheckStrictCheckBoxConstructed = false;
 
+	RegistryTab();
+
 	m_ClassCheckState = DefaultClassCheckState;
 	m_UsageCheckState = DefaultUsageCheckState;
 
@@ -132,6 +135,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	ConstructFixSelectedButton();
 	ConstructFixUpRedirectorButton();
 	ConstructOutputViewListInfoButton();
+	ConstructBatchRenameButton();
 
 	ConstructDynamicHandleAllBox();
 
@@ -240,6 +244,22 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	];
 
+}
+
+void SManagerSlateTab::RegistryTab()
+{
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
+		FName(TABNAME_BATCHRENAME),
+		FOnSpawnTab::CreateRaw(this, &SManagerSlateTab::OnSpawnBatchRenameTab))
+		.SetDisplayName(FText::FromString(TEXT(TABNAME_BATCHRENAME)))
+		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleName(), "ContentBrowser.AssetsManager"));
+}
+
+TSharedRef<SDockTab> SManagerSlateTab::OnSpawnBatchRenameTab(const FSpawnTabArgs& SpawnTabArgs)
+{
+	return SNew(SDockTab).TabRole(ETabRole::NomadTab)[
+		SNew(SBatchRename<TSharedPtr<FAssetData>>)
+		.ItemIn(this->CustomTableList->GetSelectedItems())];
 }
 
 void SManagerSlateTab::SListViewRemoveAssetData(
@@ -1369,6 +1389,18 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllBox()
 	this->BatchHandleBox->AddSlot()
 		.AutoHeight()
 		[
+			SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.FillWidth(.35f)
+				.Padding(5.f)
+				[
+					this->BatchRenameButton.ToSharedRef()
+				]
+		];
+
+	this->BatchHandleBox->AddSlot()
+		.AutoHeight()
+		[
 			this->DynamicHandleAllBox.ToSharedRef()
 		];
 
@@ -1800,6 +1832,36 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 #endif
 	;	return FReply::Handled();
 	
+}
+
+TSharedRef<SButton> SManagerSlateTab::ConstructBatchRenameButton()
+{
+	this->BatchRenameButton =
+		SNew(SButton)
+		.OnClicked(this, &SManagerSlateTab::OnBatchRenameButtonClicked)
+		.ContentPadding(FMargin(5.f));
+
+#ifdef ZH_CN
+	this->BatchRenameButton->SetContent(ConstructTextForButtons(TEXT("批量重命名已选择的资产")));
+#else
+	this->BatchRenameButton->SetContent(ConstructTextForButtons(TEXT("-- Batch Rename Selected Assets --")));
+#endif
+
+	return this->BatchRenameButton.ToSharedRef();
+}
+
+FReply SManagerSlateTab::OnBatchRenameButtonClicked()
+{
+	auto a = FGlobalTabmanager::Get()->TryInvokeTab(FName(TABNAME_BATCHRENAME));
+
+	EAppReturnType::Type result = DlgMsg(EAppMsgType::YesNo, "Close?");
+
+	if (result == EAppReturnType::Yes)
+	{
+		a->RequestCloseTab();
+	}
+
+	return FReply::Handled();
 }
 
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDropDownMenuBox()

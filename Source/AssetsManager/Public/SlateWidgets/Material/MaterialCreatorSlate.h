@@ -2,7 +2,7 @@
 
 #pragma once
 
-#define CONTENTFOLDERMATERIALCREATORTABNAME "MatrialCreator"
+#define CONTENTFOLDER_MATERIALCREATORTAB_NAME "MatrialCreator"
 
 #include "SlateWidgets/SCommonSlate.h"
 
