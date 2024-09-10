@@ -257,9 +257,12 @@ void SManagerSlateTab::RegistryTab()
 
 TSharedRef<SDockTab> SManagerSlateTab::OnSpawnBatchRenameTab(const FSpawnTabArgs& SpawnTabArgs)
 {
-	return SNew(SDockTab).TabRole(ETabRole::NomadTab)[
-		SNew(SBatchRename<TSharedPtr<FAssetData>>)
-		.ItemIn(this->CustomTableList->GetSelectedItems())];
+	return SNew(SDockTab)
+		.TabRole(ETabRole::NomadTab)
+		[
+			SNew(SBatchRename<TSharedPtr<FAssetData>>)
+				.ItemIn(this->CustomTableList->GetSelectedItems())
+		];
 }
 
 void SManagerSlateTab::SListViewRemoveAssetData(
@@ -301,6 +304,8 @@ void SManagerSlateTab::OnRowMouseButtonDoubleClicked(
 void SManagerSlateTab::RefreshAssetsListView(
 	bool bRefreshTableHeader)
 {
+	NtfyMsgLog("Refreshed");
+
 	if (bRefreshTableHeader) ConstructHeaderRow();
 
 	if (CustomTableList.IsValid())
@@ -1852,13 +1857,20 @@ TSharedRef<SButton> SManagerSlateTab::ConstructBatchRenameButton()
 
 FReply SManagerSlateTab::OnBatchRenameButtonClicked()
 {
-	auto a = FGlobalTabmanager::Get()->TryInvokeTab(FName(TABNAME_BATCHRENAME));
+	TSharedPtr<SDockTab> DockerGenerated = FGlobalTabmanager::Get()->TryInvokeTab(FName(TABNAME_BATCHRENAME));
+
+	DockerGenerated->SetOnTabClosed(SDockTab::FOnTabClosedCallback::CreateLambda(
+		[this](TSharedRef<SDockTab>)
+		{ 
+			RefreshAssetsListView(false);
+		}
+	));
 
 	EAppReturnType::Type result = DlgMsg(EAppMsgType::YesNo, "Close?");
 
 	if (result == EAppReturnType::Yes)
 	{
-		a->RequestCloseTab();
+		DockerGenerated->RequestCloseTab();
 	}
 
 	return FReply::Handled();

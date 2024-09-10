@@ -45,8 +45,6 @@ public:
 
 	void RegistryTab();
 
-	TSharedRef<SDockTab> OnSpawnBatchRenameTab(const FSpawnTabArgs& SpawnTabArgs);
-
 private:
 
 #pragma region ManagerSlateStateData
@@ -326,6 +324,8 @@ private:
 #pragma endregion
 
 #pragma region BatchRename
+	TSharedRef<SDockTab> OnSpawnBatchRenameTab(const FSpawnTabArgs& SpawnTabArgs);
+
 	TSharedPtr<SButton> BatchRenameButton;
 	TSharedRef<SButton> ConstructBatchRenameButton();
 	FReply OnBatchRenameButtonClicked();
