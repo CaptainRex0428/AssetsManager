@@ -823,7 +823,16 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetClassRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
-	const FString DisplayAssetClass = AssetDataToDisplay->GetClass()->GetName();
+	FString DisplayAssetClass;
+
+	if(AssetDataToDisplay->GetClass())
+	{
+		DisplayAssetClass = AssetDataToDisplay->GetClass()->GetName();
+	}
+	else
+	{
+		DisplayAssetClass = "[Undefined]";
+	}
 
 	TSharedRef<STextBlock> AssetClassBox = ConstructNormalTextBlock(DisplayAssetClass,FontInfo);
 	return AssetClassBox;
@@ -1917,11 +1926,20 @@ void SManagerSlateTab::ConstuctClassFilterList(
 	{
 		TArray<TSharedPtr<FAssetData>> NewAssetViewList;
 
-		for (TSharedPtr<FAssetData>& AssetD : StoredAssetsData)
+		for (const TSharedPtr<FAssetData>& AssetD : StoredAssetsData)
 		{
-			FString assetClassName = AssetD->GetClass()->GetName();
+			FString DisplayAssetClass;
 
-			if (assetClassName == *SelectedOption.Get())
+			if (AssetD->GetClass())
+			{
+				DisplayAssetClass = AssetD->GetClass()->GetName();
+			}
+			else
+			{
+				DisplayAssetClass = "[Undefined]";
+			}
+
+			if (DisplayAssetClass == *SelectedOption.Get())
 			{
 				if (!NewAssetViewList.Contains(AssetD))
 				{
