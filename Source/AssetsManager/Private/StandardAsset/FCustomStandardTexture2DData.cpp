@@ -379,59 +379,18 @@ TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetStandardLODGroup(
 				return MakeShared<TextureGroup>(*TGFound);
 			}
 		}
-	}
 
-	FString ValidSection;
+		const FConfigValue* CommonLODGroup = 
+			FConfigManager::Get().GetSectionValue(*ValidSection, "DefaultLODGroup");
 
-	switch (m_StrictAssetCategory)
-	{
-	
-	case FCustomStandardAssetData::Character:
-	{
-		ValidSection = "/AssetsManager/Character/Texture";
-		break;
-	}
-	case FCustomStandardAssetData::Effect:
-	{
-		ValidSection = "/AssetsManager/Effect/Texture";
-		break;
-	}
-	case FCustomStandardAssetData::Scene:
-	{
-		ValidSection = "/AssetsManager/Scene/Texture";
-		break;
-	}
-	case FCustomStandardAssetData::UI:
-	{
-		ValidSection = "/AssetsManager/UI/Texture";
-		break;
-	}
-	case FCustomStandardAssetData::Hair:
-	{
-		ValidSection = "/AssetsManager/Hair/Texture";
-		break;
-	}
-	case FCustomStandardAssetData::LastCatergory:
-	case FCustomStandardAssetData::Undefined:
-	default:
-		ValidSection = "/AssetsManager/Global/Texture";
-		break;
-	}
-
-	TSharedPtr<FString> LODGroup = FConfigManager::Get().FindInSectionStructArray(
-		*ValidSection,
-		"SuffixStandard",
-		"Suffix",
-		*suffix,
-		"LODGroup");
-
-	if (LODGroup.IsValid())
-	{
-		const TextureGroup* TGFound = TextureGroupNameMap.Find(*LODGroup);
-
-		if (TGFound)
+		if (CommonLODGroup)
 		{
-			return MakeShared<TextureGroup>(*TGFound);
+			const TextureGroup* TGFound = TextureGroupNameMap.Find(*CommonLODGroup->GetValue());
+
+			if (TGFound)
+			{
+				return MakeShared<TextureGroup>(*TGFound);
+			}
 		}
 	}
 
