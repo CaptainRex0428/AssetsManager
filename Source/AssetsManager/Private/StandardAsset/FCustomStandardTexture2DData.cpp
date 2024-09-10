@@ -381,7 +381,8 @@ TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetStandardLODGroup(
 		}
 
 		const FConfigValue* CommonLODGroup = 
-			FConfigManager::Get().GetSectionValue(*ValidSection, "DefaultLODGroup");
+			FConfigManager::Get().GetSectionValue(*ValidSection, 
+				*GetCompressionSettings() == TC_Normalmap?"DefaultNormalLODGroup" : "DefaultLODGroup");
 
 		if (CommonLODGroup)
 		{
@@ -394,12 +395,8 @@ TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetStandardLODGroup(
 		}
 	}
 
-	if (*GetCompressionSettings() == TC_Normalmap)
-	{
-		return MakeShared<TextureGroup>(TEXTUREGROUP_WorldNormalMap);
-	}
-
-	return MakeShared<TextureGroup>(TEXTUREGROUP_World);
+	return MakeShared<TextureGroup>(*GetCompressionSettings() == TC_Normalmap ? 
+		TEXTUREGROUP_WorldNormalMap : TEXTUREGROUP_World);
 	
 }
 
