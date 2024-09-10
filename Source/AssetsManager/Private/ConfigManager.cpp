@@ -5,40 +5,40 @@
 
 #include "ManagerLogger.h"
 
-UConfigManager& UConfigManager::Get()
+FConfigManager& FConfigManager::Get()
 {
-	static UConfigManager instance;
+	static FConfigManager instance;
 	return instance;
 }
 
-double UConfigManager::SToD(const FString& string)
+double FConfigManager::SToD(const FString& string)
 {
 	return FCString::Atod(*string);
 }
 
-float UConfigManager::SToF(const FString& string)
+float FConfigManager::SToF(const FString& string)
 {
 	return FCString::Atof(*string);
 }
 
-int UConfigManager::SToI(const FString& string)
+int FConfigManager::SToI(const FString& string)
 {
 	return FCString::Atoi(*string);
 }
 
-void UConfigManager::SetConfigPath(
+void FConfigManager::SetConfigPath(
 	const FString& FilePath)
 {
 	this->ConfigPath = FilePath;
 	ConfigPath = FConfigCacheIni::NormalizeConfigIniPath(ConfigPath);
 }
 
-void UConfigManager::SetConfigDefault()
+void FConfigManager::SetConfigDefault()
 {
 	SetConfigPath(DefaultConfigPath);
 }
 
-TArray<FString> UConfigManager::GetConfigsFullPath()
+TArray<FString> FConfigManager::GetConfigsFullPath()
 {
 	TArray<FString> PathArray;
 	
@@ -51,7 +51,7 @@ TArray<FString> UConfigManager::GetConfigsFullPath()
 	return PathArray;
 }
 
-TArray<FString> UConfigManager::GetConfigsFileName()
+TArray<FString> FConfigManager::GetConfigsFileName()
 {
 	TArray<FString> FileNameArray;
 	TArray<FString> FilePathArray = GetConfigsFullPath();
@@ -64,7 +64,7 @@ TArray<FString> UConfigManager::GetConfigsFileName()
 	return FileNameArray;
 }
 
-const FConfigSection* UConfigManager::GetSection(
+const FConfigSection* FConfigManager::GetSection(
 	const TCHAR* SectionTag)
 { 
 	GConfig->LoadFile(ConfigPath);
@@ -75,7 +75,7 @@ const FConfigSection* UConfigManager::GetSection(
 	return section;
 }
 
-const FName * UConfigManager::GetSectionKey(
+const FName * FConfigManager::GetSectionKey(
 	const TCHAR* SectionTag, 
 	const FConfigValue& ValueTag)
 {
@@ -89,7 +89,7 @@ const FName * UConfigManager::GetSectionKey(
 	return section->FindKey(ValueTag);
 }
 
-const FConfigValue* UConfigManager::GetSectionValue(
+const FConfigValue* FConfigManager::GetSectionValue(
 	const TCHAR* SectionTag,
 	const FName& KeyTag)
 {
@@ -103,7 +103,7 @@ const FConfigValue* UConfigManager::GetSectionValue(
 	return section->Find(KeyTag);
 }
 
-TArray<FConfigValue> UConfigManager::GetSectionValuesArray(
+TArray<FConfigValue> FConfigManager::GetSectionValuesArray(
 	const TCHAR* SectionTag, 
 	const FName& KeyTag)
 {
@@ -124,7 +124,7 @@ TArray<FConfigValue> UConfigManager::GetSectionValuesArray(
 	return OutArr;
 }
 
-TArray<FString> UConfigManager::GenerateStructKeyValueArray(
+TArray<FString> FConfigManager::GenerateStructKeyValueArray(
 	const TCHAR* SectionTag,
 	const FName& ArrayKeyTag,
 	const FString& SearchKey)
@@ -159,7 +159,7 @@ TArray<FString> UConfigManager::GenerateStructKeyValueArray(
 }
 	
 
-TSharedPtr<FString> UConfigManager::FindInSectionStructArray(
+TSharedPtr<FString> FConfigManager::FindInSectionStructArray(
 	const TCHAR* SectionTag, 
 	const FName& ArrayKeyTag, 
 	const FString& SearchKey, 
@@ -203,7 +203,7 @@ TSharedPtr<FString> UConfigManager::FindInSectionStructArray(
 	return nullptr;
 }
 
-UConfigManager::UConfigManager()
+FConfigManager::FConfigManager()
 	:ConfigPath(ASSETSMANAGER_CONFIGFOLDER + "AssetsManager.ini"),
 	DefaultConfigPath(ASSETSMANAGER_CONFIGFOLDER + "AssetsManager.ini")
 {

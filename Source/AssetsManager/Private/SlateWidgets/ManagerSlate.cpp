@@ -10,8 +10,10 @@
 
 #include "AssetsChecker/AssetsChecker.h"
 
+#include "StandardAsset/FCustomStandardSkeletalMeshData.h"
 #include "StandardAsset/FCustomStandardTexture2DData.h"
 #include "StandardAsset/FCustomStandardAssetData.h"
+
 
 #include "ConfigManager.h"
 
@@ -102,7 +104,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	FString AssetGlobalSection = "/AssetsManager/Global";
 	TArray<FString> Keys = 
-	UConfigManager::Get().GenerateStructKeyValueArray(
+	FConfigManager::Get().GenerateStructKeyValueArray(
 		*AssetGlobalSection,
 		"UClassPrefix",
 		"UClassName");
@@ -821,7 +823,16 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetClassRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
-	const FString DisplayAssetClass = AssetDataToDisplay->GetClass()->GetName();
+	FString DisplayAssetClass;
+
+	if(AssetDataToDisplay->GetClass())
+	{
+		DisplayAssetClass = AssetDataToDisplay->GetClass()->GetName();
+	}
+	else
+	{
+		DisplayAssetClass = "[Undefined]";
+	}
 
 	TSharedRef<STextBlock> AssetClassBox = ConstructNormalTextBlock(DisplayAssetClass,FontInfo);
 	return AssetClassBox;
@@ -994,16 +1005,13 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetDebugButtonBox(
 FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	FString a = "2048.0";
-
-	if (a.IsNumeric())
+	FCustomStandardTexture2DData TAsset(*ClickedAssetData);
+	
+	if (TAsset.IsTexture2D())
 	{
-		NtfyMsg("Yes");
+		NtfyMsg(TAsset.GetTextureVaidSection());
 	}
-	else
-	{
-		NtfyMsg("No");
-	}
+	
 
 	return FReply::Handled();
 }
@@ -1921,11 +1929,20 @@ void SManagerSlateTab::ConstuctClassFilterList(
 	{
 		TArray<TSharedPtr<FAssetData>> NewAssetViewList;
 
-		for (TSharedPtr<FAssetData>& AssetD : StoredAssetsData)
+		for (const TSharedPtr<FAssetData>& AssetD : StoredAssetsData)
 		{
-			FString assetClassName = AssetD->GetClass()->GetName();
+			FString DisplayAssetClass;
 
-			if (assetClassName == *SelectedOption.Get())
+			if (AssetD->GetClass())
+			{
+				DisplayAssetClass = AssetD->GetClass()->GetName();
+			}
+			else
+			{
+				DisplayAssetClass = "[Undefined]";
+			}
+
+			if (DisplayAssetClass == *SelectedOption.Get())
 			{
 				if (!NewAssetViewList.Contains(AssetD))
 				{
