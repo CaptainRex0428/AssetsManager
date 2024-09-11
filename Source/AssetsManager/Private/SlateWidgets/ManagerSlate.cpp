@@ -262,7 +262,13 @@ TSharedRef<SDockTab> SManagerSlateTab::OnSpawnBatchRenameTab(const FSpawnTabArgs
 		[
 			SNew(SBatchRename<TSharedPtr<FAssetData>>)
 				.ItemIn(this->CustomTableList->GetSelectedItems())
+				.OnApply(this,&SManagerSlateTab::OnBatchRenameApply)
 		];
+}
+
+void SManagerSlateTab::OnBatchRenameApply()
+{
+	NtfyMsg("CloseSomething");
 }
 
 void SManagerSlateTab::SListViewRemoveAssetData(

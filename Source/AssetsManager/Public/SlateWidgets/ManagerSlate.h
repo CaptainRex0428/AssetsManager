@@ -325,6 +325,7 @@ private:
 
 #pragma region BatchRename
 	TSharedRef<SDockTab> OnSpawnBatchRenameTab(const FSpawnTabArgs& SpawnTabArgs);
+	void OnBatchRenameApply();
 
 	TSharedPtr<SButton> BatchRenameButton;
 	TSharedRef<SButton> ConstructBatchRenameButton();

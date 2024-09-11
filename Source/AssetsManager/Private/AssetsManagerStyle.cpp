@@ -83,5 +83,9 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
 		"ContentBrowser.MaterialCreatorTitle",
 		new FSlateImageBrush(IconDirectory / "MaterialBar.png", TitleBar));
 
+	CustomStyleSet->Set(
+		"ContentBrowser.BatchRenameTile",
+		new FSlateImageBrush(IconDirectory / "BatchRenameBar.png", TitleBar));
+
 	return CustomStyleSet;
 }
