@@ -19,6 +19,7 @@
 #include "PhysicsEngine/PhysicsAsset.h"
 
 #define VNAME_STRUCT(value) VNAME(value),value
+#define VCLASSNAME_STRUCT(value) value,value->GetName()
 
 /**
  * 
@@ -80,22 +81,23 @@ protected:
 
 static const TMap<UClass*, FString> UClassNameMap =
 {
-	{UBlueprint::StaticClass(),UBlueprint::StaticClass()->GetName()},
-	{UStaticMesh::StaticClass(),UStaticMesh::StaticClass()->GetName()},
-	{UMaterial::StaticClass(),UMaterial::StaticClass()->GetName()},
-	{UMaterialInstanceConstant::StaticClass(),UMaterialInstanceConstant::StaticClass()->GetName()},
-	{UMaterialFunctionInterface::StaticClass(),UMaterialFunctionInterface::StaticClass()->GetName()},
-	{UParticleSystem::StaticClass(),UParticleSystem::StaticClass()->GetName()},
-	{USoundCue::StaticClass(),USoundCue::StaticClass()->GetName()},
-	{USoundWave::StaticClass(),USoundWave::StaticClass()->GetName()},
-	{UTexture2D::StaticClass(),UTexture2D::StaticClass()->GetName()},
-	{UTexture2DArray::StaticClass(),UTexture2DArray::StaticClass()->GetName()},
-	{UUserWidget::StaticClass(),UUserWidget::StaticClass()->GetName()},
-	{USkeletalMesh::StaticClass(),USkeletalMesh::StaticClass()->GetName()},
-	{UNiagaraSystem::StaticClass(),UNiagaraSystem::StaticClass()->GetName()},
-	{UNiagaraEmitter::StaticClass(),UNiagaraEmitter::StaticClass()->GetName()},
-	{UAnimSequence::StaticClass(),UAnimSequence::StaticClass()->GetName()},
-	{UAnimMontage::StaticClass(),UAnimMontage::StaticClass()->GetName()},
-	{UPhysicsAsset::StaticClass(),UPhysicsAsset::StaticClass()->GetName()}
+	{VCLASSNAME_STRUCT(UBlueprint::StaticClass())},
+	{VCLASSNAME_STRUCT(UStaticMesh::StaticClass())},
+	{VCLASSNAME_STRUCT(UMaterial::StaticClass())},
+	{VCLASSNAME_STRUCT(UMaterialInstanceConstant::StaticClass())},
+	{VCLASSNAME_STRUCT(UMaterialFunctionInterface::StaticClass())},
+	{VCLASSNAME_STRUCT(UMaterialFunction::StaticClass())},
+	{VCLASSNAME_STRUCT(UParticleSystem::StaticClass())},
+	{VCLASSNAME_STRUCT(USoundCue::StaticClass())},
+	{VCLASSNAME_STRUCT(USoundWave::StaticClass())},
+	{VCLASSNAME_STRUCT(UTexture2D::StaticClass())},
+	{VCLASSNAME_STRUCT(UTexture2DArray::StaticClass())},
+	{VCLASSNAME_STRUCT(UUserWidget::StaticClass())},
+	{VCLASSNAME_STRUCT(USkeletalMesh::StaticClass())},
+	{VCLASSNAME_STRUCT(UNiagaraSystem::StaticClass())},
+	{VCLASSNAME_STRUCT(UNiagaraEmitter::StaticClass())},
+	{VCLASSNAME_STRUCT(UAnimSequence::StaticClass())},
+	{VCLASSNAME_STRUCT(UAnimMontage::StaticClass())},
+	{VCLASSNAME_STRUCT(UPhysicsAsset::StaticClass())}
 
 };

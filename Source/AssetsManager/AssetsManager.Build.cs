@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
+using UnrealBuildTool.Rules;
 
 public class AssetsManager : ModuleRules
 {
@@ -10,8 +11,8 @@ public class AssetsManager : ModuleRules
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
-				// ... add public include paths required here ...
-			}
+                System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "/Source/Developer/SkeletalMeshUtilitiesCommon/Public",
+            }
 			);
 				
 		
@@ -39,7 +40,8 @@ public class AssetsManager : ModuleRules
                 "AssetTools",
                 "ContentBrowser",
 				"InputCore",
-				"Projects"
+				"Projects",
+                "SkeletalMeshUtilitiesCommon"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

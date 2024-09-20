@@ -2,7 +2,21 @@
 
 
 #include "StandardAsset/FCustomStandardSkeletalMeshData.h"
+
+#include "ManagerLogger.h"
+
+#include "LODUtilities.h"
+
+#include "Engine/RendererSettings.h"
+#include "Engine/SkinnedAssetCommon.h"
+#include "Engine/SkinnedAssetAsyncCompileUtils.h"
 #include "Rendering/SkeletalMeshModel.h"
+#include "Rendering/SkeletalMeshRenderData.h"
+
+#include "Factories/FbxSkeletalMeshImportData.h"
+
+#include "EditorUtilityLibrary.h"
+#include "EditorAssetLibrary.h"
 
 FCustomStandardSkeletalMeshData::FCustomStandardSkeletalMeshData(FAssetData& AssetData)
 	:FCustomStandardAssetData(AssetData)
@@ -17,6 +31,23 @@ FCustomStandardSkeletalMeshData::FCustomStandardSkeletalMeshData(FAssetData& Ass
 
 FCustomStandardSkeletalMeshData::~FCustomStandardSkeletalMeshData()
 {
+}
+
+bool FCustomStandardSkeletalMeshData::IsSkeletalMesh() const
+{
+	return bSkeletalMesh;
+}
+
+bool FCustomStandardSkeletalMeshData::HasLODMeshDescription(int32 LODIdx)
+{
+	if(!bSkeletalMesh)
+	{
+		return false;
+	}
+
+	USkeletalMesh* SKAsset = Cast<USkeletalMesh>(this->GetAsset());
+
+	return SKAsset->HasMeshDescription(LODIdx);
 }
 
 int32 FCustomStandardSkeletalMeshData::GetLODNum()
@@ -83,4 +114,80 @@ int32 FCustomStandardSkeletalMeshData::GetLODVertexNum(int32 Index)
 	}
 
 	return LODVertexNum;
+}
+
+bool FCustomStandardSkeletalMeshData::GetAllowCPUAccess(int32 LODIndex)
+{
+	if (!this->bSkeletalMesh)
+	{
+		return false;
+	}
+
+	USkeletalMesh* SKAsset = Cast<USkeletalMesh>(this->GetAsset());
+
+	if(!SKAsset->IsValidLODIndex(LODIndex))
+	{
+		return false;
+	}
+
+	return SKAsset->GetLODInfo(LODIndex)->bAllowCPUAccess;
+}
+
+void FCustomStandardSkeletalMeshData::SetLODsAllowCPUAccess(bool CPUAccess)
+{
+	if (!this->bSkeletalMesh)
+	{
+		return;
+	}
+
+	USkeletalMesh* SkelMesh = Cast<USkeletalMesh>(this->GetAsset());
+
+	for (int idx =0; idx < SkelMesh->GetLODNum(); ++idx)
+	{
+		if (GetAllowCPUAccess(idx) != CPUAccess)
+		{
+			SkelMesh->Modify();
+
+			SkelMesh->GetLODInfo(idx)->bAllowCPUAccess = CPUAccess;
+		}
+	}
+
+	FLODUtilities::RegenerateLOD(
+		SkelMesh,
+		GetTargetPlatformManagerRef().GetRunningTargetPlatform(),
+		SkelMesh->GetLODNum()
+	);
+
+	UEditorAssetLibrary::SaveAsset(this->GetObjectPathString());
+
+	return;
+}
+
+bool FCustomStandardSkeletalMeshData::SetAllowCPUAccess(int32 SourceLODIndex, bool CPUAccessState)
+{
+	if (!this->bSkeletalMesh)
+	{
+		return false;
+	}
+
+	USkeletalMesh* SkelMesh = Cast<USkeletalMesh>(this->GetAsset());
+
+	if (SkelMesh->IsValidLODIndex(SourceLODIndex))
+	{
+		
+		if (GetAllowCPUAccess(SourceLODIndex) != CPUAccessState)
+		{
+			SkelMesh->Modify();
+
+			SkelMesh->GetLODInfo(SourceLODIndex)->bAllowCPUAccess = CPUAccessState;
+
+			FLODUtilities::RegenerateLOD(
+				SkelMesh,
+				GetTargetPlatformManagerRef().GetRunningTargetPlatform(),
+				SkelMesh->GetLODNum()
+				);
+		};
+	}
+
+	return UEditorAssetLibrary::SaveAsset(this->GetObjectPathString());
 }

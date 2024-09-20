@@ -1005,13 +1005,13 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetDebugButtonBox(
 FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	FCustomStandardTexture2DData TAsset(*ClickedAssetData);
+	FCustomStandardSkeletalMeshData SKAsset(*ClickedAssetData);
 	
-	if (TAsset.IsTexture2D())
+	if (SKAsset.IsSkeletalMesh())
 	{
-		NtfyMsg(TAsset.GetTextureVaidSection());
+		SKAsset.SetLODsAllowCPUAccess(0);
+		//NtfyMsg(SKAsset.IsLODModifiable(1)?"Yes":"No");
 	}
-	
 
 	return FReply::Handled();
 }

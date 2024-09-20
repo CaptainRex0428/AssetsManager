@@ -15,9 +15,18 @@ public:
 	FCustomStandardSkeletalMeshData(FAssetData & AssetData);
 	~FCustomStandardSkeletalMeshData();
 
+	bool IsSkeletalMesh() const;
+
+	bool HasLODMeshDescription(int32 LODIdx);
+
+
 	int32 GetLODNum();
 	int32 GetLODTrianglesNum(int32 Index);
 	int32 GetLODVertexNum(int32 Index);
+
+	bool GetAllowCPUAccess(int32 LODIndex = 0);
+	bool SetAllowCPUAccess(int32 LODIndex = 0,bool CPUAccessState=true);
+	void SetLODsAllowCPUAccess(bool CPUAccess = true);
 
 private:
 	bool bSkeletalMesh;
