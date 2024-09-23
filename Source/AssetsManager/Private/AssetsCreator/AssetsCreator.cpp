@@ -2,6 +2,8 @@
 
 #include "AssetsCreator/AssetsCreator.h"
 
+#include "ManagerLogger.h"
+
 /* Material includes*/
 #include "Materials/Material.h"
 #include "Materials/MaterialinstanceConstant.h"
@@ -14,7 +16,9 @@
 #include "Materials/MaterialExpressionScalarParameter.h"
 #include "FileHelpers.h"
 
-UMaterialInstanceConstant* UAssetsCreator::CreateMaterialConstant(
+#include "AssetTools.h"
+
+UMaterialInstanceConstant* UAssetsCreator::CreateMaterialInstanceConstant(
 	FString PackageFolder, 
 	FString AssetName, 
 	UMaterialInterface* MaterialParent)
@@ -26,6 +30,7 @@ UMaterialInstanceConstant* UAssetsCreator::CreateMaterialConstant(
 
 	auto MaterialFactory = NewObject<UMaterialInstanceConstantFactoryNew>();
 
+	// Create asset
 	UMaterialInstanceConstant * Instance = 
 		(UMaterialInstanceConstant*)MaterialFactory->FactoryCreateNew(
 			UMaterialInstanceConstant::StaticClass(), 
@@ -33,17 +38,67 @@ UMaterialInstanceConstant* UAssetsCreator::CreateMaterialConstant(
 			RF_Standalone | RF_Public, NULL, GWarn);
 	
 	FAssetRegistryModule::AssetCreated(Instance);
+	
+	//Load package
 	Package->FullyLoad();
 
+	//Set value
 	Instance->SetParentEditorOnly(MaterialParent);
+
 	Instance->MarkPackageDirty();
 	Instance->PreEditChange(nullptr);
-	FAssetRegistryModule::AssetCreated(Instance);
 	Instance->PostEditChange();
 
+	//Save package
 	TArray<UPackage*> PackageToSave;
 	PackageToSave.Add(Package);
 	UEditorLoadingAndSavingUtils::SavePackages(PackageToSave, true);
 
 	return nullptr;
+}
+
+bool UAssetsCreator::ToggleMaterialInstanceConstantStaticSwitch(
+	UMaterialInstanceConstant* MaterialInstance, 
+	FString ParameterName,
+	EMaterialParameterAssociation Association)
+{
+	UPackage * Pkg = MaterialInstance->GetPackage();
+	Pkg->FullyLoad();
+
+	MaterialInstance->MarkPackageDirty();
+	MaterialInstance->PreEditChange(nullptr);
+
+	MaterialInstance->SetStaticSwitchParameterValueEditorOnly(
+		*ParameterName,
+		GetMaterialInstanceConstantStaticSwitch(MaterialInstance, ParameterName, Association) ? false : true);
+	
+	MaterialInstance->PostEditChange();
+
+	MaterialInstance->CacheShaders(EMaterialShaderPrecompileMode::Background);
+
+	TArray<UPackage*> PackageToSave;
+	PackageToSave.Add(Pkg);
+	UEditorLoadingAndSavingUtils::SavePackages(PackageToSave, true);
+
+	return GetMaterialInstanceConstantStaticSwitch(MaterialInstance, ParameterName, Association);
+}
+
+bool UAssetsCreator::GetMaterialInstanceConstantStaticSwitch(
+	UMaterialInstanceConstant* MaterialInstance, 
+	FString ParameterName,
+	EMaterialParameterAssociation Association)
+{
+	bool value;
+	FGuid SwitchGuid;
+
+	if (MaterialInstance->GetStaticSwitchParameterValue(
+		FMaterialParameterInfo(*ParameterName, Association, Association == LayerParameter ? 0 : INDEX_NONE),
+		value,
+		SwitchGuid))
+	{
+		return value;
+	};
+
+	return false;
+	
 }
