@@ -18,7 +18,7 @@ enum class TextureChannel : uint8
 	Alpha=3 UMETA(DisplayName = "Alpha")
 };
 
-/**
+/*
  * 
  */
 UCLASS()
@@ -28,20 +28,20 @@ class ASSETSMANAGER_API UAssetsCreator : public UAssetActionUtility
 
 public:
 	UFUNCTION(BlueprintCallable,Category = "AssetsCreator|Material")
-	UMaterialInstanceConstant* CreateMaterialInstanceConstant(
+	static UMaterialInstanceConstant* CreateMaterialInstanceConstant(
 		FString PackageFolder,
 		FString AssetName,
 		UMaterialInterface* MaterialParent);
 
 	UFUNCTION(BlueprintCallable, Category = "AssetsCreator|Material")
-	bool ToggleMaterialInstanceConstantStaticSwitch(
+	static bool ToggleMaterialInstanceConstantStaticSwitch(
 		UMaterialInstanceConstant* MaterialInstance,
 		FString ParameterName,
 		EMaterialParameterAssociation Association = EMaterialParameterAssociation::GlobalParameter
 	);
 
 	UFUNCTION(BlueprintCallable, Category = "AssetsCreator|Material")
-	bool GetMaterialInstanceConstantStaticSwitch(
+	static bool GetMaterialInstanceConstantStaticSwitch(
 		UMaterialInstanceConstant* MaterialInstance,
 		FString ParameterName,
 		EMaterialParameterAssociation Association = EMaterialParameterAssociation::GlobalParameter
