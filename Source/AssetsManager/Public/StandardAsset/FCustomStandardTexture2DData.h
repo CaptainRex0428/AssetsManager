@@ -56,7 +56,6 @@ public:
 
 	bool IsTextureLODGroupStandarized();
 
-protected:
 	FString GetTextureVaidSection();
 
 protected:

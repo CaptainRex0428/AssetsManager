@@ -7,16 +7,11 @@
 
 #include "ConfigManager.h"
 
-#include "AssetsChecker.generated.h"
-
 /*
  * 
  */
-UCLASS()
 class ASSETSMANAGER_API UAssetsChecker : public UAssetActionUtility
 {
-	GENERATED_BODY()
-	
 public:
 
 #pragma region PublicFuntions
@@ -36,7 +31,7 @@ public:
 
 #pragma region Standard Check Tools
 	
-	int EDuplicateAssets(
+	static int EDuplicateAssets(
 		const TArray<FAssetData>& AssetsDataSelected, 
 		int NumOfDupicates, 
 		bool forced);
@@ -59,8 +54,10 @@ public:
 
 	static TArray<FString> EGetAssetReferencesPath(
 		const FString& AssetPath);
+
 	static TArray<FString> EGetAssetReferencesPath(
 		const FAssetData& AssetData);
+
 	static TArray<FString> EGetAssetReferencesPath(
 		const TSharedPtr<FAssetData>& AssetData);
 
@@ -69,6 +66,7 @@ public:
 #pragma region HandleRedirectors
 
 	static void EFixUpRedirectors(const FString& Path = "/Game");
+
 	static void EFixUpRedirectors(const TArray<FString>& Path);
 
 #pragma endregion
@@ -130,13 +128,15 @@ public:
 
 #pragma region HandleUnusedAssets
 
-	void ERemoveUnusedAssets(
+	static void ERemoveUnusedAssets(
 		const TArray<FAssetData>& AssetsDataSelected);
+
 	static void ERemoveUnusedAssets(
 		const TArray<FString>& FolderPathSelected);
 
 	static void ERemoveEmptyFolder(
 		const FString FolderPathSelected = "/Game");
+
 	static void ERemoveEmptyFolder(
 		const TArray<FString>& FolderPathSelected);
 
@@ -144,7 +144,7 @@ public:
 
 #pragma region HandleAssetsName
 
-	int EReplaceName(
+	static int EReplaceName(
 		const TArray<UObject*>& AssetsSelected, 
 		const FString& OriginStr, 
 		const FString& ReplaceStr);
@@ -153,7 +153,7 @@ public:
 		TSharedPtr<FAssetData> & AssetData, 
 		FString NewName);
 
-	TSharedPtr<FString> EGetAssetNameSubfix(
+	static TSharedPtr<FString> EGetAssetNameSubfix(
 		const FAssetData & AssetSelected);
 
 #pragma endregion
@@ -207,33 +207,6 @@ public:
 		const TArray<TSharedPtr<FAssetData>>& FindInList,
 		TArray<TSharedPtr<FAssetData>>& OutList,
 		bool isAdditiveMode = false);
-
-#pragma endregion
-
-	// 留着为了测试 没别的
-	static void ECheckerCheck(const FAssetData & AssetData);
-
-	UFUNCTION(CallInEditor)
-	void CheckCheck();
-
-#pragma endregion
-
-#pragma region Call In Editor
-
-	UFUNCTION(CallInEditor)
-	void DuplicateAssets(
-		int NumOfDupicates, 
-		bool forced = true);
-	
-	UFUNCTION(CallInEditor)
-	void RemoveUnusedAssets();
-
-	UFUNCTION(CallInEditor)
-	void ReplaceName(
-		const FString& OriginStr, 
-		const FString & ReplaceStr);
-
-#pragma endregion
 
 #pragma endregion
 	

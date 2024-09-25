@@ -23,14 +23,14 @@
 /**
  * 
  */
-class ASSETSMANAGER_API UConfigManager
+class ASSETSMANAGER_API FConfigManager
 {
 
 public:
 
-	UConfigManager(UConfigManager&) = delete;
+	FConfigManager(FConfigManager&) = delete;
 	
-	static UConfigManager& Get();
+	static FConfigManager& Get();
 
 	double SToD(const FString& string);
 	float SToF(const FString& string);
@@ -70,8 +70,8 @@ public:
 		const FString& ToFindKey);
 
 private:
-	UConfigManager();
-	virtual ~UConfigManager() = default;
+	FConfigManager();
+	virtual ~FConfigManager() = default;
 
 private:
 
