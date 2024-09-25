@@ -44,6 +44,7 @@ public:
 	const TSharedPtr<FString> GetAssetPrefix() const;
 	const TSharedPtr<FString> GetAssetSuffix();
 	const uint32 GetAssetNameInfoCount() const;
+	FString GetAssetNameWithoutPrefix() const;
 	
 	bool IsPrefixStandarized() const;
 	const TSharedPtr<FString> GetAssetStandardPrefix();
