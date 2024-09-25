@@ -32,7 +32,8 @@ class ASSETSMANAGER_API UAssetsHandler : public UAssetActionUtility
 	UFUNCTION(CallInEditor, Category = "AssetsHandler")
 	void CreateIDCheckerMaterial(
 		TextureChannel Channel,
-		int32 UVs);
+		int32 UVs,
+		bool CheckNum = false);
 
 	UFUNCTION(CallInEditor, Category = "AssetsHandler")
 	void DuplicateAssets(
