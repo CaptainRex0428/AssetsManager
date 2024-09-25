@@ -54,7 +54,7 @@ UMaterialInstanceConstant* UAssetsCreator::CreateMaterialInstanceConstant(
 	PackageToSave.Add(Package);
 	UEditorLoadingAndSavingUtils::SavePackages(PackageToSave, true);
 
-	return nullptr;
+	return Instance;
 }
 
 bool UAssetsCreator::ToggleMaterialInstanceConstantStaticSwitch(

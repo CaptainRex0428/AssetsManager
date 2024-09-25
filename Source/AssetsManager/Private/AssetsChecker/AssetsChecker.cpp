@@ -91,32 +91,6 @@ int UAssetsChecker::EDuplicateAssets(
 	return Counter;
 }
 
-void UAssetsChecker::DuplicateAssets(
-	int NumOfDupicates,bool forced)
-{
-	
-	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
-	
-	int Counter = EDuplicateAssets(SelectedAssetsData, NumOfDupicates, forced);
-
-	if (Counter <= 0)
-	{
-#ifdef ZH_CN
-		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, TEXT("输入的复制数量不可以小于0"));
-#else
-		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, TEXT("Number input is invalid."));
-#endif
-		return;
-		
-	}
-#ifdef ZH_CN
-	FString Msg = TEXT("成功复制") + FString::FromInt(Counter) + TEXT("个文件");
-#else
-	FString Msg = FString::FromInt(Counter) + TEXT(" files copied.");
-#endif
-	NtfyMsg(Msg);
-}
-
 bool UAssetsChecker::EConfirmPrefixes(
 	TArray< TSharedPtr<FAssetData>>& AssetsSelected,
 	TArray< TSharedPtr<FAssetData>>& ReadyToFixAssets)
@@ -989,12 +963,6 @@ void UAssetsChecker::ERemoveUnusedAssets(
 	}
 }
 
-void UAssetsChecker::RemoveUnusedAssets()
-{
-	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
-	ERemoveUnusedAssets(SelectedAssetsData);
-}
-
 void UAssetsChecker::ERemoveEmptyFolder(
 	const FString FolderPathSelected)
 {
@@ -1239,39 +1207,6 @@ TSharedPtr<FString> UAssetsChecker::EGetAssetNameSubfix(const FAssetData& AssetS
 	return AssetS.GetAssetSuffix();
 }
 
-void UAssetsChecker::ReplaceName(
-	const FString& OriginStr, 
-	const FString& ReplaceStr)
-{
-	TArray<UObject*> AssetsSelected = UEditorUtilityLibrary::GetSelectedAssets();
-	int Counter = EReplaceName(AssetsSelected, OriginStr, ReplaceStr);
-
-	if (Counter == -1)
-	{
-#ifdef ZH_CN
-		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, 
-			TEXT("被替换的文本(Origin string)不能为空!!!"));
-#else
-		EAppReturnType::Type ReturnType = DlgMsgLog(EAppMsgType::Ok, 
-			TEXT("Origin string pattern should not be empty."));
-#endif
-		return;
-	}
-
-	if (Counter >= 0)
-	{
-#ifdef ZH_CN
-		NtfyMsgLog(FString::FromInt(Counter) + TEXT("个资产重命名替换成功"));
-#else
-		NtfyMsgLog(FString::FromInt(Counter) 
-			+ TEXT(" asset") 
-			+ (Counter > 1 ? TEXT("s'") : TEXT("'s")) 
-			+ TEXT(" name has been replaced."));
-#endif
-		return;
-	}
-}
-
 void UAssetsChecker::EFixUpRedirectors(
 	const FString & Path)
 {
@@ -1330,39 +1265,4 @@ void UAssetsChecker::ECopyAssetsPtrList(
 	{
 		ListToOutput.Add(AssetD);
 	}
-}
-
-void UAssetsChecker::ECheckerCheck(
-	const FAssetData& AssetData)
-{
-	UObject* Ast = AssetData.GetAsset();
-
-	if (Ast->IsA<UTexture2D>())
-	{
-		UTexture2D* AsTexture = Cast<UTexture2D>(Ast);
-		uint32 group = AsTexture->GetMaximumDimension();
-
-		DlgMsgLog(EAppMsgType::Ok, FString::FromInt(group));
-	}
-}
-
-void UAssetsChecker::CheckCheck()
-{
-	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
-
-	TArray<TSharedPtr<FAssetData>> InList;
-	TArray<TSharedPtr<FAssetData>> OutList;
-
-	for (auto a : SelectedAssetsData) 
-	{
-		InList.Add(MakeShared<FAssetData>(a));
-	}
-
-	EListTextureSubfixErrorAssetsForAssetList(InList, OutList);
-
-	for(auto a : OutList)
-	{
-		NtfyMsg(a->AssetName.ToString());
-	}
-	
 }

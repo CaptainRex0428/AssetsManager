@@ -226,6 +226,19 @@ const uint32 FCustomStandardAssetData::GetAssetNameInfoCount() const
 	return m_AssetNameInfoList.Num();
 }
 
+FString FCustomStandardAssetData::GetAssetNameWithoutPrefix() const
+{
+	TArray<FString> SubNameInfoList;
+	SubNameInfoList.Empty();
+
+	for (int32 idx = m_AssetNameInfoStartIndex; idx < m_AssetNameInfoList.Num(); ++idx)
+	{
+		SubNameInfoList.Add(m_AssetNameInfoList[idx]);
+	}
+
+	return FString::Join(SubNameInfoList, TEXT("_"));
+}
+
 bool FCustomStandardAssetData::IsPrefixStandarized() const
 {
 	return bHasStandardPrefix;
