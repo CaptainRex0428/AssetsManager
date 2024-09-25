@@ -38,8 +38,7 @@ void UAssetsHandler::CreateIDCheckerMaterial(
 			if (TextureAsset.IsTexture2D())
 			{
 				FString PKGPath = FPaths::GetPath(TextureAsset.GetObjectPathString());
-				FString type = CheckNum ? TEXT("Num_") : TEXT("Color_");
-				FString AssetName = TEXT("MI_IDChecker_") + type + TextureAsset.GetAssetNameWithoutPrefix();
+				FString AssetName = "MI_IDChecker_" + TextureAsset.GetAssetNameWithoutPrefix();
 
 				UMaterialInstanceConstant* Instance;
 
