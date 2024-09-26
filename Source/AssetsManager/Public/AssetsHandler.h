@@ -48,6 +48,9 @@ class ASSETSMANAGER_API UAssetsHandler : public UAssetActionUtility
 		const FString& OriginStr,
 		const FString& ReplaceStr);
 
+	UFUNCTION(CallInEditor, Category = "AssetsHandler")
+	void Check();
+
 #pragma endregion
 
 #pragma region CallInEditor

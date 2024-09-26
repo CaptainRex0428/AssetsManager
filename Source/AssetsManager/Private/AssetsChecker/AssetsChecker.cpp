@@ -1120,6 +1120,10 @@ UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(
 		return AssetsDataArray;
 	}
 
+	FSlowTask CollectingProgress(FolderPathSelected.Num(), FText::FromString(TEXT("Collecting Assets ...")));
+	CollectingProgress.Initialize();
+	CollectingProgress.MakeDialog();
+
 	for (const FString FolderPath : FolderPathSelected) 
 	{
 		DIRPATHNOTEXISTIGNORE(FolderPath);
@@ -1128,6 +1132,8 @@ UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(
 
 		for (const FString & AssetP : AssetsPath)
 		{
+			CollectingProgress.EnterProgressFrame((1 / FolderPathSelected.Num()) / AssetsPath.Num());
+
 			PATHLOOPIGNORE(AssetP);
 			ASSETPATHNOTEXISTIGNORE(AssetP);
 
@@ -1136,6 +1142,8 @@ UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(
 			AssetsDataArray.Add(MakeShared<FAssetData>(AssetD));
 		}
 	}
+	
+	CollectingProgress.Destroy();
 
 	return AssetsDataArray;
 }
