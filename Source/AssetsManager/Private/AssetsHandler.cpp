@@ -6,6 +6,7 @@
 #include "ManagerLogger.h"
 #include "StandardAsset/FCustomStandardAssetData.h"
 #include "StandardAsset/FCustomStandardTexture2DData.h"
+#include "StandardAsset/FCustomStandardSkeletalMeshData.h"
 
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
@@ -182,5 +183,21 @@ void UAssetsHandler::ReplaceName(const FString& OriginStr, const FString& Replac
 			+ TEXT(" name has been replaced."));
 #endif
 		return;
+	}
+}
+
+void UAssetsHandler::Check()
+{
+	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
+
+	for (FAssetData AssetData : SelectedAssetsData)
+	{
+		FCustomStandardSkeletalMeshData SkelMesh(AssetData);
+
+		if (SkelMesh.IsSkeletalMesh())
+		{
+			SkelMesh.ResetLODSectionsMaterial();
+		}
+
 	}
 }

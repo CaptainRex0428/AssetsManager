@@ -43,6 +43,8 @@ private:
 public:
 	virtual void Construct(const FArguments& InArgs);
 
+	void RegistryTab();
+
 private:
 
 #pragma region ManagerSlateStateData
@@ -319,6 +321,15 @@ private:
 	TSharedPtr<SButton> OutputViewListInfoButton;
 	TSharedRef<SButton> ConstructOutputViewListInfoButton();
 	FReply OnOutputViewListInfoButtonClicked();
+#pragma endregion
+
+#pragma region BatchRename
+	TSharedRef<SDockTab> OnSpawnBatchRenameTab(const FSpawnTabArgs& SpawnTabArgs);
+	void OnBatchRenameApply();
+
+	TSharedPtr<SButton> BatchRenameButton;
+	TSharedRef<SButton> ConstructBatchRenameButton();
+	FReply OnBatchRenameButtonClicked();
 #pragma endregion
 
 #pragma endregion

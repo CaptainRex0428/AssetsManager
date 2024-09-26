@@ -6,6 +6,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetsChecker/AssetsChecker.h"
 #include "SlateWidgets/ManagerSlate.h"
+#include "SlateWidgets/BatchRenameSlate.h"
 #include "SlateWidgets/Material/MaterialCreatorSlate.h"
 #include "AssetsManagerStyle.h"
 
@@ -28,6 +29,8 @@ void FAssetsManagerModule::ShutdownModule()
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_MANAGERTAB_NAME));
+	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_MATERIALCREATORTAB_NAME));
+	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(TABNAME_BATCHRENAME));
 	FAssetsMangerStyle::ShutDown();
 }
 
@@ -51,7 +54,7 @@ void FAssetsManagerModule::OnAssetsManagerButtonClicked()
 
 void FAssetsManagerModule::OnMaterialCreatButtonClicked()
 {
-	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDERMATERIALCREATORTABNAME));
+	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDER_MATERIALCREATORTAB_NAME));
 }
 
 // Second bind. Define the details for the menu entry.

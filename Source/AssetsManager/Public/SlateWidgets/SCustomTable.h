@@ -51,7 +51,7 @@ public:
 	* These functions can be called to interact with table list
 	*/
 
-	virtual const TArray<ItemType> & GetSelectedItems();
+	virtual TArray<ItemType> & GetSelectedItems();
 	virtual const TArray<ItemType> & GetListItems();
 
 	virtual void SelectAll();
@@ -72,6 +72,9 @@ private:
 	FOnGenerateTableHeaderRow OnGenerateTableHeaderRow;
 	FOnGenerateTableRowColumn OnGenerateTableRowColumn;
 
+public:
+	TArray<ItemType> CheckBoxSelected;
+
 private:
 	
 	/*
@@ -80,13 +83,11 @@ private:
 
 	TArray<ItemType>* SourceItems;
 
-private:
-
 	TSharedPtr<SCustomListView<ItemType>> MainTable;
 	TSharedPtr<SHeaderRow> TableHeaderRow;
 
 	TArray<TSharedPtr<SCheckBox>> CheckBoxArray;
-	TArray<ItemType> CheckBoxSelected;
+	
 
 	int TestCount;
 
@@ -314,7 +315,7 @@ inline FReply SCustomTable<ItemType>::OnTestButtonClicked()
 #pragma region ReadTable
 
 template<typename ItemType>
-inline const TArray<ItemType>& SCustomTable<ItemType>::GetSelectedItems()
+inline TArray<ItemType>& SCustomTable<ItemType>::GetSelectedItems()
 {
 	return CheckBoxSelected;
 }
