@@ -25,4 +25,8 @@ public:
 
 	typedef TDelegate<FText(ArgumentType&)> FOnItemToFText;
 	typedef TDelegate<bool(const FText&,ETextCommit::Type,ArgumentType&)> FOnItemCommit;
+
+	// for BatchRename
+
+	typedef TDelegate<void()> FOnApply;
 };
