@@ -157,6 +157,19 @@ bool FCustomStandardTexture2DData::IsTexture2D()
 	return bTexture2D;
 }
 
+UTexture2D* FCustomStandardTexture2DData::GetTexture2D()
+{
+	if (!bTexture2D) 
+	{
+		return nullptr;
+	}
+
+	UTexture2D * AssetAsT = Cast<UTexture2D>(this->GetAsset());
+
+	return AssetAsT;
+
+}
+
 bool FCustomStandardTexture2DData::IsTextureMaxInGameOverSize()
 {
 	if (this->bStrictCheckMode) { return this->MaxInGameSizeX > this->MaxSize || this->MaxInGameSizeY > this->MaxSize; };

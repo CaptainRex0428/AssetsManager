@@ -32,6 +32,8 @@ public:
 
 	bool IsTexture2D();
 
+	UTexture2D* GetTexture2D();
+
 	bool IsTextureMaxInGameOverSize();
 	bool IsTextureSourceOverSize();
 
