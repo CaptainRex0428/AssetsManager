@@ -24,8 +24,8 @@ void UAssetsHandler::CreateIDCheckerMaterial(
 	TArray<FAssetData> SelectedAssets = UEditorUtilityLibrary::GetSelectedAssetData();
 
 	
-	FString ColorMaterialPath = "/Script/Engine.Material'/AssetsManager/Material/M_IDChecker_Color.M_IDChecker_Color'";
-	FString NumMaterialPath = "/Script/Engine.Material'/AssetsManager/Material/M_IDChecker_Num.M_IDChecker_Num'";
+	FString ColorMaterialPath = "/Script/Engine.Material'/AssetsManager/AssetsTool/Material/M_IDChecker_Color.M_IDChecker_Color'";
+	FString NumMaterialPath = "/Script/Engine.Material'/AssetsManager/AssetsTool/Material/M_IDChecker_Num.M_IDChecker_Num'";
 
 	UMaterial* IDCheckerMaterial =Cast<UMaterial>(UEditorAssetLibrary::LoadAsset(CheckNum? NumMaterialPath : ColorMaterialPath));
 
