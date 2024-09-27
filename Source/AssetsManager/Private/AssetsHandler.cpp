@@ -23,7 +23,6 @@ void UAssetsHandler::CreateIDCheckerMaterial(
 	bool CheckNum)
 {
 	TArray<FAssetData> SelectedAssets = UEditorUtilityLibrary::GetSelectedAssetData();
-
 	
 	FString ColorMaterialPath = "/Script/Engine.Material'/AssetsManager/AssetsTool/Material/M_IDChecker_Color.M_IDChecker_Color'";
 	FString NumMaterialPath = "/Script/Engine.Material'/AssetsManager/AssetsTool/Material/M_IDChecker_Num.M_IDChecker_Num'";
@@ -192,12 +191,8 @@ void UAssetsHandler::Check()
 
 	for (FAssetData AssetData : SelectedAssetsData)
 	{
-		FCustomStandardSkeletalMeshData SkelMesh(AssetData);
-
-		if (SkelMesh.IsSkeletalMesh())
-		{
-			SkelMesh.ResetLODSectionsMaterial();
-		}
-
+		FCustomStandardAssetData AssetSelect(AssetData);
+		
+		NtfyMsgLog(FString::SanitizeFloat(AssetSelect.GetDiskSize(AssetSizeDisplayUnit::MB,true)));
 	}
 }

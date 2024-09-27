@@ -4,6 +4,10 @@
 #include "Misc/ConfigCacheIni.h"
 #include "StandardAsset/FStructLikeString.h"
 
+#include "ObjectTools.h"
+#include "AssetToolsModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+
 #define ModuleLanguage_ZH 1
 
 #if ModuleLanguage_ZH
@@ -19,6 +23,17 @@
 #define ASSETSMANAGER_LOGFOLDER FPaths::ProjectDir() + "/Saved/AssetsManager/"
 
 #define ASSETSMANAGER_CONFIGFOLDER FPaths::ProjectDir() + "/Plugins/AssetsManager/Config/"
+
+UENUM(BlueprintType)
+enum class AssetSizeDisplayUnit : uint8
+{
+	bit = 0 UMETA(DisplayName="bit"),
+	Byte = 1 UMETA(DisplayName="Byte"),
+	KB = 2 UMETA(DisplayName="KB"),
+	MB = 3 UMETA(DisplayName="MB"),
+	GB = 4 UMETA(DisplayName="GB"),
+	TB = 5 UMETA(DisplayName="TB")
+};
 
 /**
  * 

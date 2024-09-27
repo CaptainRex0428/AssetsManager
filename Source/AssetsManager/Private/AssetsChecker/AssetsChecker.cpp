@@ -1230,7 +1230,6 @@ void UAssetsChecker::EFixUpRedirectors(
 
 	// deal with content browser, the module should only have one instance.
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-
 	// create filter
 	FARFilter Filter;
 	Filter.bRecursivePaths = true;

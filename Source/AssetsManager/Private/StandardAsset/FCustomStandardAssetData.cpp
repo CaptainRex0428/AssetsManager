@@ -1,10 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "StandardAsset/FCustomStandardAssetData.h"
 #include "AssetsChecker/AssetsChecker.h"
-#include "ConfigManager.h"
+
 #include "ManagerLogger.h"
+#include "HAL/FileManager.h"
+#include "ObjectTools.h"
+#include "AssetToolsModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 
 FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData, bool StrictCheckMode)
 	:FAssetData(AssetData), 
@@ -297,6 +301,20 @@ const FCustomStandardAssetData::Category FCustomStandardAssetData::GetConfirmAss
 bool FCustomStandardAssetData::IsCatogryStandarized()
 {
 	return !(m_StrictAssetCategory == FCustomStandardAssetData::Undefined);
+}
+
+double FCustomStandardAssetData::GetMemoryUsedSize(AssetSizeDisplayUnit SizeUnit,bool bEstimatedTotal)
+{
+	FResourceSizeEx size(bEstimatedTotal ? EResourceSizeMode::EstimatedTotal : EResourceSizeMode::Exclusive);
+	this->GetAsset()->GetResourceSizeEx(size);
+	
+	int32 a = size.GetTotalMemoryBytes();
+
+	double scale = FMath::Pow(1024.f, uint8(SizeUnit) - 1);
+
+	double result = a / scale;
+
+	return result;
 }
 
 TArray<FString> FCustomStandardAssetData::SplitStringRecursive(
