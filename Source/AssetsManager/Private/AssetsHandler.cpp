@@ -193,6 +193,6 @@ void UAssetsHandler::Check()
 	{
 		FCustomStandardAssetData AssetSelect(AssetData);
 		
-		NtfyMsgLog(FString::SanitizeFloat(AssetSelect.GetDiskSize(AssetSizeDisplayUnit::MB,true)));
+		NtfyMsgLog(FString::SanitizeFloat(AssetSelect.GetMemoryUsedSize(AssetSizeDisplayUnit::MB,true)));
 	}
 }

@@ -57,7 +57,7 @@ public:
 	bool IsCatogryStandarized();
 
 	
-	double GetDiskSize(
+	double GetMemoryUsedSize(
 		AssetSizeDisplayUnit SizeUnit = AssetSizeDisplayUnit::Byte,
 		bool bEstimatedTotal = false);
 
