@@ -184,6 +184,25 @@ bool FCustomStandardTexture2DData::IsTextureSourceOverSize()
 	return this->SourceSizeX > this->GlobalMaxSize || this->SourceSizeY > this->GlobalMaxSize;
 }
 
+int64 FCustomStandardTexture2DData::GetMemorySize()
+{
+	if (!bTexture2D)
+	{
+		return GetLoadedSize();
+	}
+
+	UTexture2D* AssetT = Cast<UTexture2D>(this->GetAsset());
+
+	if (!AssetT)
+	{
+		return 0;
+	}
+
+	AssetT->PostLoad();
+	AssetT->UpdateResource();
+	return AssetT->GetResourceSizeBytes(EResourceSizeMode::EstimatedTotal);
+}
+
 FVector2D FCustomStandardTexture2DData::GetSourceSize()
 {
 	return FVector2D(this->SourceSizeX,this->SourceSizeY);

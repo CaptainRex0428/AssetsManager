@@ -37,12 +37,13 @@ public:
 	bool IsTextureMaxInGameOverSize();
 	bool IsTextureSourceOverSize();
 
+	int64 GetMemorySize();
+
 	FVector2D GetSourceSize();
 	FVector2D GetMaxInGameSize();
 
 	double GetStandardMaxSize();
 	double GetStandardMaxSizeStrict();
-
 
 	TSharedPtr<TextureCompressionSettings> GetCompressionSettings();
 	TSharedPtr<TextureCompressionSettings> GetStandardCompressionSettings(bool forced = false);

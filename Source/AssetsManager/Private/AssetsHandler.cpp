@@ -191,9 +191,9 @@ void UAssetsHandler::Check()
 
 	for (FAssetData AssetData : SelectedAssetsData)
 	{
-		FCustomStandardAssetData AssetSelect(AssetData);
+		FCustomStandardTexture2DData AssetSelect(AssetData);
 		FString OutUnit;
-		UAssetsChecker::ByteConversion(AssetSelect.GetDiskSize(),OutUnit,false);
+		UAssetsChecker::ByteConversion(AssetSelect.GetMemorySize(), OutUnit, false);
 
 		NtfyMsg(OutUnit);
 	}
