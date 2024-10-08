@@ -663,6 +663,10 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 		OutList.Empty();
 	}
 
+	FSlowTask CollectingProgress(FindInList.Num(), FText::FromString(TEXT("Scaning Assets ...")));
+	CollectingProgress.Initialize();
+	CollectingProgress.MakeDialog();
+
 	for(const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
 		FCustomStandardAssetData StandardAsset(*AssetDPtr);
@@ -676,7 +680,11 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 
 			OutList.Add(AssetDPtr);
 		}
+
+		CollectingProgress.EnterProgressFrame();
 	}
+
+	CollectingProgress.Destroy();
 }
 
 void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
@@ -691,9 +699,15 @@ void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
 
 	TMultiMap<FString, TSharedPtr<FAssetData>> AssetsMultiInfoMap;
 
+	FSlowTask CollectingProgress(2*FindInList.Num(), FText::FromString(TEXT("Collecting Assets ...")));
+	CollectingProgress.Initialize();
+	CollectingProgress.MakeDialog();
+
 	for (const TSharedPtr<FAssetData> & DataSharedPtr : FindInList)
 	{
 		AssetsMultiInfoMap.Emplace(DataSharedPtr->AssetName.ToString(), DataSharedPtr);
+
+		CollectingProgress.EnterProgressFrame();
 	}
 
 	for (const TSharedPtr<FAssetData>& DataSharedPtr : FindInList)
@@ -720,8 +734,11 @@ void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
 				}
 			}
 		}
+
+		CollectingProgress.EnterProgressFrame();
 	}
 
+	CollectingProgress.Destroy();
 }
 
 void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
@@ -735,6 +752,10 @@ void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
 		OutList.Empty();
 	}
 	
+	FSlowTask CollectingProgress(FindInList.Num(), FText::FromString(TEXT("Scaning Assets ...")));
+	CollectingProgress.Initialize();
+	CollectingProgress.MakeDialog();
+
 	for (const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
 		if (!AssetDPtr->GetAsset()->IsA<UTexture2D>())
@@ -748,7 +769,12 @@ void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
 		{
 			OutList.Add(AssetDPtr);
 		}
+		
+		CollectingProgress.EnterProgressFrame();
+
 	}
+
+	CollectingProgress.Destroy();
 }
 
 void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
@@ -761,6 +787,10 @@ void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 	{
 		OutList.Empty();
 	}
+
+	FSlowTask CollectingProgress(FindInList.Num(), FText::FromString(TEXT("Scaning Assets ...")));
+	CollectingProgress.Initialize();
+	CollectingProgress.MakeDialog();
 
 	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
@@ -775,7 +805,11 @@ void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 		{
 			OutList.Add(AssetDPtr);
 		}
+
+		CollectingProgress.EnterProgressFrame();
 	}
+
+	CollectingProgress.Destroy();
 }
 
 void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
@@ -787,6 +821,10 @@ void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
 	{
 		OutList.Empty();
 	}
+
+	FSlowTask CollectingProgress(FindInList.Num(), FText::FromString(TEXT("Collecting Assets ...")));
+	CollectingProgress.Initialize();
+	CollectingProgress.MakeDialog();
 
 	for (const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
@@ -806,7 +844,11 @@ void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
 
 			OutList.Add(AssetDPtr);
 		}
+
+		CollectingProgress.EnterProgressFrame();
 	}
+
+	CollectingProgress.Destroy();
 }
 
 void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
@@ -818,6 +860,10 @@ void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
 	{
 		OutList.Empty();
 	}
+
+	FSlowTask CollectingProgress(FindInList.Num(), FText::FromString(TEXT("Collecting Assets ...")));
+	CollectingProgress.Initialize();
+	CollectingProgress.MakeDialog();
 
 	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
@@ -836,8 +882,12 @@ void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
 			}
 
 			OutList.Add(AssetDPtr);
-		};		
+		};
+
+		CollectingProgress.EnterProgressFrame();
 	}
+
+	CollectingProgress.Destroy();
 }
 
 void UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(
@@ -849,6 +899,10 @@ void UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(
 	{
 		OutList.Empty();
 	}
+
+	FSlowTask CollectingProgress(FindInList.Num(), FText::FromString(TEXT("Collecting Assets ...")));
+	CollectingProgress.Initialize();
+	CollectingProgress.MakeDialog();
 
 	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
@@ -869,7 +923,11 @@ void UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(
 			OutList.Add(AssetDPtr);
 
 		}
+
+		CollectingProgress.EnterProgressFrame();
 	}
+
+	CollectingProgress.Destroy();
 }
 
 uint32 UAssetsChecker::EDeleteAssets(
@@ -894,6 +952,10 @@ void UAssetsChecker::ERemoveUnusedAssets(
 
 	TArray<FAssetData> UnusedAssetsData;
 
+	FSlowTask CollectingProgress(AssetsDataSelected.Num(), FText::FromString(TEXT("Loading Assets ...")));
+	CollectingProgress.Initialize();
+	CollectingProgress.MakeDialog();
+
 	for (const FAssetData& SelectedAssetData : AssetsDataSelected)
 	{
 		TArray<FString> AssetReferences = UEditorAssetLibrary::FindPackageReferencersForAsset(SelectedAssetData.GetObjectPathString(), true);
@@ -902,7 +964,11 @@ void UAssetsChecker::ERemoveUnusedAssets(
 		{
 			UnusedAssetsData.Add(SelectedAssetData);
 		}
+
+		CollectingProgress.EnterProgressFrame();
 	}
+
+	CollectingProgress.Destroy();
 
 	if (UnusedAssetsData.Num() == 0)
 	{
@@ -1272,4 +1338,89 @@ void UAssetsChecker::ECopyAssetsPtrList(
 	{
 		ListToOutput.Add(AssetD);
 	}
+}
+
+
+double UAssetsChecker::ByteConversion(
+	uint64 ByteSize,
+	AssetSizeDisplayUnit Target)
+{
+	if (Target == AssetSizeDisplayUnit::AssetSizeDisplayUnit_Max)
+	{
+		return ByteSize;
+	}
+
+	double scale = FMath::Pow(1024.f, uint8(Target) - 1);
+
+	double result = ByteSize / scale;
+
+	return result;
+}
+
+double UAssetsChecker::ByteConversion(
+	uint64 ByteSize,
+	FString& UnitOut,
+	bool OnlyUnit,
+	AssetSizeDisplayUnit Target)
+{
+	double SizeResult = ByteSize;
+	AssetSizeDisplayUnit UnitType = Target;
+
+	if (Target != AssetSizeDisplayUnit::AssetSizeDisplayUnit_Max)
+	{
+		SizeResult = ByteConversion(ByteSize, Target);
+	}
+	else
+	{
+		UnitType = AssetSizeDisplayUnit::Byte;
+
+		for (enum AssetSizeDisplayUnit unitLoop = UnitType;
+			unitLoop < AssetSizeDisplayUnit::AssetSizeDisplayUnit_Max;
+			unitLoop = (AssetSizeDisplayUnit)(uint8(unitLoop) + 1))
+		{
+			double SizePreview = ByteConversion(ByteSize, unitLoop);
+
+			if (SizePreview < 0.1)
+			{
+				break;
+			}
+
+			UnitType = unitLoop;
+			SizeResult = SizePreview;
+		}
+	}
+
+	FString UnitStr = "";
+
+	switch (UnitType)
+	{
+	case AssetSizeDisplayUnit::bit:
+	{ UnitStr = "bit"; break; }
+	case AssetSizeDisplayUnit::Byte:
+	{ UnitStr = "Byte"; break; }
+	case AssetSizeDisplayUnit::KB:
+	{ UnitStr = "KB"; break; }
+	case AssetSizeDisplayUnit::MB:
+	{ UnitStr = "MB"; break; }
+	case AssetSizeDisplayUnit::GB:
+	{ UnitStr = "GB"; break; }
+	case AssetSizeDisplayUnit::TB:
+	{ UnitStr = "TB"; break; }
+	case AssetSizeDisplayUnit::AssetSizeDisplayUnit_Max:
+	{ UnitStr = "Byte"; break; }
+	default:
+	{ UnitStr = "Byte"; break; }
+	}
+
+	if (OnlyUnit)
+	{
+		UnitOut = UnitStr;
+	}
+	else
+	{
+		UnitOut = FString::Printf(L"%.4f%s", SizeResult, *UnitStr);
+	}
+
+	return SizeResult;
+
 }

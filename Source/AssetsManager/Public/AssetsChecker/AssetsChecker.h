@@ -29,6 +29,19 @@ public:
 
 #pragma endregion
 
+#pragma region FileSize
+	static double ByteConversion(
+		uint64 ByteSize,
+		AssetSizeDisplayUnit Target = AssetSizeDisplayUnit::AssetSizeDisplayUnit_Max);
+
+	static double ByteConversion(
+		uint64 ByteSize,
+		FString& UnitOut,
+		bool OnlyUnit = true,
+		AssetSizeDisplayUnit Target = AssetSizeDisplayUnit::AssetSizeDisplayUnit_Max);
+
+#pragma endregion
+
 #pragma region Standard Check Tools
 	
 	static int EDuplicateAssets(

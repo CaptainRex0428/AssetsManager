@@ -192,7 +192,9 @@ void UAssetsHandler::Check()
 	for (FAssetData AssetData : SelectedAssetsData)
 	{
 		FCustomStandardAssetData AssetSelect(AssetData);
-		
-		NtfyMsgLog(FString::SanitizeFloat(AssetSelect.GetMemoryUsedSize(AssetSizeDisplayUnit::MB,true)));
+		FString OutUnit;
+		UAssetsChecker::ByteConversion(AssetSelect.GetDiskSize(),OutUnit,false);
+
+		NtfyMsg(OutUnit);
 	}
 }

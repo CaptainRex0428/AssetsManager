@@ -185,6 +185,13 @@ private:
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
+	/*
+	* Construct disk size info box
+	*/
+	TSharedRef<STextBlock> ConstructAssetDiskSizeRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
 #pragma endregion
 
 

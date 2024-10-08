@@ -1,5 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
+#pragma warning(disable: 5038)
 
 #include "StandardAsset/FCustomStandardAssetData.h"
 #include "AssetsChecker/AssetsChecker.h"
@@ -303,19 +304,23 @@ bool FCustomStandardAssetData::IsCatogryStandarized()
 	return !(m_StrictAssetCategory == FCustomStandardAssetData::Undefined);
 }
 
-double FCustomStandardAssetData::GetMemoryUsedSize(AssetSizeDisplayUnit SizeUnit,bool bEstimatedTotal)
+int64 FCustomStandardAssetData::GetLoadedSize(
+	bool bEstimatedTotal)
 {
 	FResourceSizeEx size(bEstimatedTotal ? EResourceSizeMode::EstimatedTotal : EResourceSizeMode::Exclusive);
 	this->GetAsset()->GetResourceSizeEx(size);
-	
-	int32 a = size.GetTotalMemoryBytes();
 
-	double scale = FMath::Pow(1024.f, uint8(SizeUnit) - 1);
+	int32 Size = size.GetTotalMemoryBytes();
 
-	double result = a / scale;
-
-	return result;
+	return Size;
 }
+
+int64 FCustomStandardAssetData::GetDiskSize()
+{
+	return this->GetPackage()->GetFileSize();
+}
+
+
 
 TArray<FString> FCustomStandardAssetData::SplitStringRecursive(
 	const FString& InStr, 

@@ -57,9 +57,10 @@ public:
 	bool IsCatogryStandarized();
 
 	
-	double GetMemoryUsedSize(
-		AssetSizeDisplayUnit SizeUnit = AssetSizeDisplayUnit::Byte,
-		bool bEstimatedTotal = false);
+	int64 GetLoadedSize(bool bEstimatedTotal = false);
+	int64 GetDiskSize();
+
+	
 
 private:
 	TArray<FString> SplitStringRecursive(

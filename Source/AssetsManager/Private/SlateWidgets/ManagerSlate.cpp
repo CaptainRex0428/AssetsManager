@@ -310,7 +310,7 @@ void SManagerSlateTab::OnRowMouseButtonDoubleClicked(
 void SManagerSlateTab::RefreshAssetsListView(
 	bool bRefreshTableHeader)
 {
-	NtfyMsgLog("Refreshed");
+	// NtfyMsgLog("Refreshed");
 
 	if (bRefreshTableHeader) ConstructHeaderRow();
 
@@ -331,28 +331,33 @@ void SManagerSlateTab::ConstructHeaderRow()
 	SManagerCustomTableTitleRowColumnsType.Add(Column_UClass);
 	SManagerCustomTableTitleRowColumnsType.Add(Column_AssetName);
 
-	if (!OnlyCheck)
+	if (DetailMode)
 	{
-		SManagerCustomTableTitleRowColumnsType.Add(Column_PerAssetHandle);
+		SManagerCustomTableTitleRowColumnsType.Add(Column_DiskSize);
 	}
 
 	if (m_ClassCheckState == Texture)
 	{
-		SManagerCustomTableTitleRowColumnsType.Insert(
+		SManagerCustomTableTitleRowColumnsType.Add(
 			m_UsageCheckState == SourceSizeError ? 
-			Column_TextureSourceSize :Column_TextureMaxInGameSize, 1);
+			Column_TextureSourceSize :Column_TextureMaxInGameSize);
 
 		if (m_UsageCheckState == TextureGroupError || DetailMode)
 		{
-			SManagerCustomTableTitleRowColumnsType.Insert(Column_TextureGroup, 3);
+			SManagerCustomTableTitleRowColumnsType.Add(Column_TextureGroup);
 		}
 
 		if (m_UsageCheckState == TextureSettingsError || DetailMode)
 		{
-			SManagerCustomTableTitleRowColumnsType.Insert(Column_TextureSRGB,3);
+			SManagerCustomTableTitleRowColumnsType.Add(Column_TextureSRGB);
 			
-			SManagerCustomTableTitleRowColumnsType.Insert(Column_TextureCompressionSettings,3);
+			SManagerCustomTableTitleRowColumnsType.Add(Column_TextureCompressionSettings);
 		}
+	}
+
+	if (!OnlyCheck)
+	{
+		SManagerCustomTableTitleRowColumnsType.Add(Column_PerAssetHandle);
 	}
 
 }
@@ -408,6 +413,10 @@ TSharedRef<SHeaderRow> SManagerSlateTab::OnTableGenerateHeaderRow(
 			ColumnBoxArgs.FillWidth(0.2f);
 			break;
 
+		case Column_DiskSize:
+			ColumnBoxArgs.FillWidth(0.06f);
+			break;
+
 		default:
 			ColumnBoxArgs.FillWidth(0.1f);
 			break;
@@ -442,7 +451,8 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 
 		case Column_UClass:
 		{
-			TSharedPtr<STextBlock> ClassWidget = ConstructAssetClassRowBox(AssetToDisplay, GetFontInfo(9));
+			TSharedPtr<STextBlock> ClassWidget = 
+				ConstructAssetClassRowBox(AssetToDisplay, GetFontInfo(9));
 			ClassWidget->SetAutoWrapText(true);
 			ClassWidget->SetJustification(ETextJustify::Center);
 			ClassWidget->SetMargin(FMargin(3.f));
@@ -463,7 +473,8 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 
 		case Column_TextureMaxInGameSize:
 		{
-			TSharedPtr<STextBlock> TextureSizeWidget = ConstructAssetTextureSizeRowBox(AssetToDisplay, GetFontInfo(9));
+			TSharedPtr<STextBlock> TextureSizeWidget = 
+				ConstructAssetTextureSizeRowBox(AssetToDisplay, GetFontInfo(9));
 			TextureSizeWidget->SetAutoWrapText(true);
 			TextureSizeWidget->SetJustification(ETextJustify::Center);
 			TextureSizeWidget->SetMargin(FMargin(3.f));
@@ -473,7 +484,8 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 
 		case Column_TextureSourceSize:
 		{
-			TSharedPtr<STextBlock> TextureSizeWidget = ConstructAssetTextureSizeRowBox(AssetToDisplay, GetFontInfo(9));
+			TSharedPtr<STextBlock> TextureSizeWidget = 
+				ConstructAssetTextureSizeRowBox(AssetToDisplay, GetFontInfo(9));
 			TextureSizeWidget->SetAutoWrapText(true);
 			TextureSizeWidget->SetJustification(ETextJustify::Center);
 			TextureSizeWidget->SetMargin(FMargin(3.f));
@@ -483,7 +495,8 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 
 		case Column_TextureCompressionSettings:
 		{
-			TSharedPtr<STextBlock> TextureCompressionSettingsWidget = ConstructAssetTextureCompressionSettingsRowBox(AssetToDisplay, GetFontInfo(9));
+			TSharedPtr<STextBlock> TextureCompressionSettingsWidget = 
+				ConstructAssetTextureCompressionSettingsRowBox(AssetToDisplay, GetFontInfo(9));
 			TextureCompressionSettingsWidget->SetAutoWrapText(true);
 			TextureCompressionSettingsWidget->SetJustification(ETextJustify::Center);
 			TextureCompressionSettingsWidget->SetMargin(FMargin(3.f));
@@ -493,7 +506,8 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 
 		case Column_TextureSRGB:
 		{
-			TSharedPtr<STextBlock> TextureSRGBSettingsWidget = ConstructAssetTextureSRGBRowBox(AssetToDisplay, GetFontInfo(9));
+			TSharedPtr<STextBlock> TextureSRGBSettingsWidget = 
+				ConstructAssetTextureSRGBRowBox(AssetToDisplay, GetFontInfo(9));
 			TextureSRGBSettingsWidget->SetAutoWrapText(true);
 			TextureSRGBSettingsWidget->SetJustification(ETextJustify::Center);
 			TextureSRGBSettingsWidget->SetMargin(FMargin(3.f));
@@ -503,12 +517,24 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 
 		case Column_TextureGroup:
 		{
-			TSharedPtr<STextBlock> TextureLODGroup = ConstructAssetTextureLODGroupRowBox(AssetToDisplay, GetFontInfo(9));
+			TSharedPtr<STextBlock> TextureLODGroup = 
+				ConstructAssetTextureLODGroupRowBox(AssetToDisplay, GetFontInfo(9));
 			TextureLODGroup->SetAutoWrapText(true);
 			TextureLODGroup->SetJustification(ETextJustify::Left);
 			TextureLODGroup->SetMargin(FMargin(3.f));
 
 			return TextureLODGroup.ToSharedRef();
+		}
+
+		case Column_DiskSize:
+		{
+			TSharedPtr<STextBlock> DiskSizeBox = 
+				ConstructAssetDiskSizeRowBox(AssetToDisplay, GetFontInfo(9));
+			DiskSizeBox->SetAutoWrapText(true);
+			DiskSizeBox->SetJustification(ETextJustify::Left);
+			DiskSizeBox->SetMargin(FMargin(3.f));
+
+			return DiskSizeBox.ToSharedRef();
 		}
 
 		case Column_PerAssetHandle:
@@ -951,6 +977,54 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureLODGroupRowBox(
 	const FString ShowString = "[-]";
 	TSharedRef<STextBlock> TextureCompressionSettinsBox = ConstructNormalTextBlock(ShowString, FontInfo);
 	return TextureCompressionSettinsBox;
+}
+
+TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetDiskSizeRowBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	const FSlateFontInfo& FontInfo)
+{
+	FCustomStandardAssetData StandardAsset(*AssetDataToDisplay);
+	double AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetDiskSize(), AssetSizeDisplayUnit::MB);
+
+	FString AssetSizeStr =FString::Printf(L"%.4f%s", AssetSize, L"MB");
+
+	TSharedRef<STextBlock> DiskSizeBox = ConstructNormalTextBlock(AssetSizeStr, FontInfo);
+
+	FColor TextColor(255,255,255);
+
+	if (AssetSize > 2)
+	{
+		TextColor = FColor::Cyan;
+	}
+
+	if (AssetSize > 4)
+	{
+		TextColor = FColor::Green;
+	}
+
+	if (AssetSize > 8)
+	{
+		TextColor = FColor::Orange;
+	}
+
+	if (AssetSize > 16)
+	{
+		TextColor = FColor::Yellow;
+	}
+
+	if (AssetSize > 32)
+	{
+		TextColor = FColor::Purple;
+	}
+
+	if (AssetSize > 32)
+	{
+		TextColor = FColor::Red;
+	}
+	
+	DiskSizeBox->SetColorAndOpacity(TextColor);
+
+	return DiskSizeBox;
 }
 
 #pragma endregion

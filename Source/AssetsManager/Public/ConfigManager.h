@@ -32,7 +32,8 @@ enum class AssetSizeDisplayUnit : uint8
 	KB = 2 UMETA(DisplayName="KB"),
 	MB = 3 UMETA(DisplayName="MB"),
 	GB = 4 UMETA(DisplayName="GB"),
-	TB = 5 UMETA(DisplayName="TB")
+	TB = 5 UMETA(DisplayName="TB"),
+	AssetSizeDisplayUnit_Max
 };
 
 /**
