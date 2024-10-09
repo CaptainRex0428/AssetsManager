@@ -37,12 +37,13 @@ public:
 	bool IsTextureMaxInGameOverSize();
 	bool IsTextureSourceOverSize();
 
+	virtual int64 GetMemorySize(bool bEstimatedTotal = true) override;
+
 	FVector2D GetSourceSize();
 	FVector2D GetMaxInGameSize();
 
 	double GetStandardMaxSize();
 	double GetStandardMaxSizeStrict();
-
 
 	TSharedPtr<TextureCompressionSettings> GetCompressionSettings();
 	TSharedPtr<TextureCompressionSettings> GetStandardCompressionSettings(bool forced = false);
@@ -98,7 +99,6 @@ static const TArray<FCustomStandardTexture2DData::CompressionSettingsInfo> Valid
 	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_EncodedReflectionCapture),"EncodedReflectionCapture"),
 	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_SingleFloat),"Single Float (R32F)"),
 	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_HDR_F32),"HDR High Precision (RGBA32F)")
-	//ConstructCompressionConfigPairs(VNAME_STRUCT(TC_MAX),"TC_MAX")
 };
 
 static const TMap<FString, TextureGroup> TextureGroupNameMap =

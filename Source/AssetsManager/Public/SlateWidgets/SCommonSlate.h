@@ -20,17 +20,24 @@ public:
 	static enum CustomTableColumnType
 	{
 		//basic
-		Column_UClass= 0, 
-		Column_AssetName, 
-		Column_AssetPath, 
+		Column_UClass = 0,
+		Column_AssetName,
+		Column_AssetPath,
 		Column_PerAssetHandle,
 
 		//texture
-		Column_TextureMaxInGameSize, 
-		Column_TextureSourceSize, 
-		Column_TextureCompressionSettings, 
-		Column_TextureSRGB, 
-		Column_TextureGroup
+		Column_TextureMaxInGameSize,
+		Column_TextureSourceSize,
+		Column_TextureCompressionSettings,
+		Column_TextureSRGB,
+		Column_TextureGroup,
+
+		//Asset Size
+		Column_DiskSize,
+		Column_MemorySize,
+		
+		//Border
+		Column_Max
 	};
 
 	const TMap<CustomTableColumnType, FString> CustomTableColumnTypeToString =
@@ -44,7 +51,9 @@ public:
 		{Column_TextureSourceSize,TEXT("SourceSize")},
 		{Column_TextureCompressionSettings,TEXT("CompressionSettings")},
 		{Column_TextureSRGB,TEXT("sRGB")},
-		{Column_TextureGroup, TEXT("TextureGroup")}
+		{Column_TextureGroup, TEXT("TextureGroup")},
+		{Column_DiskSize, TEXT("DiskSize(MB)")},
+		{Column_MemorySize, TEXT("MemorySize(MB)")}
 	};
 
 	inline const TMap<CustomTableColumnType, FString>& GetCustomTableColumnTypeToStringMap() 

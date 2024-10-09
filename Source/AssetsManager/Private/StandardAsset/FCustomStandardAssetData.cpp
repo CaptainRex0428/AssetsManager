@@ -1,10 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
+#pragma warning(disable: 5038)
 
 #include "StandardAsset/FCustomStandardAssetData.h"
 #include "AssetsChecker/AssetsChecker.h"
-#include "ConfigManager.h"
+
 #include "ManagerLogger.h"
+#include "HAL/FileManager.h"
+#include "ObjectTools.h"
+#include "AssetToolsModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 
 FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData, bool StrictCheckMode)
 	:FAssetData(AssetData), 
@@ -297,6 +302,17 @@ const FCustomStandardAssetData::Category FCustomStandardAssetData::GetConfirmAss
 bool FCustomStandardAssetData::IsCatogryStandarized()
 {
 	return !(m_StrictAssetCategory == FCustomStandardAssetData::Undefined);
+}
+
+int64 FCustomStandardAssetData::GetMemorySize(
+	bool bEstimatedTotal)
+{
+	return this->GetAsset()->GetResourceSizeBytes(bEstimatedTotal ? EResourceSizeMode::EstimatedTotal : EResourceSizeMode::Exclusive);;
+}
+
+int64 FCustomStandardAssetData::GetDiskSize()
+{
+	return this->GetPackage()->GetFileSize();
 }
 
 TArray<FString> FCustomStandardAssetData::SplitStringRecursive(

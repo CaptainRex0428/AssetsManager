@@ -18,6 +18,8 @@
 #include "NiagaraEmitter.h"
 #include "PhysicsEngine/PhysicsAsset.h"
 
+#include "ConfigManager.h"
+
 #define VNAME_STRUCT(value) VNAME(value),value
 #define VCLASSNAME_STRUCT(value) value,value->GetName()
 
@@ -53,6 +55,9 @@ public:
 	const FCustomStandardAssetData::Category& GetStrictAssetCategory();
 	const FCustomStandardAssetData::Category GetConfirmAssetCategory();
 	bool IsCatogryStandarized();
+
+	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
+	virtual int64 GetDiskSize();
 
 private:
 	TArray<FString> SplitStringRecursive(

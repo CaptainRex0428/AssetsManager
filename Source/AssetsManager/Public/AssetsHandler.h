@@ -53,8 +53,12 @@ class ASSETSMANAGER_API UAssetsHandler : public UAssetActionUtility
 
 #pragma endregion
 
-#pragma region CallInEditor
+#pragma region BlueprintCallable
+	
 
 #pragma endregion
 
+#pragma region Inner
+
+#pragma endregion
 };
