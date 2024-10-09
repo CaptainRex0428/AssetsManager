@@ -34,6 +34,7 @@ public:
 
 		//Asset Size
 		Column_DiskSize,
+		Column_MemorySize,
 		
 		//Border
 		Column_Max
@@ -51,7 +52,8 @@ public:
 		{Column_TextureCompressionSettings,TEXT("CompressionSettings")},
 		{Column_TextureSRGB,TEXT("sRGB")},
 		{Column_TextureGroup, TEXT("TextureGroup")},
-		{Column_DiskSize, TEXT("DiskSize(MB)")}
+		{Column_DiskSize, TEXT("DiskSize(MB)")},
+		{Column_MemorySize, TEXT("MemorySize(MB)")}
 	};
 
 	inline const TMap<CustomTableColumnType, FString>& GetCustomTableColumnTypeToStringMap() 

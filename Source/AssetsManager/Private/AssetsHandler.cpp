@@ -193,7 +193,7 @@ void UAssetsHandler::Check()
 	{
 		FCustomStandardTexture2DData AssetSelect(AssetData);
 		FString OutUnit;
-		UAssetsChecker::ByteConversion(AssetSelect.GetMemorySize(), OutUnit, false);
+		UAssetsChecker::ByteConversion(AssetSelect.GetMemorySize(true), OutUnit, false);
 
 		NtfyMsg(OutUnit);
 	}

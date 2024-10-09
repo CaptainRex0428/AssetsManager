@@ -37,7 +37,7 @@ public:
 	bool IsTextureMaxInGameOverSize();
 	bool IsTextureSourceOverSize();
 
-	int64 GetMemorySize();
+	virtual int64 GetMemorySize(bool bEstimatedTotal = true) override;
 
 	FVector2D GetSourceSize();
 	FVector2D GetMaxInGameSize();

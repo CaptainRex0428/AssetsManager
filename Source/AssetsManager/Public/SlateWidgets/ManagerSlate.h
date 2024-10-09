@@ -192,6 +192,13 @@ private:
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
+	/*
+	* Construct memory size info box
+	*/
+	TSharedRef<STextBlock> ConstructAssetMemorySizeRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
 #pragma endregion
 
 

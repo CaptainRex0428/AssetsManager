@@ -304,23 +304,16 @@ bool FCustomStandardAssetData::IsCatogryStandarized()
 	return !(m_StrictAssetCategory == FCustomStandardAssetData::Undefined);
 }
 
-int64 FCustomStandardAssetData::GetLoadedSize(
+int64 FCustomStandardAssetData::GetMemorySize(
 	bool bEstimatedTotal)
 {
-	FResourceSizeEx size(bEstimatedTotal ? EResourceSizeMode::EstimatedTotal : EResourceSizeMode::Exclusive);
-	this->GetAsset()->GetResourceSizeEx(size);
-
-	int32 Size = size.GetTotalMemoryBytes();
-
-	return Size;
+	return this->GetAsset()->GetResourceSizeBytes(bEstimatedTotal ? EResourceSizeMode::EstimatedTotal : EResourceSizeMode::Exclusive);;
 }
 
 int64 FCustomStandardAssetData::GetDiskSize()
 {
 	return this->GetPackage()->GetFileSize();
 }
-
-
 
 TArray<FString> FCustomStandardAssetData::SplitStringRecursive(
 	const FString& InStr, 

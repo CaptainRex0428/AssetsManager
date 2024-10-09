@@ -56,8 +56,8 @@ public:
 	const FCustomStandardAssetData::Category GetConfirmAssetCategory();
 	bool IsCatogryStandarized();
 
-	int64 GetLoadedSize(bool bEstimatedTotal = false);
-	int64 GetDiskSize();
+	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
+	virtual int64 GetDiskSize();
 
 private:
 	TArray<FString> SplitStringRecursive(
