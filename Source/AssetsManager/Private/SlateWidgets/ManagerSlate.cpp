@@ -356,6 +356,14 @@ void SManagerSlateTab::ConstructHeaderRow()
 		}
 	}
 
+	if (m_ClassCheckState == SkeletalMesh)
+	{
+		SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalMeshLODNum);
+		SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalVertices);
+		SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalTriangles);
+
+	}
+
 	if (!OnlyCheck)
 	{
 		SManagerCustomTableTitleRowColumnsType.Add(Column_PerAssetHandle);
@@ -421,6 +429,19 @@ TSharedRef<SHeaderRow> SManagerSlateTab::OnTableGenerateHeaderRow(
 		case Column_MemorySize:
 			ColumnBoxArgs.FillWidth(0.1f);
 			break;
+
+		case Column_SkeletalMeshLODNum:
+			ColumnBoxArgs.FillWidth(0.05f);
+			break;
+
+		case Column_SkeletalVertices:
+			ColumnBoxArgs.FillWidth(0.2f);
+			break;
+
+		case Column_SkeletalTriangles:
+			ColumnBoxArgs.FillWidth(0.2f);
+			break;
+
 
 		default:
 			ColumnBoxArgs.FillWidth(0.1f);
@@ -551,6 +572,39 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 			DiskSizeBox->SetMargin(FMargin(3.f));
 
 			return DiskSizeBox.ToSharedRef();
+		}
+
+		case Column_SkeletalMeshLODNum:
+		{
+			TSharedPtr<STextBlock> LODNumBox =
+				ConstructSkeletalMeshLODNumRowBox(AssetToDisplay, GetFontInfo(9));
+			LODNumBox->SetAutoWrapText(true);
+			LODNumBox->SetJustification(ETextJustify::Center);
+			LODNumBox->SetMargin(FMargin(3.f));
+			
+			return LODNumBox.ToSharedRef();
+		}
+
+		case Column_SkeletalTriangles:
+		{
+			TSharedPtr<STextBlock> TriangleBox =
+				ConstructSkeletalMeshTrianglesNumRowBox(AssetToDisplay, GetFontInfo(9));
+			TriangleBox->SetAutoWrapText(true);
+			TriangleBox->SetJustification(ETextJustify::Center);
+			TriangleBox->SetMargin(FMargin(3.f));
+
+			return TriangleBox.ToSharedRef();
+		}
+
+		case Column_SkeletalVertices:
+		{
+			TSharedPtr<STextBlock> VerticesBox =
+				ConstructSkeletalMeshVerticesNumRowBox(AssetToDisplay, GetFontInfo(9));
+			VerticesBox->SetAutoWrapText(true);
+			VerticesBox->SetJustification(ETextJustify::Center);
+			VerticesBox->SetMargin(FMargin(3.f));
+
+			return VerticesBox.ToSharedRef();
 		}
 
 		case Column_PerAssetHandle:
@@ -1097,6 +1151,113 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetMemorySizeRowBox(const TS
 	MemorySizeBox->SetColorAndOpacity(TextColor);
 
 	return MemorySizeBox;
+}
+
+TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshLODNumRowBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	const FSlateFontInfo& FontInfo)
+{
+	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
+
+	if(!StandardSkeletal.IsSkeletalMesh())
+	{
+		return ConstructNormalTextBlock(L"[-]", FontInfo);
+	}
+
+	TSharedRef<STextBlock> LODNumBox = 
+		ConstructNormalTextBlock(FString::FromInt(StandardSkeletal.GetLODNum()), FontInfo);
+
+	return LODNumBox;
+}
+
+TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshVerticesNumRowBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	const FSlateFontInfo& FontInfo)
+{
+	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
+
+	if (!StandardSkeletal.IsSkeletalMesh())
+	{
+		return ConstructNormalTextBlock(L"[-]", FontInfo);
+	}
+
+	int32 LODNum = StandardSkeletal.GetLODNum();
+	FString DisplayContent;
+
+	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
+	{
+		DisplayContent += 
+			FString::Printf(L"LOD%d:%d", 
+				LODIdx, StandardSkeletal.GetLODVertexNum(LODIdx));
+		
+		if (LODIdx < LODNum - 1)
+		{
+			DisplayContent += L"\n";
+		}
+
+	}
+	
+	return ConstructNormalTextBlock(DisplayContent, FontInfo);
+}
+
+TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshTrianglesNumRowBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	const FSlateFontInfo& FontInfo)
+{
+	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
+
+	if (!StandardSkeletal.IsSkeletalMesh())
+	{
+		return ConstructNormalTextBlock(L"[-]", FontInfo);
+	}
+
+	int32 LODNum = StandardSkeletal.GetLODNum();
+	FString DisplayContent;
+
+	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
+	{
+		DisplayContent +=
+			FString::Printf(L"LOD%d:%d",
+				LODIdx, StandardSkeletal.GetLODTrianglesNum(LODIdx));
+
+		if (LODIdx < LODNum - 1)
+		{
+			DisplayContent += L"\n";
+		}
+
+	}
+
+	return ConstructNormalTextBlock(DisplayContent, FontInfo);
+}
+
+TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshLODAllowCPUAccessRowBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	const FSlateFontInfo& FontInfo)
+{
+	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
+
+	if (!StandardSkeletal.IsSkeletalMesh())
+	{
+		return ConstructNormalTextBlock(L"[-]", FontInfo);
+	}
+
+	int32 LODNum = StandardSkeletal.GetLODNum();
+	FString DisplayContent;
+
+	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
+	{
+		DisplayContent +=
+			FString::Printf(L"LOD%d:%d",
+				LODIdx, StandardSkeletal.GetAllowCPUAccess(LODIdx)? 1:0);
+
+		if (LODIdx < LODNum - 1)
+		{
+			DisplayContent += L"\n";
+		}
+
+	}
+
+	return ConstructNormalTextBlock(DisplayContent, FontInfo);
 }
 
 #pragma endregion
@@ -2234,6 +2395,36 @@ void SManagerSlateTab::OnClassFilterButtonChanged(
 				if (UsageFilterComboSourceItems.Contains(TextureSelect))
 				{
 					UsageFilterComboSourceItems.Remove(TextureSelect);
+				}
+			}
+		}
+	}
+
+	// Construct SkeletalMesh Selections
+	{
+		TArray<TSharedPtr<FString>> OnlySkeletalCollection =
+		{
+		};
+
+		if (*SelectedOption.Get() == USkeletalMesh::StaticClass()->GetName())
+		{
+			m_ClassCheckState = SkeletalMesh;
+
+			for (TSharedPtr<FString>& SkeletalSelect : OnlySkeletalCollection)
+			{
+				if (!UsageFilterComboSourceItems.Contains(SkeletalSelect))
+				{
+					UsageFilterComboSourceItems.Add(SkeletalSelect);
+				}
+			}
+		}
+		else
+		{
+			for (TSharedPtr<FString>& SkeletalSelect : OnlySkeletalCollection)
+			{
+				if (UsageFilterComboSourceItems.Contains(SkeletalSelect))
+				{
+					UsageFilterComboSourceItems.Remove(SkeletalSelect);
 				}
 			}
 		}

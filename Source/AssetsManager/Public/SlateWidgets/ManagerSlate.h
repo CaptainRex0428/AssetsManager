@@ -199,6 +199,34 @@ private:
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
+	/*
+	* Construct SkeletalMesh LODNumBox
+	*/
+	TSharedRef<STextBlock> ConstructSkeletalMeshLODNumRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
+	/*
+	* Construct SkeletalMesh Vertices
+	*/
+	TSharedRef<STextBlock> ConstructSkeletalMeshVerticesNumRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
+	/*
+	* Construct SkeletalMesh LODNumBox
+	*/
+	TSharedRef<STextBlock> ConstructSkeletalMeshTrianglesNumRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
+	/*
+	* Construct SkeletalMesh LOD Allow CPU Access
+	*/
+	TSharedRef<STextBlock> ConstructSkeletalMeshLODAllowCPUAccessRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
 #pragma endregion
 
 
