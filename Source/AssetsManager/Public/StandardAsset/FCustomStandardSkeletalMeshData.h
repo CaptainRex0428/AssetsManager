@@ -6,8 +6,6 @@
 
 #include "StandardAsset/FCustomStandardAssetData.h"
 
-#include "LODUtilities.h"
-
 #include "Engine/RendererSettings.h"
 #include "Engine/SkinnedAssetCommon.h"
 #include "Engine/SkinnedAssetAsyncCompileUtils.h"
