@@ -663,11 +663,7 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 		OutList.Empty();
 	}
 
-	FSlowTask CollectingProgress(FindInList.Num(), FText::FromString(TEXT("Scaning Assets ...")));
-	CollectingProgress.Initialize();
-	CollectingProgress.MakeDialog();
-
-	for(const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
+	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
 		FCustomStandardAssetData StandardAsset(*AssetDPtr);
 
@@ -681,10 +677,8 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 			OutList.Add(AssetDPtr);
 		}
 
-		CollectingProgress.EnterProgressFrame();
 	}
 
-	CollectingProgress.Destroy();
 }
 
 void UAssetsChecker::EListSameNameErrorAssetsForAssetList(

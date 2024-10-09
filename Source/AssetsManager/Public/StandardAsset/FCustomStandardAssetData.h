@@ -17,6 +17,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraEmitter.h"
 #include "PhysicsEngine/PhysicsAsset.h"
+#include "WidgetBlueprint.h"
 
 #include "ConfigManager.h"
 
@@ -99,6 +100,7 @@ static const TMap<UClass*, FString> UClassNameMap =
 	{VCLASSNAME_STRUCT(UTexture2D::StaticClass())},
 	{VCLASSNAME_STRUCT(UTexture2DArray::StaticClass())},
 	{VCLASSNAME_STRUCT(UUserWidget::StaticClass())},
+	{VCLASSNAME_STRUCT(UWidgetBlueprint::StaticClass())},
 	{VCLASSNAME_STRUCT(USkeletalMesh::StaticClass())},
 	{VCLASSNAME_STRUCT(UNiagaraSystem::StaticClass())},
 	{VCLASSNAME_STRUCT(UNiagaraEmitter::StaticClass())},

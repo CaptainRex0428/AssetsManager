@@ -41,7 +41,8 @@ public class AssetsManager : ModuleRules
                 "ContentBrowser",
 				"InputCore",
 				"Projects",
-                "SkeletalMeshUtilitiesCommon"
+                "SkeletalMeshUtilitiesCommon",
+                "UMGEditor"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
