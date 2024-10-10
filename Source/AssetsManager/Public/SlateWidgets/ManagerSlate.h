@@ -225,7 +225,7 @@ private:
 	/*
 	* Construct SkeletalMesh LOD AllowCPUAccessInfoBox
 	*/
-	TSharedRef<STextBlock> ConstructSkeletalMeshLODAllowCPUAccessRowBox(
+	TSharedRef<SVerticalBox> ConstructSkeletalMeshLODAllowCPUAccessRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 

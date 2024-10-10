@@ -602,11 +602,8 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 
 		case Column_SkeletalAllowCPUAccess:
 		{
-			TSharedPtr<STextBlock> AllowCPUAccessBox =
+			TSharedPtr<SVerticalBox> AllowCPUAccessBox =
 				ConstructSkeletalMeshLODAllowCPUAccessRowBox(AssetToDisplay, GetFontInfo(9));
-			AllowCPUAccessBox->SetAutoWrapText(true);
-			AllowCPUAccessBox->SetJustification(ETextJustify::Center);
-			AllowCPUAccessBox->SetMargin(FMargin(3.f));
 
 			return AllowCPUAccessBox.ToSharedRef();
 		}
@@ -1204,7 +1201,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshTrianglesNumRowB
 	return InfoList.ToSharedRef();
 }
 
-TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshLODAllowCPUAccessRowBox(
+TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshLODAllowCPUAccessRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
@@ -1212,26 +1209,29 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshLODAllowCPUAccessR
 
 	if (!StandardSkeletal.IsSkeletalMesh())
 	{
-		return ConstructNormalTextBlock(L"[-]", FontInfo);
+		return SNew(SVerticalBox)+SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
 	int32 LODNum = StandardSkeletal.GetLODNum();
 	FString DisplayContent;
 
+	TSharedPtr<SVerticalBox> InfoList = SNew(SVerticalBox);
+
 	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
 	{
-		DisplayContent +=
+		DisplayContent =
 			FString::Printf(L"LOD%d: %s",
-				LODIdx, StandardSkeletal.GetAllowCPUAccess(LODIdx) ? L"[ √ ]": L"[    ]");
+				LODIdx, StandardSkeletal.GetAllowCPUAccess(LODIdx) ? L"[ √ ]" : L"[    ]");
 
-		if (LODIdx < LODNum - 1)
-		{
-			DisplayContent += L"\n";
-		}
+		TSharedPtr<STextBlock> DisplayBox = ConstructNormalTextBlock(DisplayContent, FontInfo);
+		DisplayBox->SetAutoWrapText(true);
+		DisplayBox->SetJustification(ETextJustify::Center);
+		DisplayBox->SetMargin(FMargin(1.f));
 
+		InfoList->AddSlot().HAlign(HAlign_Fill).Padding(FMargin(1.f))[DisplayBox.ToSharedRef()];
 	}
 
-	return ConstructNormalTextBlock(DisplayContent, FontInfo);
+	return InfoList.ToSharedRef();
 }
 
 #pragma endregion
