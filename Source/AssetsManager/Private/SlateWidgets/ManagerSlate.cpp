@@ -334,11 +334,15 @@ void SManagerSlateTab::ConstructHeaderRow()
 	if (DetailMode)
 	{
 		SManagerCustomTableTitleRowColumnsType.Add(Column_DiskSize);
-		SManagerCustomTableTitleRowColumnsType.Add(Column_MemorySize);
 	}
 
 	if (m_ClassCheckState == Texture)
 	{
+		if (DetailMode)
+		{
+			SManagerCustomTableTitleRowColumnsType.Add(Column_MemorySize);
+		}
+
 		SManagerCustomTableTitleRowColumnsType.Add(
 			m_UsageCheckState == SourceSizeError ? 
 			Column_TextureSourceSize :Column_TextureMaxInGameSize);
@@ -486,7 +490,6 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 			TSharedPtr<SHorizontalBox> ClassWidget =
 				ConstructAssetClassRowBox(AssetToDisplay, GetFontInfo(9));
 			
-
 			return ClassWidget.ToSharedRef();
 		}
 
@@ -583,22 +586,16 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 
 		case Column_SkeletalTriangles:
 		{
-			TSharedPtr<STextBlock> TriangleBox =
+			TSharedPtr<SVerticalBox> TriangleBox =
 				ConstructSkeletalMeshTrianglesNumRowBox(AssetToDisplay, GetFontInfo(9));
-			TriangleBox->SetAutoWrapText(true);
-			TriangleBox->SetJustification(ETextJustify::Center);
-			TriangleBox->SetMargin(FMargin(3.f));
 
 			return TriangleBox.ToSharedRef();
 		}
 
 		case Column_SkeletalVertices:
 		{
-			TSharedPtr<STextBlock> VerticesBox =
+			TSharedPtr<SVerticalBox> VerticesBox =
 				ConstructSkeletalMeshVerticesNumRowBox(AssetToDisplay, GetFontInfo(9));
-			VerticesBox->SetAutoWrapText(true);
-			VerticesBox->SetJustification(ETextJustify::Center);
-			VerticesBox->SetMargin(FMargin(3.f));
 
 			return VerticesBox.ToSharedRef();
 		}
@@ -1065,45 +1062,14 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetDiskSizeRowBox(
 	const FSlateFontInfo& FontInfo)
 {
 	FCustomStandardAssetData StandardAsset(*AssetDataToDisplay);
-	double AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetDiskSize(), AssetSizeDisplayUnit::MB);
+	AssetsInfoDisplayLevel DisplayLevel = AssetsInfoDisplayLevel::AssetsInfoDisplay_Display;
+	double AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetDiskSize(DisplayLevel), AssetSizeDisplayUnit::MB);
 
 	FString AssetSizeStr =FString::Printf(L"%.4f%s", AssetSize, L"MB");
 
 	TSharedRef<STextBlock> DiskSizeBox = ConstructNormalTextBlock(AssetSizeStr, FontInfo);
 
-	FColor TextColor(255,255,255);
-
-	if (AssetSize > 2)
-	{
-		TextColor = FColor::Cyan;
-	}
-
-	if (AssetSize > 4)
-	{
-		TextColor = FColor::Green;
-	}
-
-	if (AssetSize > 8)
-	{
-		TextColor = FColor::Orange;
-	}
-
-	if (AssetSize > 16)
-	{
-		TextColor = FColor::Yellow;
-	}
-
-	if (AssetSize > 32)
-	{
-		TextColor = FColor::Purple;
-	}
-
-	if (AssetSize > 32)
-	{
-		TextColor = FColor::Red;
-	}
-	
-	DiskSizeBox->SetColorAndOpacity(TextColor);
+	DiskSizeBox->SetColorAndOpacity(UAssetsChecker::DisplayLevelToColor(DisplayLevel));
 	DiskSizeBox->SetAutoWrapText(true);
 	DiskSizeBox->SetJustification(ETextJustify::Center);
 	DiskSizeBox->SetMargin(FMargin(3.f));
@@ -1116,55 +1082,24 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetMemorySizeRowBox(
 	const FSlateFontInfo& FontInfo)
 {
 	double AssetSize = 0;
+	AssetsInfoDisplayLevel DisplayLevel = AssetsInfoDisplayLevel::AssetsInfoDisplay_Display;
 
 	if (AssetDataToDisplay->GetAsset()->IsA<UTexture2D>())
 	{
 		FCustomStandardTexture2DData StandardAsset(*AssetDataToDisplay);
-		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetMemorySize(), AssetSizeDisplayUnit::MB);
+		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetMemorySize(DisplayLevel), AssetSizeDisplayUnit::MB);
 	}
 	else
 	{
 		FCustomStandardAssetData StandardAsset(*AssetDataToDisplay);
-		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetMemorySize(), AssetSizeDisplayUnit::MB);
+		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetMemorySize(DisplayLevel), AssetSizeDisplayUnit::MB);
 	}
 
 	FString AssetSizeStr = FString::Printf(L"%.4f%s", AssetSize, L"MB");
 
 	TSharedRef<STextBlock> MemorySizeBox = ConstructNormalTextBlock(AssetSizeStr, FontInfo);
 
-	FColor TextColor(255, 255, 255);
-
-	if (AssetSize > 2)
-	{
-		TextColor = FColor::Cyan;
-	}
-
-	if (AssetSize > 4)
-	{
-		TextColor = FColor::Green;
-	}
-
-	if (AssetSize > 8)
-	{
-		TextColor = FColor::Orange;
-	}
-
-	if (AssetSize > 16)
-	{
-		TextColor = FColor::Yellow;
-	}
-
-	if (AssetSize > 32)
-	{
-		TextColor = FColor::Purple;
-	}
-
-	if (AssetSize > 32)
-	{
-		TextColor = FColor::Red;
-	}
-
-	MemorySizeBox->SetColorAndOpacity(TextColor);
+	MemorySizeBox->SetColorAndOpacity(UAssetsChecker::DisplayLevelToColor(DisplayLevel));
 	MemorySizeBox->SetAutoWrapText(true);
 	MemorySizeBox->SetJustification(ETextJustify::Center);
 	MemorySizeBox->SetMargin(FMargin(3.f));
@@ -1193,64 +1128,80 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSkeletalMeshLODNumRowBox(
 	return SNew(SHorizontalBox) +SHorizontalBox::Slot().VAlign(VAlign_Center)[LODNumBox];
 }
 
-TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshVerticesNumRowBox(
+TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshVerticesNumRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
-	const FSlateFontInfo& FontInfo)
+	const FSlateFontInfo& FontInfo,
+	bool bStricWithCategory)
 {
 	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
 
 	if (!StandardSkeletal.IsSkeletalMesh())
 	{
-		return ConstructNormalTextBlock(L"[-]", FontInfo);
+		return SNew(SVerticalBox) +SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
 	int32 LODNum = StandardSkeletal.GetLODNum();
 	FString DisplayContent;
 
+	TSharedPtr<SVerticalBox> InfoList = SNew(SVerticalBox);
+
 	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
 	{
-		DisplayContent += 
-			FString::Printf(L"LOD%d:%8.2fw", 
-				LODIdx, StandardSkeletal.GetLODVertexNum(LODIdx) / 10000.0f);
-		
-		if (LODIdx < LODNum - 1)
-		{
-			DisplayContent += L"\n";
-		}
+		AssetsInfoDisplayLevel DisplayLevel;
+		int32 VerticesCount = StandardSkeletal.GetLODVerticesNum(LODIdx, DisplayLevel,bStricWithCategory);
 
+		DisplayContent =
+			FString::Printf(L"LOD%d:%8.2fw",
+				LODIdx, VerticesCount / 10000.0f);
+
+		TSharedPtr<STextBlock> DisplayBox = ConstructNormalTextBlock(DisplayContent, FontInfo);
+		DisplayBox->SetColorAndOpacity(UAssetsChecker::DisplayLevelToColor(DisplayLevel));
+		DisplayBox->SetAutoWrapText(true);
+		DisplayBox->SetJustification(ETextJustify::Center);
+		DisplayBox->SetMargin(FMargin(1.f));
+
+		InfoList->AddSlot().HAlign(HAlign_Fill).Padding(FMargin(1.f))[DisplayBox.ToSharedRef()];
 	}
 	
-	return ConstructNormalTextBlock(DisplayContent, FontInfo);
+	return InfoList.ToSharedRef();
 }
 
-TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshTrianglesNumRowBox(
+TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshTrianglesNumRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
-	const FSlateFontInfo& FontInfo)
+	const FSlateFontInfo& FontInfo,
+	bool bStricWithCategory)
 {
 	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
 
 	if (!StandardSkeletal.IsSkeletalMesh())
 	{
-		return ConstructNormalTextBlock(L"[-]", FontInfo);
+		return SNew(SVerticalBox) +SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
 	int32 LODNum = StandardSkeletal.GetLODNum();
 	FString DisplayContent;
 
+	TSharedPtr<SVerticalBox> InfoList = SNew(SVerticalBox);
+
 	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
 	{
-		DisplayContent +=
+		AssetsInfoDisplayLevel DisplayLevel;
+		int32 VerticesCount = StandardSkeletal.GetLODTrianglesNum(LODIdx, DisplayLevel, bStricWithCategory);
+
+		DisplayContent =
 			FString::Printf(L"LOD%d:%8.2fw",
-				LODIdx, StandardSkeletal.GetLODTrianglesNum(LODIdx)/10000.0f);
+				LODIdx, VerticesCount / 10000.0f);
 
-		if (LODIdx < LODNum - 1)
-		{
-			DisplayContent += L"\n";
-		}
+		TSharedPtr<STextBlock> DisplayBox = ConstructNormalTextBlock(DisplayContent, FontInfo);
+		DisplayBox->SetColorAndOpacity(UAssetsChecker::DisplayLevelToColor(DisplayLevel));
+		DisplayBox->SetAutoWrapText(true);
+		DisplayBox->SetJustification(ETextJustify::Center);
+		DisplayBox->SetMargin(FMargin(1.f));
 
+		InfoList->AddSlot().HAlign(HAlign_Fill).Padding(FMargin(1.f))[DisplayBox.ToSharedRef()];
 	}
 
-	return ConstructNormalTextBlock(DisplayContent, FontInfo);
+	return InfoList.ToSharedRef();
 }
 
 TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshLODAllowCPUAccessRowBox(

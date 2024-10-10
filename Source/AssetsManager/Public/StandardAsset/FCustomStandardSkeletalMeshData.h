@@ -36,7 +36,9 @@ public:
 
 	int32 GetLODNum();
 	int32 GetLODTrianglesNum(int32 LODIndex);
-	int32 GetLODVertexNum(int32 LODIndex);
+	int32 GetLODTrianglesNum(int32 LODIndex,AssetsInfoDisplayLevel & DisplayLevel, bool bStrictWithCategory = false);
+	int32 GetLODVerticesNum(int32 LODIndex);
+	int32 GetLODVerticesNum(int32 LODIndex, AssetsInfoDisplayLevel& DisplayLevel, bool bStrictWithCategory = false);
 
 	bool GetAllowCPUAccess(int32 LODIndex = 0);
 	bool SetAllowCPUAccess(int32 LODIndex = 0,bool CPUAccessState=true);

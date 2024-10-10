@@ -40,6 +40,9 @@ public:
 		bool OnlyUnit = true,
 		AssetSizeDisplayUnit Target = AssetSizeDisplayUnit::AssetSizeDisplayUnit_Max);
 
+	static AssetsInfoDisplayLevel IntToDisplayLevel(int32 Idx);
+	static FColor DisplayLevelToColor(AssetsInfoDisplayLevel & DisplayLevel);
+
 #pragma endregion
 
 #pragma region Standard Check Tools

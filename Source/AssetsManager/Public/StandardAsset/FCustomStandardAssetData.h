@@ -58,7 +58,9 @@ public:
 	bool IsCatogryStandarized();
 
 	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
+	virtual int64 GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel,bool bEstimatedTotal = true);
 	virtual int64 GetDiskSize();
+	virtual int64 GetDiskSize(AssetsInfoDisplayLevel& DisplayLevel);
 
 private:
 	TArray<FString> SplitStringRecursive(

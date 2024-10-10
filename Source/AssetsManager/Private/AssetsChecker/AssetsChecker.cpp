@@ -1418,3 +1418,41 @@ double UAssetsChecker::ByteConversion(
 	return SizeResult;
 
 }
+
+AssetsInfoDisplayLevel UAssetsChecker::IntToDisplayLevel(int32 Idx)
+{
+	if (Idx < 0)
+	{
+		return AssetsInfoDisplayLevel::AssetsInfoDisplay_Display;
+	}
+
+	if (Idx < (int32)AssetsInfoDisplayLevel::AssetsInfoDisplayLevel_Max)
+	{
+		return (AssetsInfoDisplayLevel)Idx;
+	}
+
+	return AssetsInfoDisplayLevel::AssetsInfoDisplay_Exceed;
+}
+
+FColor UAssetsChecker::DisplayLevelToColor(AssetsInfoDisplayLevel & DisplayLevel)
+{
+	switch (DisplayLevel)
+	{
+	case AssetsInfoDisplayLevel::AssetsInfoDisplay_Display:
+		return FColor::White;
+	case AssetsInfoDisplayLevel::AssetsInfoDisplay_Tip:
+		return FColor::Cyan;
+	case AssetsInfoDisplayLevel::AssetsInfoDisplay_Attention:
+		return FColor::Green;
+	case AssetsInfoDisplayLevel::AssetsInfoDisplay_Warning:
+		return FColor::Yellow;
+	case AssetsInfoDisplayLevel::AssetsInfoDisplay_Risk:
+		return FColor::Orange;
+	case AssetsInfoDisplayLevel::AssetsInfoDisplay_Exceed:
+		return FColor::Red;
+	case AssetsInfoDisplayLevel::AssetsInfoDisplayLevel_Max:
+	default:
+		return FColor::White;
+		break;
+	}
+}

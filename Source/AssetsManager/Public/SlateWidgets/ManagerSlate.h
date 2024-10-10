@@ -209,16 +209,18 @@ private:
 	/*
 	* Construct SkeletalMesh Vertices
 	*/
-	TSharedRef<STextBlock> ConstructSkeletalMeshVerticesNumRowBox(
+	TSharedRef<SVerticalBox> ConstructSkeletalMeshVerticesNumRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
-		const FSlateFontInfo& FontInfo);
+		const FSlateFontInfo& FontInfo,
+		bool bStricWithCategory = false);
 
 	/*
 	* Construct SkeletalMesh LODNumBox
 	*/
-	TSharedRef<STextBlock> ConstructSkeletalMeshTrianglesNumRowBox(
+	TSharedRef<SVerticalBox> ConstructSkeletalMeshTrianglesNumRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
-		const FSlateFontInfo& FontInfo);
+		const FSlateFontInfo& FontInfo,
+		bool bStricWithCategory = false);
 
 	/*
 	* Construct SkeletalMesh LOD AllowCPUAccessInfoBox

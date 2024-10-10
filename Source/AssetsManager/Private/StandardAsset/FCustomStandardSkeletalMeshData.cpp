@@ -4,6 +4,7 @@
 #include "StandardAsset/FCustomStandardSkeletalMeshData.h"
 #include "LODUtilities.h"
 #include "ManagerLogger.h"
+#include "AssetsChecker/AssetsChecker.h"
 
 
 FCustomStandardSkeletalMeshData::FCustomStandardSkeletalMeshData(FAssetData& AssetData)
@@ -92,7 +93,93 @@ int32 FCustomStandardSkeletalMeshData::GetLODTrianglesNum(
 	return LODTriNum;
 }
 
-int32 FCustomStandardSkeletalMeshData::GetLODVertexNum(int32 LODIndex)
+int32 FCustomStandardSkeletalMeshData::GetLODTrianglesNum(
+	int32 LODIndex, 
+	AssetsInfoDisplayLevel& DisplayLevel,
+	bool bStrictWithCategory)
+{
+	int32 TNum = GetLODTrianglesNum(LODIndex);
+
+	if (!bStrictWithCategory)
+	{
+		FString SKAssetGlobalSection = "/AssetsManager/Global/SkeletalMesh";
+
+		TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
+			*SKAssetGlobalSection,
+			L"AssetTrianglesNumLevelDivide",
+			L"Level");
+
+		int32 LevelOut = 0;
+
+		for (int32 levelIdx = 0; levelIdx < ValidLevels.Num(); ++levelIdx)
+		{
+			TSharedPtr<FString> LevelValue = FConfigManager::Get().FindInSectionStructArray(
+				*SKAssetGlobalSection,
+				L"AssetTrianglesNumLevelDivide",
+				L"Level",
+				FString::FromInt(levelIdx),
+				L"Value");
+
+			if (!LevelValue.IsValid())
+			{
+				continue;
+			}
+
+			int BorderSize = FConfigManager::Get().SToI(*LevelValue);
+
+			LevelOut = levelIdx;
+
+			if (TNum < BorderSize)
+			{
+				break;
+			}
+		}
+
+		DisplayLevel = UAssetsChecker::IntToDisplayLevel(LevelOut);
+
+		return TNum;
+	}
+	
+	FString SKAssetGlobalSection = "/AssetsManager/Global/SkeletalMesh";
+
+	TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
+		*SKAssetGlobalSection,
+		L"AssetTrianglesNumLevelDivide",
+		L"Level");
+
+	int32 LevelOut = 0;
+
+	for (int32 levelIdx = 0; levelIdx < ValidLevels.Num(); ++levelIdx)
+	{
+		TSharedPtr<FString> LevelValue = FConfigManager::Get().FindInSectionStructArray(
+			*SKAssetGlobalSection,
+			L"AssetTrianglesNumLevelDivide",
+			L"Level",
+			FString::FromInt(levelIdx),
+			L"Value");
+
+		if (!LevelValue.IsValid())
+		{
+			continue;
+		}
+
+		int BorderSize = FConfigManager::Get().SToI(*LevelValue);
+
+		LevelOut = levelIdx;
+
+		if (TNum < BorderSize)
+		{
+			break;
+		}
+	}
+
+	DisplayLevel = UAssetsChecker::IntToDisplayLevel(LevelOut);
+
+	return TNum;
+
+}
+
+int32 FCustomStandardSkeletalMeshData::GetLODVerticesNum(int32 LODIndex)
 {
 	if (!this->bSkeletalMesh || !GetSkeletalMesh()->IsValidLODIndex(LODIndex))
 	{
@@ -114,6 +201,93 @@ int32 FCustomStandardSkeletalMeshData::GetLODVertexNum(int32 LODIndex)
 	}
 
 	return LODVertexNum;
+}
+
+int32 FCustomStandardSkeletalMeshData::GetLODVerticesNum(
+	int32 LODIndex, 
+	AssetsInfoDisplayLevel& DisplayLevel,
+	bool bStrictWithCategory)
+{
+	int32 VNum = GetLODVerticesNum(LODIndex);
+
+	if (!bStrictWithCategory)
+	{
+		FString SKAssetGlobalSection = "/AssetsManager/Global/SkeletalMesh";
+
+		TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
+			*SKAssetGlobalSection,
+			L"AssetVerticesNumLevelDivide",
+			L"Level");
+
+		int32 LevelOut = 0;
+
+		for (int32 levelIdx = 0; levelIdx < ValidLevels.Num(); ++levelIdx)
+		{
+			TSharedPtr<FString> LevelValue = FConfigManager::Get().FindInSectionStructArray(
+				*SKAssetGlobalSection,
+				L"AssetVerticesNumLevelDivide",
+				L"Level",
+				FString::FromInt(levelIdx),
+				L"Value");
+
+			if (!LevelValue.IsValid())
+			{
+				continue;
+			}
+
+			int BorderSize = FConfigManager::Get().SToI(*LevelValue);
+
+			LevelOut = levelIdx;
+
+			if (VNum < BorderSize)
+			{
+				break;
+			}
+		}
+
+		DisplayLevel = UAssetsChecker::IntToDisplayLevel(LevelOut);
+
+		return VNum;
+	}
+
+	FString SKAssetGlobalSection = "/AssetsManager/Global/SkeletalMesh";
+
+	TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
+		*SKAssetGlobalSection,
+		L"AssetVerticesNumLevelDivide",
+		L"Level");
+
+	int32 LevelOut = 0;
+
+	for (int32 levelIdx = 0; levelIdx < ValidLevels.Num(); ++levelIdx)
+	{
+		TSharedPtr<FString> LevelValue = FConfigManager::Get().FindInSectionStructArray(
+			*SKAssetGlobalSection,
+			L"AssetVerticesNumLevelDivide",
+			L"Level",
+			FString::FromInt(levelIdx),
+			L"Value");
+
+		if (!LevelValue.IsValid())
+		{
+			continue;
+		}
+
+		int BorderSize = FConfigManager::Get().SToI(*LevelValue);
+
+		LevelOut = levelIdx;
+
+		if (VNum < BorderSize)
+		{
+			break;
+		}
+	}
+
+	DisplayLevel = UAssetsChecker::IntToDisplayLevel(LevelOut);
+
+	return VNum;
+
+	
 }
 
 bool FCustomStandardSkeletalMeshData::GetAllowCPUAccess(int32 LODIndex)
