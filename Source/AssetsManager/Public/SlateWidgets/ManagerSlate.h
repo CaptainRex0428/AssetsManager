@@ -127,7 +127,7 @@ private:
 	/* 
 	Construct standard editable name info box
 	*/
-	TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> ConstructEditAssetNameRowBox(
+	TSharedRef<SHorizontalBox> ConstructEditAssetNameRowBox(
 		TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
@@ -146,14 +146,14 @@ private:
 	/*
 	Construct standard name info box
 	*/
-	TSharedRef<STextBlock> ConstructAssetNameRowBox(
+	TSharedRef<SHorizontalBox> ConstructAssetNameRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
 	/*
 	Construct standard class info box
 	*/
-	TSharedRef<STextBlock> ConstructAssetClassRowBox(
+	TSharedRef<SHorizontalBox> ConstructAssetClassRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 		const FSlateFontInfo& FontInfo);
 	
@@ -188,21 +188,21 @@ private:
 	/*
 	* Construct disk size info box
 	*/
-	TSharedRef<STextBlock> ConstructAssetDiskSizeRowBox(
+	TSharedRef<SHorizontalBox> ConstructAssetDiskSizeRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
 	/*
 	* Construct memory size info box
 	*/
-	TSharedRef<STextBlock> ConstructAssetMemorySizeRowBox(
+	TSharedRef<SHorizontalBox> ConstructAssetMemorySizeRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
 	/*
 	* Construct SkeletalMesh LODNumBox
 	*/
-	TSharedRef<STextBlock> ConstructSkeletalMeshLODNumRowBox(
+	TSharedRef<SHorizontalBox> ConstructSkeletalMeshLODNumRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
@@ -221,11 +221,13 @@ private:
 		const FSlateFontInfo& FontInfo);
 
 	/*
-	* Construct SkeletalMesh LOD Allow CPU Access
+	* Construct SkeletalMesh LOD AllowCPUAccessInfoBox
 	*/
 	TSharedRef<STextBlock> ConstructSkeletalMeshLODAllowCPUAccessRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
+
+
 
 #pragma endregion
 

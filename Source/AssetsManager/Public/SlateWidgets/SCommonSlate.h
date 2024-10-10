@@ -36,6 +36,7 @@ public:
 		Column_SkeletalMeshLODNum,
 		Column_SkeletalVertices,
 		Column_SkeletalTriangles,
+		Column_SkeletalAllowCPUAccess,
 
 		//Asset Size
 		Column_DiskSize,
@@ -61,6 +62,7 @@ public:
 		{Column_SkeletalMeshLODNum, TEXT("LODNum(SK)")},
 		{Column_SkeletalTriangles, TEXT("Triangles(SK)")},
 		{Column_SkeletalVertices, TEXT("Vertices(SK)")},
+		{Column_SkeletalAllowCPUAccess, TEXT("AllowCPUAccess")},
 		{Column_MemorySize, TEXT("MemorySize(MB)")}
 	};
 

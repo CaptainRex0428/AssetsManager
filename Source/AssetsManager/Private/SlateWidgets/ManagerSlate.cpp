@@ -358,10 +358,13 @@ void SManagerSlateTab::ConstructHeaderRow()
 
 	if (m_ClassCheckState == SkeletalMesh)
 	{
-		SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalMeshLODNum);
-		SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalVertices);
-		SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalTriangles);
-
+		if (DetailMode)
+		{
+			SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalMeshLODNum);
+			SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalVertices);
+			SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalTriangles);
+			SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalAllowCPUAccess);
+		}
 	}
 
 	if (!OnlyCheck)
@@ -435,13 +438,16 @@ TSharedRef<SHeaderRow> SManagerSlateTab::OnTableGenerateHeaderRow(
 			break;
 
 		case Column_SkeletalVertices:
-			ColumnBoxArgs.FillWidth(0.2f);
+			ColumnBoxArgs.FillWidth(0.12f);
 			break;
 
 		case Column_SkeletalTriangles:
-			ColumnBoxArgs.FillWidth(0.2f);
+			ColumnBoxArgs.FillWidth(0.12f);
 			break;
 
+		case Column_SkeletalAllowCPUAccess:
+			ColumnBoxArgs.FillWidth(0.1f);
+			break;
 
 		default:
 			ColumnBoxArgs.FillWidth(0.1f);
@@ -477,18 +483,16 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 
 		case Column_UClass:
 		{
-			TSharedPtr<STextBlock> ClassWidget = 
+			TSharedPtr<SHorizontalBox> ClassWidget =
 				ConstructAssetClassRowBox(AssetToDisplay, GetFontInfo(9));
-			ClassWidget->SetAutoWrapText(true);
-			ClassWidget->SetJustification(ETextJustify::Center);
-			ClassWidget->SetMargin(FMargin(3.f));
+			
 
 			return ClassWidget.ToSharedRef();
 		}
 
 		case Column_AssetName:
 		{
-			TSharedPtr<SCustomEditableText<TSharedPtr<FAssetData>>> NameWidget =
+			TSharedPtr<SHorizontalBox> NameWidget =
 				ConstructEditAssetNameRowBox(AssetToDisplay, GetFontInfo(9));
 
 			return NameWidget.ToSharedRef();
@@ -554,33 +558,25 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 
 		case Column_MemorySize:
 		{
-			TSharedPtr<STextBlock> MemorySizeBox =
+			TSharedPtr<SHorizontalBox> MemorySizeBox =
 				ConstructAssetMemorySizeRowBox(AssetToDisplay, GetFontInfo(9));
-			MemorySizeBox->SetAutoWrapText(true);
-			MemorySizeBox->SetJustification(ETextJustify::Center);
-			MemorySizeBox->SetMargin(FMargin(3.f));
 
 			return MemorySizeBox.ToSharedRef();
 		}
 
 		case Column_DiskSize:
 		{
-			TSharedPtr<STextBlock> DiskSizeBox = 
+			TSharedPtr<SHorizontalBox> DiskSizeBox =
 				ConstructAssetDiskSizeRowBox(AssetToDisplay, GetFontInfo(9));
-			DiskSizeBox->SetAutoWrapText(true);
-			DiskSizeBox->SetJustification(ETextJustify::Center);
-			DiskSizeBox->SetMargin(FMargin(3.f));
+			
 
 			return DiskSizeBox.ToSharedRef();
 		}
 
 		case Column_SkeletalMeshLODNum:
 		{
-			TSharedPtr<STextBlock> LODNumBox =
+			TSharedPtr<SHorizontalBox> LODNumBox =
 				ConstructSkeletalMeshLODNumRowBox(AssetToDisplay, GetFontInfo(9));
-			LODNumBox->SetAutoWrapText(true);
-			LODNumBox->SetJustification(ETextJustify::Center);
-			LODNumBox->SetMargin(FMargin(3.f));
 			
 			return LODNumBox.ToSharedRef();
 		}
@@ -605,6 +601,17 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 			VerticesBox->SetMargin(FMargin(3.f));
 
 			return VerticesBox.ToSharedRef();
+		}
+
+		case Column_SkeletalAllowCPUAccess:
+		{
+			TSharedPtr<STextBlock> AllowCPUAccessBox =
+				ConstructSkeletalMeshLODAllowCPUAccessRowBox(AssetToDisplay, GetFontInfo(9));
+			AllowCPUAccessBox->SetAutoWrapText(true);
+			AllowCPUAccessBox->SetJustification(ETextJustify::Center);
+			AllowCPUAccessBox->SetMargin(FMargin(3.f));
+
+			return AllowCPUAccessBox.ToSharedRef();
 		}
 
 		case Column_PerAssetHandle:
@@ -884,7 +891,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructListAssetsCountInfo(
 	return ListAssetsCountInfo;
 }
 
-TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> SManagerSlateTab::ConstructEditAssetNameRowBox(
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructEditAssetNameRowBox(
 	TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
@@ -898,7 +905,7 @@ TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> SManagerSlateTab::Constr
 		.OnItemToTipText(this,&SManagerSlateTab::OnAssetDataToAssetEditableTextTip)
 		.OnItemCommit(this,&SManagerSlateTab::OnItemDataCommitted);
 
-	return AssetNameBox.ToSharedRef();
+	return SNew(SHorizontalBox) + SHorizontalBox::Slot().VAlign(VAlign_Center)[AssetNameBox.ToSharedRef()];
 }
 
 FText SManagerSlateTab::OnAssetDataToAssetNameEditableText(
@@ -929,7 +936,7 @@ bool SManagerSlateTab::OnItemDataCommitted(
 	return result;
 }
 
-TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetNameRowBox(
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetNameRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
@@ -943,10 +950,10 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetNameRowBox(
 			ETextJustify::Left, 
 			FColor::White,DisplayAssetPath);
 
-	return AssetNameBox.ToSharedRef();
+	return SNew(SHorizontalBox) + SHorizontalBox::Slot().VAlign(VAlign_Center)[AssetNameBox.ToSharedRef()];
 }
 
-TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetClassRowBox(
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetClassRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
@@ -961,8 +968,12 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetClassRowBox(
 		DisplayAssetClass = "[Undefined]";
 	}
 
-	TSharedRef<STextBlock> AssetClassBox = ConstructNormalTextBlock(DisplayAssetClass,FontInfo);
-	return AssetClassBox;
+	TSharedRef<STextBlock> ClassWidget = ConstructNormalTextBlock(DisplayAssetClass,FontInfo);
+	ClassWidget->SetAutoWrapText(true);
+	ClassWidget->SetJustification(ETextJustify::Center);
+	ClassWidget->SetMargin(FMargin(3.f));
+
+	return SNew(SHorizontalBox) + SHorizontalBox::Slot().VAlign(VAlign_Center)[ClassWidget];
 }
 
 TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureSizeRowBox(
@@ -1020,7 +1031,7 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureSRGBRowBox(
 
 	if (SRGBSettings.IsValid())
 	{
-		const FString ShowString = *SRGBSettings ? "sRGB" : "NsRGB";
+		const FString ShowString = *SRGBSettings ? L"[ √ ]" : L"[    ]";
 		TSharedRef<STextBlock> TextureCompressionSettinsBox = ConstructNormalTextBlock(ShowString, FontInfo);
 		return TextureCompressionSettinsBox;
 	};
@@ -1049,7 +1060,7 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureLODGroupRowBox(
 	return TextureCompressionSettinsBox;
 }
 
-TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetDiskSizeRowBox(
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetDiskSizeRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
@@ -1093,11 +1104,16 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetDiskSizeRowBox(
 	}
 	
 	DiskSizeBox->SetColorAndOpacity(TextColor);
+	DiskSizeBox->SetAutoWrapText(true);
+	DiskSizeBox->SetJustification(ETextJustify::Center);
+	DiskSizeBox->SetMargin(FMargin(3.f));
 
-	return DiskSizeBox;
+	return SNew(SHorizontalBox) + SHorizontalBox::Slot().VAlign(VAlign_Center)[DiskSizeBox];
 }
 
-TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetMemorySizeRowBox(const TSharedPtr<FAssetData>& AssetDataToDisplay, const FSlateFontInfo& FontInfo)
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetMemorySizeRowBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	const FSlateFontInfo& FontInfo)
 {
 	double AssetSize = 0;
 
@@ -1149,11 +1165,14 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetMemorySizeRowBox(const TS
 	}
 
 	MemorySizeBox->SetColorAndOpacity(TextColor);
+	MemorySizeBox->SetAutoWrapText(true);
+	MemorySizeBox->SetJustification(ETextJustify::Center);
+	MemorySizeBox->SetMargin(FMargin(3.f));
 
-	return MemorySizeBox;
+	return SNew(SHorizontalBox) +SHorizontalBox::Slot().VAlign(VAlign_Center)[MemorySizeBox];
 }
 
-TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshLODNumRowBox(
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSkeletalMeshLODNumRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
@@ -1161,13 +1180,17 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshLODNumRowBox(
 
 	if(!StandardSkeletal.IsSkeletalMesh())
 	{
-		return ConstructNormalTextBlock(L"[-]", FontInfo);
+		return SNew(SHorizontalBox) + SHorizontalBox::Slot().VAlign(VAlign_Center)[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
 	TSharedRef<STextBlock> LODNumBox = 
 		ConstructNormalTextBlock(FString::FromInt(StandardSkeletal.GetLODNum()), FontInfo);
 
-	return LODNumBox;
+	LODNumBox->SetAutoWrapText(true);
+	LODNumBox->SetJustification(ETextJustify::Center);
+	LODNumBox->SetMargin(FMargin(3.f));
+
+	return SNew(SHorizontalBox) +SHorizontalBox::Slot().VAlign(VAlign_Center)[LODNumBox];
 }
 
 TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshVerticesNumRowBox(
@@ -1187,8 +1210,8 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshVerticesNumRowBox(
 	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
 	{
 		DisplayContent += 
-			FString::Printf(L"LOD%d:%d", 
-				LODIdx, StandardSkeletal.GetLODVertexNum(LODIdx));
+			FString::Printf(L"LOD%d:%8.2fw", 
+				LODIdx, StandardSkeletal.GetLODVertexNum(LODIdx) / 10000.0f);
 		
 		if (LODIdx < LODNum - 1)
 		{
@@ -1217,8 +1240,8 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshTrianglesNumRowBox
 	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
 	{
 		DisplayContent +=
-			FString::Printf(L"LOD%d:%d",
-				LODIdx, StandardSkeletal.GetLODTrianglesNum(LODIdx));
+			FString::Printf(L"LOD%d:%8.2fw",
+				LODIdx, StandardSkeletal.GetLODTrianglesNum(LODIdx)/10000.0f);
 
 		if (LODIdx < LODNum - 1)
 		{
@@ -1247,8 +1270,8 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructSkeletalMeshLODAllowCPUAccessR
 	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
 	{
 		DisplayContent +=
-			FString::Printf(L"LOD%d:%d",
-				LODIdx, StandardSkeletal.GetAllowCPUAccess(LODIdx)? 1:0);
+			FString::Printf(L"LOD%d: %s",
+				LODIdx, StandardSkeletal.GetAllowCPUAccess(LODIdx) ? L"[ √ ]": L"[    ]");
 
 		if (LODIdx < LODNum - 1)
 		{
