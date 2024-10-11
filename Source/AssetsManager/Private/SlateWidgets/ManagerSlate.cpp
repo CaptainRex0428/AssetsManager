@@ -2791,7 +2791,7 @@ void SManagerSlateTab::OnReverseConditionCheckBoxStateChanged(
 		{
 			ReverseCondition = false;
 
-			UpdateUsageFilterAssetData(this->UsageFilterCurrent);
+			UpdateDisplayListSource();
 
 			RefreshAssetsListView(false);
 
