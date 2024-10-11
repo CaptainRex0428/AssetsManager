@@ -378,12 +378,20 @@ private:
 	FReply OnBatchRenameButtonClicked();
 #pragma endregion
 
+#pragma region SkeletonMeshBatchAudit
+
+
+
+#pragma endregion
+
 #pragma endregion
 
 
 #pragma region ComboListFilter
 
 	TSharedRef<SHorizontalBox> ConstructDropDownMenuBox();
+
+	void ConsrtuctDisplayListSource();
 
 #pragma region ClassFilter
 
@@ -443,6 +451,12 @@ private:
 
 	void UpdateUsageFilterAssetData(
 		const FString& Selection);
+
+#pragma endregion
+
+#pragma region CategoryFilter
+
+
 
 #pragma endregion
 

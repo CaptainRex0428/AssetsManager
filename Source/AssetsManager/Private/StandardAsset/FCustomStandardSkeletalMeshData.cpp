@@ -102,7 +102,7 @@ int32 FCustomStandardSkeletalMeshData::GetLODTrianglesNum(
 
 	if (!bStrictWithCategory)
 	{
-		FString SKAssetGlobalSection = "/AssetsManager/Global/SkeletalMesh";
+		FString SKAssetGlobalSection = "/AssetsManager/Global/Mesh";
 
 		TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
 			*SKAssetGlobalSection,
@@ -140,7 +140,7 @@ int32 FCustomStandardSkeletalMeshData::GetLODTrianglesNum(
 		return TNum;
 	}
 	
-	FString SKAssetGlobalSection = "/AssetsManager/Global/SkeletalMesh";
+	FString SKAssetGlobalSection = "/AssetsManager/Global/Mesh";
 
 	TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
 		*SKAssetGlobalSection,
@@ -212,7 +212,7 @@ int32 FCustomStandardSkeletalMeshData::GetLODVerticesNum(
 
 	if (!bStrictWithCategory)
 	{
-		FString SKAssetGlobalSection = "/AssetsManager/Global/SkeletalMesh";
+		FString SKAssetGlobalSection = "/AssetsManager/Global/Mesh";
 
 		TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
 			*SKAssetGlobalSection,
@@ -250,7 +250,7 @@ int32 FCustomStandardSkeletalMeshData::GetLODVerticesNum(
 		return VNum;
 	}
 
-	FString SKAssetGlobalSection = "/AssetsManager/Global/SkeletalMesh";
+	FString SKAssetGlobalSection = "/AssetsManager/Global/Mesh";
 
 	TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
 		*SKAssetGlobalSection,

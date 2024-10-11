@@ -925,7 +925,7 @@ bool SManagerSlateTab::OnItemDataCommitted(
 
 	const FString NewName = TextIn.ToString();
 	
-	bool result = UAssetsChecker::ERenameAsset(AssetDataToDisplay, NewName);
+	bool result = UAssetsChecker::RenameAsset(AssetDataToDisplay, NewName);
 
 	return result;
 }
@@ -978,11 +978,11 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureSizeRowBox(
 
 	if (m_ClassCheckState == Texture && m_UsageCheckState == SourceSizeError)
 	{
-		TextureAssetSize = UAssetsChecker::EGetTextureAssetSourceSize(*AssetDataToDisplay);
+		TextureAssetSize = UAssetsChecker::GetTextureAssetSourceSize(*AssetDataToDisplay);
 	}
 	else
 	{
-		TextureAssetSize = UAssetsChecker::EGetTextureAssetMaxInGameSize(*AssetDataToDisplay);
+		TextureAssetSize = UAssetsChecker::GetTextureAssetMaxInGameSize(*AssetDataToDisplay);
 	}
 	
 	const FString ShowString = FString::FromInt(TextureAssetSize.X) + "x" + FString::FromInt(TextureAssetSize.Y);
@@ -996,7 +996,7 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureCompressionSetting
 	const FSlateFontInfo& FontInfo)
 {
 	TSharedPtr<TextureCompressionSettings> CompressionSettings 
-		= UAssetsChecker::EGetTextureAssetCompressionSettings(*AssetDataToDisplay);
+		= UAssetsChecker::GetTextureAssetCompressionSettings(*AssetDataToDisplay);
 
 	if (CompressionSettings.IsValid())
 	{
@@ -1021,7 +1021,7 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureSRGBRowBox(
 	const FSlateFontInfo& FontInfo)
 {
 	TSharedPtr<bool> SRGBSettings
-		= UAssetsChecker::EGetTextureAssetSRGBSettings(*AssetDataToDisplay);
+		= UAssetsChecker::GetTextureAssetSRGBSettings(*AssetDataToDisplay);
 
 	if (SRGBSettings.IsValid())
 	{
@@ -1040,7 +1040,7 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureLODGroupRowBox(
 	const FSlateFontInfo& FontInfo)
 {
 	TSharedPtr<TextureGroup> TextureGroupResult
-		= UAssetsChecker::EGetTextureAssetTextureGroup(*AssetDataToDisplay);
+		= UAssetsChecker::GetTextureAssetTextureGroup(*AssetDataToDisplay);
 
 	if (TextureGroupResult.IsValid())
 	{
@@ -1260,7 +1260,7 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetDeleteButtonBox(
 FReply SManagerSlateTab::OnSingleAssetDeleteButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	if (UAssetsChecker::EGetAssetReferencesPath(ClickedAssetData).Num() > 0)
+	if (UAssetsChecker::GetAssetReferencesPath(ClickedAssetData).Num() > 0)
 	{
 #ifdef ZH_CN
 		EAppReturnType::Type result = DlgMsg(EAppMsgType::OkCancel,
@@ -1278,7 +1278,7 @@ FReply SManagerSlateTab::OnSingleAssetDeleteButtonClicked(
 		}
 	}
 
-	if (UAssetsChecker::EDeleteAsset(*ClickedAssetData))
+	if (UAssetsChecker::DeleteAsset(*ClickedAssetData))
 	{
 		// log
 #ifdef ZH_CN
@@ -1387,7 +1387,7 @@ FReply SManagerSlateTab::OnSingleTextureAsset2KButtonClicked(
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1439,7 +1439,7 @@ FReply SManagerSlateTab::OnSingleTextureAsset1KButtonClicked(
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() 
@@ -1491,7 +1491,7 @@ FReply SManagerSlateTab::OnSingleTextureAsset512ButtonClicked(
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1543,7 +1543,7 @@ FReply SManagerSlateTab::OnSingleTextureAssetResetButtonClicked(
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1594,7 +1594,7 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleTextureAssetSettingsFixButt
 FReply SManagerSlateTab::OnSingleTextureAssetSettingsFixButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	UAssetsChecker::ESetTextureStandardSettings(*ClickedAssetData);
+	UAssetsChecker::SetTextureStandardSettings(*ClickedAssetData);
 	RefreshAssetsListView();
 	return FReply::Handled();
 }
@@ -1628,7 +1628,7 @@ FReply SManagerSlateTab::OnSingleTextureLODGroupStandardFixButtonClicked(
 
 	if (STLODGroup)
 	{
-		UAssetsChecker::ESetTextureLODGroup(*ClickedAssetData, *STLODGroup);
+		UAssetsChecker::SetTextureLODGroup(*ClickedAssetData, *STLODGroup);
 
 		RefreshAssetsListView(false);
 	}
@@ -1787,7 +1787,7 @@ FReply SManagerSlateTab::OnDeleteAllSelectedButtonClicked()
 		AssetsDataToDelete.Add(*AssetDataPtr.Get());
 	}
 
-	if (UAssetsChecker::EDeleteAssets(AssetsDataToDelete))
+	if (UAssetsChecker::DeleteAssets(AssetsDataToDelete))
 	{
 		for (TSharedPtr<FAssetData> AssetDataPtr : AssetList)
 		{
@@ -1884,7 +1884,7 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 			AssetsReadyRename.Add(AssetData);
 		}
 
-		bool result = UAssetsChecker::EConfirmPrefixes(AssetsReadyRename, AssetShouldRename);
+		bool result = UAssetsChecker::ConfirmPrefixes(AssetsReadyRename, AssetShouldRename);
 
 		if (result)
 		{
@@ -1895,8 +1895,8 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 				AssetToRename.Add(*Asset);
 			}
 
-			UAssetsChecker::EAddPrefixes(AssetToRename);
-			StoredAssetsData = UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(StoredFolderPaths);
+			UAssetsChecker::AddPrefixes(AssetToRename);
+			StoredAssetsData = UAssetsChecker::ListAssetsDataPtrUnderSelectedFolder(StoredFolderPaths);
 			ConstuctClassFilterList(ClassFilterCurrent);
 		}
 
@@ -1908,7 +1908,7 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 	{
 		for (TSharedPtr<FAssetData> AssetData : AssetsList)
 		{
-			if(UAssetsChecker::ESetTextureStandardSettings(*AssetData))
+			if(UAssetsChecker::SetTextureStandardSettings(*AssetData))
 			{
 				if (SListViewUsageFilterAssetData.Contains(AssetData))
 				{
@@ -1932,7 +1932,7 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 
 			if (STLODGroup)
 			{
-				UAssetsChecker::ESetTextureLODGroup(*AssetData, *STLODGroup);
+				UAssetsChecker::SetTextureLODGroup(*AssetData, *STLODGroup);
 			}
 		}
 
@@ -1971,7 +1971,7 @@ TSharedRef<SButton> SManagerSlateTab::ConstructFixUpRedirectorButton()
 
 FReply SManagerSlateTab::OnFixUpRedirectorButtonClicked()
 {
-	UAssetsChecker::EFixUpRedirectors(StoredFolderPaths);
+	UAssetsChecker::FixUpRedirectors(StoredFolderPaths);
 	return FReply::Handled();
 }
 #pragma endregion
@@ -1996,12 +1996,10 @@ TSharedRef<SButton> SManagerSlateTab::ConstructOutputViewListInfoButton()
 
 FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 {
-	// Construct Output
-
 	FString Output;
 
+	// Construct Output
 	Output += L"Path Include:\n";
-
 	for (FString path : StoredFolderPaths)
 	{
 		Output += path;
@@ -2009,20 +2007,9 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 	}
 
 	Output += "\n";
-	Output += CLASSFILTER;
-	Output += L":\n";
-	Output += ClassFilterComboDisplayText->GetText().ToString();
-	Output += "\n\n";
 
-	Output += USAGEFILTER;
-	Output += L":\n";
-	Output += UsageFilterComboDisplayText->GetText().ToString();
-#ifdef ZH_CN
-	Output += ReverseCondition ? TEXT("(反选)") : TEXT("");
-#else
-	Output += ReverseCondition ? TEXT("(Reverse)") : TEXT("");
-#endif
-	Output += "\n\n";
+	Output += FString::Printf(L"%s:\n%s\n\n", CLASSFILTER, *ClassFilterComboDisplayText->GetText().ToString());
+	Output += FString::Printf(L"%s:\n%s(%s)\n\n", USAGEFILTER, *UsageFilterComboDisplayText->GetText().ToString(), ReverseCondition ? TEXT("Reverse") : TEXT(""));
 
 	Output += L"Files:\n";
 	
@@ -2038,9 +2025,8 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 		OutputData = this->CustomTableList->GetListItems();
 	}
 
-	float TargetNum = OutputData.Num();
-
-	FSlowTask WritingTask(TargetNum, FText::FromString("Writing Data ..."));
+	int32 TaskNum = OutputData.Num();
+	FSlowTask WritingTask(TaskNum, FText::FromString("Writing Data ..."));
 	WritingTask.Initialize();
 	WritingTask.MakeDialog();
 
@@ -2048,50 +2034,90 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 	{
 		WritingTask.EnterProgressFrame(.9f);
 
-		FString AssetName = asset->AssetName.ToString();
-		FString AssetPath = asset->GetObjectPathString();
-		FString AssetClass = asset->GetClass()->GetName();
+		FCustomStandardAssetData StandardAsset(*asset);
 
-		FVector2D MaxInGameTextureSize = UAssetsChecker::EGetTextureAssetMaxInGameSize(*asset);
-		FVector2D SourceTextureSize = UAssetsChecker::EGetTextureAssetSourceSize(*asset);
+		FString AssetName = StandardAsset.AssetName.ToString();
+		FString AssetPath = StandardAsset.GetObjectPathString();
+		FString AssetClass = StandardAsset.GetClass()->GetName();
+		
+		FString DiskSize;
+		UAssetsChecker::ByteConversion(StandardAsset.GetDiskSize(), DiskSize, false);
 
-		FString MaxInGameTextureSizeString = FString::FromInt(MaxInGameTextureSize.X) + "x" + FString::FromInt(MaxInGameTextureSize.Y);
-		FString SourceTextureSizeString = FString::FromInt(SourceTextureSize.X) + "x" + FString::FromInt(SourceTextureSize.Y);
-
+		
 		TArray<FStringFormatArg> args;
-		args.Add(FStringFormatArg(AssetClass));
-		args.Add(FStringFormatArg(AssetName));
-		args.Add(FStringFormatArg(AssetPath));
-		args.Add(FStringFormatArg(MaxInGameTextureSizeString));
-		args.Add(FStringFormatArg(SourceTextureSizeString));
+		args.Add(FStringFormatArg(AssetClass)); // 0
+		args.Add(FStringFormatArg(AssetName)); // 1
+		args.Add(FStringFormatArg(AssetPath)); // 2
+		args.Add(FStringFormatArg(DiskSize)); // 3
+		
 
 		if (m_ClassCheckState == Texture)
 		{
-			Output += FString::Format(TEXT("[{0}] [MaxInGameSize:{3}] [SourceGameSize:{4}] {1} ({2})\n"),args);
+			FCustomStandardTexture2DData StandardTexture(*asset);
+
+			FString ResourceSize;
+			UAssetsChecker::ByteConversion(StandardTexture.GetMemorySize(), ResourceSize, false);
+
+			FVector2D MaxInGameTextureSize = StandardTexture.GetMaxInGameSize();
+			FVector2D SourceTextureSize = StandardTexture.GetSourceSize();
+
+			FString MaxInGameTextureSizeString = FString::Printf(L"(%dx%d)", (int32)MaxInGameTextureSize.X, (int32)MaxInGameTextureSize.Y);
+			FString SourceTextureSizeString = FString::Printf(L"(%dx%d)", (int32)SourceTextureSize.X, (int32)SourceTextureSize.Y);
+
+			args.Add(FStringFormatArg(ResourceSize)); // 4
+			args.Add(FStringFormatArg(MaxInGameTextureSizeString)); // 5
+			args.Add(FStringFormatArg(SourceTextureSizeString)); // 6
+
+			Output += FString::Format(TEXT("[{0}] [{1}] - [MaxInGameSize:{5}] [SourceGameSize:{6}] - [DiskSize:{3}] [ResourceSize:{4}] - [{2}]\n"),args);
+
+			continue;
 		}
-		else
+
+		if (m_ClassCheckState == SkeletalMesh)
 		{
-			Output += FString::Format(TEXT("[{0}] {1} ({2})\n"), args);
+			FCustomStandardSkeletalMeshData StandardSkeletal(*asset);
+
+			int32 LODNum = StandardSkeletal.GetLODNum();
+			
+			FString LODVer;
+			FString LODTri;
+
+			for (int32 Idx = 0; Idx < LODNum; ++Idx)
+			{
+				LODVer += UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d",StandardSkeletal.GetLODVerticesNum(Idx)));
+				LODTri += UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d",StandardSkeletal.GetLODTrianglesNum(Idx)));
+				
+				if (Idx < LODNum - 1)
+				{
+					LODVer += L"/";
+					LODTri += L"/";
+				}
+			}
+			
+			args.Add(FStringFormatArg(LODNum)); // 4
+			args.Add(FStringFormatArg(LODVer)); // 5
+			args.Add(FStringFormatArg(LODTri)); // 6
+
+			Output += FString::Format(TEXT("[{0}] [{1}] - [LOD Layer:{4}] - [DiskSize:{3}] - [LODVer:{5}] [LODTri:{6}] - [{2}]\n"), args);
+			continue;
 		}
+
+		
+		Output += FString::Format(TEXT("[{0}] [{1}] - [DiskSize:{3}] - [{2}]\n"), args);
 	}
 
-	
-
-	// Output
-
-	// DlgMsg(EAppMsgType::Ok, Output);
 
 	FDateTime Time = FDateTime::Now();
-	FString FileName = "AssetsManagerLog_"
-		+FString::FromInt(Time.GetYear())
-		+ FString::FromInt(Time.GetMonth())
-		+ FString::FromInt(Time.GetDay())
-		+ FString::FromInt(Time.GetHour())
-		+ FString::FromInt(Time.GetMinute())
-		+ FString::FromInt(Time.GetSecond())
-		+ "_"
-		+ FString::FromInt(Time.GetMillisecond())
-		+ "_"
+	FString TimeStr = FString::Printf(L"%.2d%.2d%.2d%.2d%.2d%.2d_%.3d",
+		Time.GetYear(),
+		Time.GetMonth(),
+		Time.GetDay(),
+		Time.GetHour(),
+		Time.GetMinute(),
+		Time.GetSecond(),
+		Time.GetMillisecond());
+
+	FString FileName = "AssetsManagerLog_"+ TimeStr + "_"
 		+ ClassFilterComboDisplayText->GetText().ToString()
 		+ "_"
 		+ UsageFilterComboDisplayText->GetText().ToString();
@@ -2103,7 +2129,7 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 		&IFileManager::Get(),
 		EFileWrite::FILEWRITE_Append))
 	{
-		WritingTask.EnterProgressFrame(.1f * TargetNum);
+		WritingTask.EnterProgressFrame(.1f * TaskNum);
 		WritingTask.Destroy();
 
 #ifdef ZH_CN
@@ -2114,7 +2140,7 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 		return FReply::Handled();
 	};
 
-	WritingTask.EnterProgressFrame(.1f * TargetNum);
+	WritingTask.EnterProgressFrame(.1f * TaskNum);
 	WritingTask.Destroy();
 
 #ifdef ZH_CN
@@ -2245,6 +2271,11 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDropDownMenuBox()
 		];
 
 	return DropDownMenu;
+}
+
+void SManagerSlateTab::ConsrtuctDisplayListSource()
+{
+
 }
 
 #pragma endregion
@@ -2494,7 +2525,7 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 			}
 		}
 
-		UAssetsChecker::EListUnusedAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::FilterUnusedAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
 		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
@@ -2504,7 +2535,7 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 		m_UsageCheckState = PrefixError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListPrefixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::FilterPrefixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
 		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
@@ -2514,7 +2545,7 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 		m_UsageCheckState = SameNameAssetError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListSameNameErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::FilterSameNameErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
 		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
@@ -2524,7 +2555,7 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 		m_UsageCheckState = MaxInGameSizeError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
+		UAssetsChecker::FilterMaxInGameSizeErrorAssetsForAssetList(
 			SListViewClassFilterAssetData, 
 			SListViewUsageFilterAssetData, 
 			bTextureSizeCheckStrictMode);
@@ -2538,7 +2569,7 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 		m_UsageCheckState = SourceSizeError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
+		UAssetsChecker::FilterSourceSizeErrorAssetsForAssetList(
 			SListViewClassFilterAssetData, 
 			SListViewUsageFilterAssetData, 
 			bTextureSizeCheckStrictMode);
@@ -2552,7 +2583,7 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 		m_UsageCheckState = SubfixError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
+		UAssetsChecker::FilterTextureSubfixErrorAssetsForAssetList(
 			SListViewClassFilterAssetData, 
 			SListViewUsageFilterAssetData);
 
@@ -2567,7 +2598,7 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 		m_UsageCheckState = TextureSettingsError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
+		UAssetsChecker::FilterTextureSettingsErrorAssetsForAssetList(
 			SListViewClassFilterAssetData, 
 			SListViewUsageFilterAssetData);
 
@@ -2581,7 +2612,7 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 		m_UsageCheckState = TextureGroupError;
 		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::FilterTextureLODGroupErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
 		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 

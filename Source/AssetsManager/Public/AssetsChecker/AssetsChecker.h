@@ -43,91 +43,93 @@ public:
 	static AssetsInfoDisplayLevel IntToDisplayLevel(int32 Idx);
 	static FColor DisplayLevelToColor(AssetsInfoDisplayLevel & DisplayLevel);
 
+	static FString IntStrAddColumn(FString SourceStr);
+
 #pragma endregion
 
 #pragma region Standard Check Tools
 	
-	static int EDuplicateAssets(
+	static int DuplicateAssets(
 		const TArray<FAssetData>& AssetsDataSelected, 
 		int NumOfDupicates, 
 		bool forced);
 	
 #pragma region FixPrefix
 
-	static bool EConfirmPrefixes(
+	static bool ConfirmPrefixes(
 		TArray< TSharedPtr<FAssetData>>& AssetsSelected,
 		TArray< TSharedPtr<FAssetData>>& ReadyToFixAssets);
 
-	static void EAddPrefixes(
+	static void AddPrefixes(
 		const TArray<UObject*>& AssetsSelected);
 	
-	static void EAddPrefixes(
+	static void AddPrefixes(
 		const TArray<FAssetData>& AssetsSelected);
 
 #pragma endregion
 
 #pragma region GetReferences
 
-	static TArray<FString> EGetAssetReferencesPath(
+	static TArray<FString> GetAssetReferencesPath(
 		const FString& AssetPath);
 
-	static TArray<FString> EGetAssetReferencesPath(
+	static TArray<FString> GetAssetReferencesPath(
 		const FAssetData& AssetData);
 
-	static TArray<FString> EGetAssetReferencesPath(
+	static TArray<FString> GetAssetReferencesPath(
 		const TSharedPtr<FAssetData>& AssetData);
 
 #pragma endregion
 
 #pragma region HandleRedirectors
 
-	static void EFixUpRedirectors(const FString& Path = "/Game");
+	static void FixUpRedirectors(const FString& Path = "/Game");
 
-	static void EFixUpRedirectors(const TArray<FString>& Path);
+	static void FixUpRedirectors(const TArray<FString>& Path);
 
 #pragma endregion
 
 #pragma region HandleTexture
 
-	static FVector2D EGetTextureAssetSourceSize(
+	static FVector2D GetTextureAssetSourceSize(
 		const FAssetData& AssetData);
 
-	static FVector2D EGetTextureAssetMaxInGameSize(
+	static FVector2D GetTextureAssetMaxInGameSize(
 		const FAssetData& AssetData);
 	
-	static TSharedPtr<TextureCompressionSettings> EGetTextureAssetCompressionSettings(
+	static TSharedPtr<TextureCompressionSettings> GetTextureAssetCompressionSettings(
 		const FAssetData& AssetData);
 
-	static TSharedPtr<TextureGroup> EGetTextureAssetTextureGroup(
+	static TSharedPtr<TextureGroup> GetTextureAssetTextureGroup(
 		const FAssetData& AssetData);
 
-	static bool ESetTextureAssetCompressionSettings(
+	static bool SetTextureAssetCompressionSettings(
 		const FAssetData& AssetData,
 		const TEnumAsByte<TextureCompressionSettings> & CompressionSetting);
 
-	static TSharedPtr<bool> EGetTextureAssetSRGBSettings(
+	static TSharedPtr<bool> GetTextureAssetSRGBSettings(
 		const FAssetData& AssetData);
 
-	static bool ESetTextureSRGBSettings(
+	static bool SetTextureSRGBSettings(
 		const FAssetData& AssetData,
 		const bool & sRGB);
 
-	static bool EFixTextureMaxSizeInGame(
+	static bool FixTextureMaxSizeInGame(
 		FAssetData& ClickedAssetData, 
 		double maxSize, 
 		bool forced = false);
 
-	static bool ESetTextureSize(
+	static bool SetTextureSize(
 		FAssetData& ClickedAssetData, 
 		double maxSize);
 
-	static bool ESetTextureStandardSettings(
+	static bool SetTextureStandardSettings(
 		FAssetData& ClickedAssetData);
 
-	static TSharedPtr<TextureGroup> EGetTextureLODGroup(
+	static TSharedPtr<TextureGroup> GetTextureLODGroup(
 		const FAssetData& AssetData);
 
-	static bool ESetTextureLODGroup(
+	static bool SetTextureLODGroup(
 		FAssetData& AssetData,
 		TextureGroup InTextureGroup);
 
@@ -135,91 +137,96 @@ public:
 
 #pragma region DeleteAssets
 
-	static uint32 EDeleteAssets(
+	static uint32 DeleteAssets(
 		const TArray<FAssetData>& AssetsData);
-	static uint32 EDeleteAsset(
+	static uint32 DeleteAsset(
 		const FAssetData& AssetData);
 
 #pragma endregion
 
 #pragma region HandleUnusedAssets
 
-	static void ERemoveUnusedAssets(
+	static void RemoveUnusedAssets(
 		const TArray<FAssetData>& AssetsDataSelected);
 
-	static void ERemoveUnusedAssets(
+	static void RemoveUnusedAssets(
 		const TArray<FString>& FolderPathSelected);
 
-	static void ERemoveEmptyFolder(
+	static void RemoveEmptyFolder(
 		const FString FolderPathSelected = "/Game");
 
-	static void ERemoveEmptyFolder(
+	static void RemoveEmptyFolder(
 		const TArray<FString>& FolderPathSelected);
 
 #pragma endregion
 
 #pragma region HandleAssetsName
 
-	static int EReplaceName(
+	static int ReplaceName(
 		const TArray<UObject*>& AssetsSelected, 
 		const FString& OriginStr, 
 		const FString& ReplaceStr);
 	
-	static bool ERenameAsset(
+	static bool RenameAsset(
 		TSharedPtr<FAssetData> & AssetData, 
 		FString NewName);
 
-	static TSharedPtr<FString> EGetAssetNameSubfix(
+	static TSharedPtr<FString> GetAssetNameSubfix(
 		const FAssetData & AssetSelected);
 
 #pragma endregion
 
 #pragma region ListAssets
 
-	static TArray<TSharedPtr<FAssetData>> EListAssetsDataPtrUnderSelectedFolder(
+	static TArray<TSharedPtr<FAssetData>> ListAssetsDataPtrUnderSelectedFolder(
 		const FString& FolderPathSelected);
 
-	static TArray<TSharedPtr<FAssetData>> EListAssetsDataPtrUnderSelectedFolder(
+	static TArray<TSharedPtr<FAssetData>> ListAssetsDataPtrUnderSelectedFolder(
 		const TArray<FString>& FolderPathSelected);
 
-	static void EListUnusedAssetsForAssetList(
+	static void FilterAssetsWithTagFromAssetList(
+		const TArray<TSharedPtr<FAssetData>>& FindInList,
+		TArray<TSharedPtr<FAssetData>>& OutList,
+		FName TagName);
+
+	static void FilterUnusedAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
 		TArray<TSharedPtr<FAssetData>>& OutList,
 		bool isAdditiveMode = false);
 
-	static void EListPrefixErrorAssetsForAssetList(
+	static void FilterPrefixErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
 		TArray<TSharedPtr<FAssetData>>& OutList,
 		bool isAdditiveMode = false);
 
-	static void EListSameNameErrorAssetsForAssetList(
+	static void FilterSameNameErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
 		TArray<TSharedPtr<FAssetData>>& OutList,
 		bool isAdditiveMode = false);
 
-	static void EListMaxInGameSizeErrorAssetsForAssetList(
+	static void FilterMaxInGameSizeErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList,
 		TArray<TSharedPtr<FAssetData>>& OutList,
 		bool bStrictMode = false,
 		bool isAdditiveMode = false);
 
-	static void EListSourceSizeErrorAssetsForAssetList(
+	static void FilterSourceSizeErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
 		TArray<TSharedPtr<FAssetData>>& OutList,
 		bool bStrictMode = false,
 		bool isAdditiveMode = false);
 
-	static void EListTextureSubfixErrorAssetsForAssetList(
+	static void FilterTextureSubfixErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
 		TArray<TSharedPtr<FAssetData>>& OutList,
 		bool isAdditiveMode = false);
 
-	static void EListTextureSettingsErrorAssetsForAssetList(
+	static void FilterTextureSettingsErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList,
 		TArray<TSharedPtr<FAssetData>>& OutList,
 		bool isAdditiveMode = false);
 
-	static void EListTextureLODGroupErrorAssetsForAssetList(
+	static void FilterTextureLODGroupErrorAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList,
 		TArray<TSharedPtr<FAssetData>>& OutList,
 		bool isAdditiveMode = false);
