@@ -1897,7 +1897,7 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 
 			UAssetsChecker::AddPrefixes(AssetToRename);
 			StoredAssetsData = UAssetsChecker::ListAssetsDataPtrUnderSelectedFolder(StoredFolderPaths);
-			ConstuctClassFilterList(ClassFilterCurrent);
+			UpdateClassFilterList(ClassFilterCurrent);
 		}
 
 		RefreshAssetsListView(false);
@@ -2273,9 +2273,117 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDropDownMenuBox()
 	return DropDownMenu;
 }
 
-void SManagerSlateTab::ConsrtuctDisplayListSource()
+void SManagerSlateTab::UpdateDisplayListSource()
 {
+	/*-------------------------- Class filter----------------------------*/
 
+	UpdateClassFilterList(ClassFilterCurrent);
+
+	// Construct Only Texture Selections
+	{
+		TArray<TSharedPtr<FString>> OnlyTextureCollection =
+		{
+			UsageSelectionMaxInGameSizeError,
+			UsageSelectionSourceSizeError,
+			UsageSelectionTextureSubfixError,
+			UsageSelectionTextureSettinsError,
+			UsageSelectionTextureLODGroupError
+		};
+
+		if (m_ClassCheckState == Texture)
+		{
+			for (TSharedPtr<FString>& TextureSelect : OnlyTextureCollection)
+			{
+				if (!UsageFilterComboSourceItems.Contains(TextureSelect))
+				{
+					UsageFilterComboSourceItems.Add(TextureSelect);
+				}
+			}
+		}
+		else
+		{
+			for (TSharedPtr<FString>& TextureSelect : OnlyTextureCollection)
+			{
+				if (UsageFilterComboSourceItems.Contains(TextureSelect))
+				{
+					UsageFilterComboSourceItems.Remove(TextureSelect);
+				}
+			}
+		}
+	}
+
+	// Construct SkeletalMesh Selections
+	{
+		TArray<TSharedPtr<FString>> OnlySkeletalCollection =
+		{
+		};
+
+		if (m_ClassCheckState == SkeletalMesh)
+		{
+			for (TSharedPtr<FString>& SkeletalSelect : OnlySkeletalCollection)
+			{
+				if (!UsageFilterComboSourceItems.Contains(SkeletalSelect))
+				{
+					UsageFilterComboSourceItems.Add(SkeletalSelect);
+				}
+			}
+		}
+		else
+		{
+			for (TSharedPtr<FString>& SkeletalSelect : OnlySkeletalCollection)
+			{
+				if (UsageFilterComboSourceItems.Contains(SkeletalSelect))
+				{
+					UsageFilterComboSourceItems.Remove(SkeletalSelect);
+				}
+			}
+		}
+	}
+
+	/*-------------------------- Usage filter----------------------------*/
+
+	UpdateUsageFilterAssetData(UsageFilterCurrent);
+	
+
+	UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
+
+	/*-------------------------- Dynamic Buttons Component----------------------------*/
+
+	ConstructDynamicHandleAllBox();
+
+	/*-------------------------- Strict Check Component----------------------------*/
+
+	if (m_UsageCheckState == MaxInGameSizeError || m_UsageCheckState == SourceSizeError)
+	{
+		if (bTextureSizeCheckStrictCheckBoxConstructed)
+		{
+			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
+		}
+
+		DropDownContent->InsertSlot(2)
+			.FillWidth(.05f)
+			.Padding(FMargin(2.f))
+			[
+				ConstructTextureSizeStrictCheckBox(
+					bTextureSizeCheckStrictMode ?
+					ECheckBoxState::Checked : ECheckBoxState::Unchecked)
+			];
+	}
+	else
+	{
+		if (bTextureSizeCheckStrictCheckBoxConstructed)
+		{
+			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
+		}
+	}
+
+	/*-------------------------- Reverse Check Component----------------------------*/
+
+	if (ReverseCondition)
+	{
+		ReverseConditionCheckBox->SetIsChecked(ECheckBoxState::Unchecked);
+		ReverseCondition = false;
+	}
 }
 
 #pragma endregion
@@ -2309,7 +2417,7 @@ TSharedRef<SWidget> SManagerSlateTab::OnGenerateClassFilterButton(
 	return SourceItemWidget;
 }
 
-void SManagerSlateTab::ConstuctClassFilterList(
+void SManagerSlateTab::UpdateClassFilterList(
 	TSharedPtr<FString> SelectedOption)
 {
 	if (*SelectedOption.Get() == CLASS_LISTALL)
@@ -2347,94 +2455,38 @@ void SManagerSlateTab::ConstuctClassFilterList(
 		UAssetsChecker::ECopyAssetsPtrList(NewAssetViewList, SListViewClassFilterAssetData);
 		
 	}
+
+	// Update count
+	ClassListViewCountBlock->SetText(FText::FromString(FString::FromInt(SListViewClassFilterAssetData.Num())));
 }
 
 void SManagerSlateTab::OnClassFilterButtonChanged(
 	TSharedPtr<FString> SelectedOption, 
 	ESelectInfo::Type InSelectInfo)
 {
-	ClassFilterCurrent = SelectedOption;
+	
 
 	ClassFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
 
-	ConstuctClassFilterList(ClassFilterCurrent);
-	UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-	UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
-	
-	// Update count
-
-	ClassListViewCountBlock->SetText(FText::FromString(FString::FromInt(SListViewClassFilterAssetData.Num())));
+	ClassFilterCurrent = SelectedOption;
 	
 	// add option
 
 	m_ClassCheckState = DefaultClassCheckState;
-
-	// Construct Only Texture Selections
+	
+	if (*SelectedOption.Get() == UTexture2D::StaticClass()->GetName() ||
+		*SelectedOption.Get() == UTexture2DArray::StaticClass()->GetName())
 	{
-		TArray<TSharedPtr<FString>> OnlyTextureCollection =
-		{
-			UsageSelectionMaxInGameSizeError,
-			UsageSelectionSourceSizeError,
-			UsageSelectionTextureSubfixError,
-			UsageSelectionTextureSettinsError,
-			UsageSelectionTextureLODGroupError
-		};
+		m_ClassCheckState = Texture;
+	}
+	
+	if (*SelectedOption.Get() == USkeletalMesh::StaticClass()->GetName())
+	{
+		m_ClassCheckState = SkeletalMesh;
 
-		if (*SelectedOption.Get() == UTexture2D::StaticClass()->GetName() ||
-			*SelectedOption.Get() == UTexture2DArray::StaticClass()->GetName())
-		{
-			m_ClassCheckState = Texture;
-
-			for (TSharedPtr<FString>& TextureSelect : OnlyTextureCollection)
-			{
-				if (!UsageFilterComboSourceItems.Contains(TextureSelect))
-				{
-					UsageFilterComboSourceItems.Add(TextureSelect);
-				}
-			}
-		}
-		else
-		{
-			for (TSharedPtr<FString>& TextureSelect : OnlyTextureCollection)
-			{
-				if (UsageFilterComboSourceItems.Contains(TextureSelect))
-				{
-					UsageFilterComboSourceItems.Remove(TextureSelect);
-				}
-			}
-		}
 	}
 
-	// Construct SkeletalMesh Selections
-	{
-		TArray<TSharedPtr<FString>> OnlySkeletalCollection =
-		{
-		};
-
-		if (*SelectedOption.Get() == USkeletalMesh::StaticClass()->GetName())
-		{
-			m_ClassCheckState = SkeletalMesh;
-
-			for (TSharedPtr<FString>& SkeletalSelect : OnlySkeletalCollection)
-			{
-				if (!UsageFilterComboSourceItems.Contains(SkeletalSelect))
-				{
-					UsageFilterComboSourceItems.Add(SkeletalSelect);
-				}
-			}
-		}
-		else
-		{
-			for (TSharedPtr<FString>& SkeletalSelect : OnlySkeletalCollection)
-			{
-				if (UsageFilterComboSourceItems.Contains(SkeletalSelect))
-				{
-					UsageFilterComboSourceItems.Remove(SkeletalSelect);
-				}
-			}
-		}
-	}
-
+	UpdateDisplayListSource();
 	RefreshAssetsListView();
 
 	//set Usage Filter to default 
@@ -2474,36 +2526,67 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 	ESelectInfo::Type InSelectInfo)
 {
 	UsageFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
-	
-	if (ReverseCondition)
-	{
-		ReverseConditionCheckBox->SetIsChecked(ECheckBoxState::Unchecked);
-		ReverseCondition = false;
-	}
 
 	UsageFilterCurrent = *SelectedOption.Get();
 
-	UpdateUsageFilterAssetData(*SelectedOption.Get());
+	if (UsageFilterCurrent == USAGE_NONE)
+	{
+		m_UsageCheckState = DefaultUsageCheckState;
+	}
 
+	if (UsageFilterCurrent == USAGE_UNUSED)
+	{
+		m_UsageCheckState = Unused;
+	}
+
+	if (UsageFilterCurrent == USAGE_PREFIXERROR)
+	{
+		m_UsageCheckState = PrefixError;
+	}
+
+	if (UsageFilterCurrent == USAGE_SAMENAMEASSETERROR)
+	{
+		m_UsageCheckState = SameNameAssetError;
+	}
+
+	if (UsageFilterCurrent == USAGE_MAXINGAMESIZEERROR)
+	{
+		m_UsageCheckState = MaxInGameSizeError;
+	}
+
+	if (UsageFilterCurrent == USAGE_SOURCESIZEERROR)
+	{
+		m_UsageCheckState = SourceSizeError;
+	}
+
+	if (UsageFilterCurrent == USAGE_TEXTURESUBFIXERROR)
+	{
+		m_UsageCheckState = SubfixError;
+	}
+
+	if (UsageFilterCurrent == USAGE_TEXTURESETTINGSERROR)
+	{
+		m_UsageCheckState = TextureSettingsError;
+	}
+
+	if (UsageFilterCurrent == USAGE_TEXTUREGROUPERROR)
+	{
+		m_UsageCheckState = TextureGroupError;
+	}
+
+	UpdateDisplayListSource();
 	RefreshAssetsListView();
 }
 
 void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 {
-	if (Selection == USAGE_NONE)
+	if (m_UsageCheckState == DefaultUsageCheckState)
 	{
-		m_UsageCheckState = DefaultUsageCheckState;
-		ConstructDynamicHandleAllBox();
-
 		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
-	if (Selection == USAGE_UNUSED)
+	if (m_UsageCheckState == Unused)
 	{
-		m_UsageCheckState = Unused;
-		ConstructDynamicHandleAllBox();
-
 		if (SListViewClassFilterAssetData.Num() > 64)
 		{
 #ifdef ZH_CN
@@ -2526,120 +2609,57 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 		}
 
 		UAssetsChecker::FilterUnusedAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
-
-	if (Selection == USAGE_PREFIXERROR)
+	if (m_UsageCheckState == PrefixError)
 	{
-		m_UsageCheckState = PrefixError;
-		ConstructDynamicHandleAllBox();
-
 		UAssetsChecker::FilterPrefixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
 
-	if (Selection == USAGE_SAMENAMEASSETERROR)
+	if (m_UsageCheckState == SameNameAssetError)
 	{
-		m_UsageCheckState = SameNameAssetError;
-		ConstructDynamicHandleAllBox();
-
 		UAssetsChecker::FilterSameNameErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
 
-	if (Selection == USAGE_MAXINGAMESIZEERROR)
+	if (m_UsageCheckState == MaxInGameSizeError)
 	{
-		m_UsageCheckState = MaxInGameSizeError;
-		ConstructDynamicHandleAllBox();
-
 		UAssetsChecker::FilterMaxInGameSizeErrorAssetsForAssetList(
 			SListViewClassFilterAssetData, 
 			SListViewUsageFilterAssetData, 
 			bTextureSizeCheckStrictMode);
-
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
-
-	if (Selection == USAGE_SOURCESIZEERROR)
+	if (m_UsageCheckState == SourceSizeError)
 	{
-		m_UsageCheckState = SourceSizeError;
-		ConstructDynamicHandleAllBox();
-
 		UAssetsChecker::FilterSourceSizeErrorAssetsForAssetList(
 			SListViewClassFilterAssetData, 
 			SListViewUsageFilterAssetData, 
 			bTextureSizeCheckStrictMode);
-
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
 
-	if (Selection == USAGE_TEXTURESUBFIXERROR)
+	if (m_UsageCheckState == SubfixError)
 	{
-		m_UsageCheckState = SubfixError;
-		ConstructDynamicHandleAllBox();
 
 		UAssetsChecker::FilterTextureSubfixErrorAssetsForAssetList(
 			SListViewClassFilterAssetData, 
 			SListViewUsageFilterAssetData);
-
-		UAssetsChecker::ECopyAssetsPtrList(
-			SListViewUsageFilterAssetData, 
-			SListViewAssetData);
 	}
 
 
-	if (Selection == USAGE_TEXTURESETTINGSERROR)
+	if (m_UsageCheckState == TextureSettingsError)
 	{
-		m_UsageCheckState = TextureSettingsError;
-		ConstructDynamicHandleAllBox();
 
 		UAssetsChecker::FilterTextureSettingsErrorAssetsForAssetList(
 			SListViewClassFilterAssetData, 
 			SListViewUsageFilterAssetData);
-
-		UAssetsChecker::ECopyAssetsPtrList(
-			SListViewUsageFilterAssetData, 
-			SListViewAssetData);
 	}
 
-	if (Selection == USAGE_TEXTUREGROUPERROR)
+	if (m_UsageCheckState == TextureGroupError)
 	{
-		m_UsageCheckState = TextureGroupError;
-		ConstructDynamicHandleAllBox();
-
 		UAssetsChecker::FilterTextureLODGroupErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
-	}
-
-	// dynamic components
-
-	if (Selection == USAGE_MAXINGAMESIZEERROR || Selection == USAGE_SOURCESIZEERROR)
-	{
-		if (bTextureSizeCheckStrictCheckBoxConstructed)
-		{
-			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
-		}
-
-		DropDownContent->InsertSlot(2)
-			.FillWidth(.05f)
-			.Padding(FMargin(2.f))
-			[
-				ConstructTextureSizeStrictCheckBox(
-					bTextureSizeCheckStrictMode ?
-					ECheckBoxState::Checked : ECheckBoxState::Unchecked)
-			];
-	}
-	else
-	{
-		if(bTextureSizeCheckStrictCheckBoxConstructed)
-		{
-			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
-		}
 	}
 }
 

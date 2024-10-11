@@ -391,7 +391,7 @@ private:
 
 	TSharedRef<SHorizontalBox> ConstructDropDownMenuBox();
 
-	void ConsrtuctDisplayListSource();
+	void UpdateDisplayListSource();
 
 #pragma region ClassFilter
 
@@ -410,12 +410,14 @@ private:
 	TSharedRef<SWidget> OnGenerateClassFilterButton(
 		TSharedPtr<FString> SourceItem);
 
-	void ConstuctClassFilterList(
+	void OnClassFilterButtonChanged(
+		TSharedPtr<FString> SelectedOption,
+		ESelectInfo::Type InSelectInfo);
+
+	void UpdateClassFilterList(
 		TSharedPtr<FString> SelectedOption);
 
-	void OnClassFilterButtonChanged(
-		TSharedPtr<FString> SelectedOption, 
-		ESelectInfo::Type InSelectInfo);
+	
 
 #pragma endregion
 	
