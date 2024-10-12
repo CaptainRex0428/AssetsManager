@@ -6,6 +6,8 @@
 #include "SlateWidgets/SCustomTable.h"
 #include "SlateWidgets/SCustomEditableText.h"
 
+#include "StandardAsset/FCustomStandardAssetData.h"
+
 #define CONTENTFOLDER_MANAGERTAB_NAME "AssetsManager"
 
 class ASSETSMANAGER_API SManagerSlateTab: public SCommonSlate
