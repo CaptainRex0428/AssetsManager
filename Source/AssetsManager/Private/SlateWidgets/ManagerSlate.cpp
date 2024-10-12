@@ -118,6 +118,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	RegistryTab();
 
 	m_ClassCheckState = DefaultClassCheckState;
+	m_CategoryCheckState = FCustomStandardAssetData::LastCatergory;
 	m_UsageCheckState = DefaultUsageCheckState;
 
 	FSlateFontInfo TitleTextFont = GetFontInfo(25);
