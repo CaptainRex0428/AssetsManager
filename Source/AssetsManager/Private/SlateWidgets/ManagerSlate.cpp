@@ -38,9 +38,11 @@
 
 #ifdef ZH_CN
 #define CLASSFILTER TEXT("资产类型过滤: ")
-#define USAGEFILTER TEXT("条件过滤")
+#define CATEGORYFILTER TEXT("资产分组过滤: ")
+#define USAGEFILTER TEXT("资产条件过滤")
 #else
 #define CLASSFILTER TEXT("Class Filter: ")
+#define CATEGORYFLTER TEXT("Category Filter: ")
 #define USAGEFILTER TEXT("Condition Filter: ")
 #endif
 
@@ -48,6 +50,32 @@
 
 #pragma region ClassFilterComboSourceItems
 #define CLASS_LISTALL TEXT("All")
+#pragma endregion
+
+#pragma region CategoryFilterComboSourceItems
+
+#ifdef ZH_CN
+
+#define CATEGORY_LISTALL TEXT("All")
+#define CATEGORY_NOGROUP TEXT("未分组")
+#define CATEGORY_CHARACTER TEXT("角色")
+#define CATEGORY_HAIR TEXT("头发")
+#define CATEGORY_SCENE TEXT("场景")
+#define CATEGORY_UI TEXT("界面")
+#define CATEGORY_EFFECT TEXT("特效")
+
+#else
+
+#define CATEGORY_LISTALL TEXT("All")
+#define CATEGORY_NOGROUP TEXT("Undefined Category")
+#define CATEGORY_CHARACTER TEXT("Character")
+#define CATEGORY_HAIR TEXT("Hair")
+#define CATEGORY_SCENE TEXT("Scene")
+#define CATEGORY_UI TEXT("UI")
+#define CATEGORY_EFFECT TEXT("Effect")
+
+#endif
+
 #pragma endregion
 
 #pragma region UsageFilterComboSourceItems
@@ -117,7 +145,19 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 		ClassFilterComboSourceItems.Add(MakeShared<FString>(Key));
 	}
 
+	CategoryFilterDefault = MakeShared<FString>(CATEGORY_LISTALL);
+	CategoryFilterCurrent = CategoryFilterDefault;
+
+	CategoryFilterComboSourceItems.Add(CategoryFilterDefault);
+	CategoryFilterComboSourceItems.Add(MakeShared<FString>(CATEGORY_NOGROUP));
+	CategoryFilterComboSourceItems.Add(MakeShared<FString>(CATEGORY_CHARACTER));
+	CategoryFilterComboSourceItems.Add(MakeShared<FString>(CATEGORY_HAIR));
+	CategoryFilterComboSourceItems.Add(MakeShared<FString>(CATEGORY_UI));
+	CategoryFilterComboSourceItems.Add(MakeShared<FString>(CATEGORY_SCENE));
+	CategoryFilterComboSourceItems.Add(MakeShared<FString>(CATEGORY_EFFECT));
+
 	UsageSelectedDefault = MakeShared<FString>(USAGE_NONE);
+
 	UsageSelectionMaxInGameSizeError = MakeShared<FString>(USAGE_MAXINGAMESIZEERROR);
 	UsageSelectionSourceSizeError = MakeShared<FString>(USAGE_SOURCESIZEERROR);
 	UsageSelectionTextureSubfixError = MakeShared<FString>(USAGE_TEXTURESUBFIXERROR);
@@ -2218,7 +2258,30 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDropDownMenuBox()
 		];
 
 	DropDownContent->AddSlot()
-		.FillWidth(.25f)
+		.FillWidth(.12f)
+		.Padding(FMargin(2.f))
+		[
+			SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				[
+					SNew(STextBlock)
+						.Font(GetFontInfo(12))
+						.Text(FText::FromString(CATEGORYFILTER))
+						.Justification(ETextJustify::Right)
+						.ColorAndOpacity(FColor::White)
+				]
+
+				+ SHorizontalBox::Slot()
+				.FillWidth(.5f)
+				[
+					ConstructCategoryFilterButton()
+				]
+		];
+
+
+	DropDownContent->AddSlot()
+		.FillWidth(.2f)
 		.Padding(FMargin(2.f))
 		[
 			SNew(SHorizontalBox)
@@ -2340,9 +2403,14 @@ void SManagerSlateTab::UpdateDisplayListSource()
 		}
 	}
 
+	/*-------------------------- Category filter----------------------------*/
+
+	UpdateCategoryFilterList();
+
+
 	/*-------------------------- Usage filter----------------------------*/
 
-	UpdateUsageFilterAssetData(UsageFilterCurrent);
+	UpdateUsageFilterAssetData();
 	
 
 	UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
@@ -2360,7 +2428,7 @@ void SManagerSlateTab::UpdateDisplayListSource()
 			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
 		}
 
-		DropDownContent->InsertSlot(2)
+		DropDownContent->InsertSlot(3)
 			.FillWidth(.05f)
 			.Padding(FMargin(2.f))
 			[
@@ -2460,12 +2528,108 @@ void SManagerSlateTab::UpdateClassFilterList(
 	ClassListViewCountBlock->SetText(FText::FromString(FString::FromInt(SListViewClassFilterAssetData.Num())));
 }
 
+TSharedRef<SComboBox<TSharedPtr<FString>>> SManagerSlateTab::ConstructCategoryFilterButton()
+{
+	TSharedRef<SComboBox<TSharedPtr<FString>>> CategoryFilterButton =
+		SNew(SComboBox<TSharedPtr<FString>>)
+		.OptionsSource(&CategoryFilterComboSourceItems)
+		.OnGenerateWidget(this, &SManagerSlateTab::OnGenerateCategoryFilterButton)
+		.OnSelectionChanged(this, &SManagerSlateTab::OnCategoryFilterButtonChanged)
+		[
+			SAssignNew(CategoryFilterComboDisplayText, STextBlock)
+				.Text(FText::FromString(CATEGORY_LISTALL))
+		];
+
+	this->CategoryFilterComboBox = CategoryFilterButton.ToSharedPtr();
+
+	return CategoryFilterButton;
+}
+
+TSharedRef<SWidget> SManagerSlateTab::OnGenerateCategoryFilterButton(
+	TSharedPtr<FString> SourceItem)
+{
+	TSharedRef<SWidget> SourceItemWidget =
+		SNew(STextBlock)
+		.Text(FText::FromString(*SourceItem.Get()));
+
+	return SourceItemWidget;
+}
+
+void SManagerSlateTab::OnCategoryFilterButtonChanged(
+	TSharedPtr<FString> SelectedOption, 
+	ESelectInfo::Type InSelectInfo)
+{
+	CategoryFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
+
+	CategoryFilterCurrent = SelectedOption;
+
+	// add option
+
+	m_CategoryCheckState = FCustomStandardAssetData::Category::LastCatergory;
+
+	if(*SelectedOption.Get() == CATEGORY_NOGROUP)
+	{
+		m_CategoryCheckState = FCustomStandardAssetData::Category::Undefined;
+	}
+
+	if (*SelectedOption.Get() == CATEGORY_CHARACTER)
+	{
+		m_CategoryCheckState = FCustomStandardAssetData::Category::Character;
+	}
+
+	if (*SelectedOption.Get() == CATEGORY_HAIR)
+	{
+		m_CategoryCheckState = FCustomStandardAssetData::Category::Hair;
+	}
+
+	if (*SelectedOption.Get() == CATEGORY_UI)
+	{
+		m_CategoryCheckState = FCustomStandardAssetData::Category::UI;
+	}
+
+	if (*SelectedOption.Get() == CATEGORY_SCENE)
+	{
+		m_CategoryCheckState = FCustomStandardAssetData::Category::Scene;
+	}
+
+	if (*SelectedOption.Get() == CATEGORY_EFFECT)
+	{
+		m_CategoryCheckState = FCustomStandardAssetData::Category::Effect;
+	}
+
+	UpdateDisplayListSource();
+	RefreshAssetsListView();
+}
+
+void SManagerSlateTab::UpdateCategoryFilterList()
+{
+	if (m_CategoryCheckState == FCustomStandardAssetData::Category::LastCatergory)
+	{
+		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewCategoryFilterAssetData);
+	}
+	else
+	{
+		TArray<TSharedPtr<FAssetData>> NewAssetsList;
+		NewAssetsList.Empty();
+
+		for (TSharedPtr<FAssetData> AssetData : SListViewClassFilterAssetData)
+		{
+			FCustomStandardAssetData StandardAsset(*AssetData);
+
+			if (StandardAsset.GetCommonAssetCategory() == m_CategoryCheckState)
+			{
+				NewAssetsList.AddUnique(AssetData);
+			};
+		}
+
+		UAssetsChecker::ECopyAssetsPtrList(NewAssetsList, SListViewCategoryFilterAssetData);
+	}
+}
+
 void SManagerSlateTab::OnClassFilterButtonChanged(
 	TSharedPtr<FString> SelectedOption, 
 	ESelectInfo::Type InSelectInfo)
 {
-	
-
 	ClassFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
 
 	ClassFilterCurrent = SelectedOption;
@@ -2488,9 +2652,6 @@ void SManagerSlateTab::OnClassFilterButtonChanged(
 
 	UpdateDisplayListSource();
 	RefreshAssetsListView();
-
-	//set Usage Filter to default 
-	UsageFilterComboBox->SetSelectedItem(UsageSelectedDefault);
 }
 
 TSharedRef<SComboBox<TSharedPtr<FString>>> SManagerSlateTab::ConstructUsageFilterButton()
@@ -2578,26 +2739,26 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 	RefreshAssetsListView();
 }
 
-void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
+void SManagerSlateTab::UpdateUsageFilterAssetData()
 {
 	if (m_UsageCheckState == DefaultUsageCheckState)
 	{
-		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::ECopyAssetsPtrList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
 	}
 
 	if (m_UsageCheckState == Unused)
 	{
-		if (SListViewClassFilterAssetData.Num() > 64)
+		if (SListViewCategoryFilterAssetData.Num() > 64)
 		{
 #ifdef ZH_CN
 			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
 				TEXT("选择的文件太多[")
-				+ FString::FromInt(SListViewClassFilterAssetData.Num())
+				+ FString::FromInt(SListViewCategoryFilterAssetData.Num())
 				+ TEXT("个文件]\n由于需要查找所有引用项，这将会消耗大量时间!!!\n\n是否继续?"));
 #else
 			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
 				TEXT("The list selected to check is too large.[")
-				+ FString::FromInt(SListViewClassFilterAssetData.Num())
+				+ FString::FromInt(SListViewCategoryFilterAssetData.Num())
 				+ TEXT(" assets]\nFilter unused assets will cost a lot of time.\n\nReady to proceed?"));
 #endif
 
@@ -2608,25 +2769,25 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 			}
 		}
 
-		UAssetsChecker::FilterUnusedAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::FilterUnusedAssetsForAssetList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
 	}
 
 	if (m_UsageCheckState == PrefixError)
 	{
-		UAssetsChecker::FilterPrefixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::FilterPrefixErrorAssetsForAssetList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
 	}
 
 
 	if (m_UsageCheckState == SameNameAssetError)
 	{
-		UAssetsChecker::FilterSameNameErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::FilterSameNameErrorAssetsForAssetList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
 	}
 
 
 	if (m_UsageCheckState == MaxInGameSizeError)
 	{
 		UAssetsChecker::FilterMaxInGameSizeErrorAssetsForAssetList(
-			SListViewClassFilterAssetData, 
+			SListViewCategoryFilterAssetData,
 			SListViewUsageFilterAssetData, 
 			bTextureSizeCheckStrictMode);
 	}
@@ -2634,7 +2795,7 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 	if (m_UsageCheckState == SourceSizeError)
 	{
 		UAssetsChecker::FilterSourceSizeErrorAssetsForAssetList(
-			SListViewClassFilterAssetData, 
+			SListViewCategoryFilterAssetData,
 			SListViewUsageFilterAssetData, 
 			bTextureSizeCheckStrictMode);
 	}
@@ -2644,7 +2805,7 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 	{
 
 		UAssetsChecker::FilterTextureSubfixErrorAssetsForAssetList(
-			SListViewClassFilterAssetData, 
+			SListViewCategoryFilterAssetData,
 			SListViewUsageFilterAssetData);
 	}
 
@@ -2653,13 +2814,13 @@ void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
 	{
 
 		UAssetsChecker::FilterTextureSettingsErrorAssetsForAssetList(
-			SListViewClassFilterAssetData, 
+			SListViewCategoryFilterAssetData,
 			SListViewUsageFilterAssetData);
 	}
 
 	if (m_UsageCheckState == TextureGroupError)
 	{
-		UAssetsChecker::FilterTextureLODGroupErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::FilterTextureLODGroupErrorAssetsForAssetList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
 	}
 }
 
@@ -2717,7 +2878,7 @@ void SManagerSlateTab::OnTextureSizeStrictCheckBoxStateChanged(
 				ReverseConditionCheckBox->ToggleCheckedState();
 			}
 
-			UpdateUsageFilterAssetData(this->UsageFilterCurrent);
+			UpdateDisplayListSource();
 			RefreshAssetsListView(false);
 		}
 		break;
@@ -2733,7 +2894,7 @@ void SManagerSlateTab::OnTextureSizeStrictCheckBoxStateChanged(
 				ReverseConditionCheckBox->ToggleCheckedState();
 			}
 
-			UpdateUsageFilterAssetData(this->UsageFilterCurrent);
+			UpdateDisplayListSource();
 			RefreshAssetsListView(false);
 		}
 		break;

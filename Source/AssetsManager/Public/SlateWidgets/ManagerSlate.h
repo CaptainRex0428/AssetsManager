@@ -52,6 +52,7 @@ private:
 	TArray<FString> StoredFolderPaths;
 	TArray<TSharedPtr<FAssetData>> StoredAssetsData;
 	TArray<TSharedPtr<FAssetData>> SListViewClassFilterAssetData;
+	TArray<TSharedPtr<FAssetData>> SListViewCategoryFilterAssetData;
 	TArray<TSharedPtr<FAssetData>> SListViewUsageFilterAssetData;
 
 	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
@@ -59,6 +60,7 @@ private:
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
 
 	ClassCheckState m_ClassCheckState;
+	FCustomStandardAssetData::Category m_CategoryCheckState;
 	UsageCheckState m_UsageCheckState;
 
 	TSharedPtr<SCustomTable<TSharedPtr<FAssetData>>> CustomTableList;
@@ -420,6 +422,28 @@ private:
 	
 
 #pragma endregion
+
+#pragma region CategoryFilter
+	TSharedPtr<SComboBox<TSharedPtr<FString>>> CategoryFilterComboBox;
+
+	TArray<TSharedPtr<FString>> CategoryFilterComboSourceItems;
+
+	TSharedPtr<STextBlock> CategoryFilterComboDisplayText;
+
+	TSharedPtr<FString> CategoryFilterCurrent;
+	TSharedPtr<FString> CategoryFilterDefault;
+
+	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructCategoryFilterButton();
+
+	TSharedRef<SWidget> OnGenerateCategoryFilterButton(
+		TSharedPtr<FString> SourceItem);
+
+	void OnCategoryFilterButtonChanged(
+		TSharedPtr<FString> SelectedOption,
+		ESelectInfo::Type InSelectInfo);
+
+	void UpdateCategoryFilterList();
+#pragma endregion
 	
 
 #pragma region UsageFilter
@@ -451,8 +475,7 @@ private:
 		TSharedPtr<FString> SelectedOption, 
 		ESelectInfo::Type InSelectInfo);
 
-	void UpdateUsageFilterAssetData(
-		const FString& Selection);
+	void UpdateUsageFilterAssetData();
 
 #pragma endregion
 
