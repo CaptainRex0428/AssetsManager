@@ -421,9 +421,10 @@ bool UAssetsChecker::SetTextureLODGroup(
 }
 
 TArray<FString> UAssetsChecker::GetAssetReferencesPath(
-	const FString& AssetPath)
+	const FString& AssetPath,
+	bool bLoadToCheck)
 {
-	return UEditorAssetLibrary::FindPackageReferencersForAsset(AssetPath, true);
+	return UEditorAssetLibrary::FindPackageReferencersForAsset(AssetPath, bLoadToCheck);
 }
 
 TArray<FString> UAssetsChecker::GetAssetReferencesPath(

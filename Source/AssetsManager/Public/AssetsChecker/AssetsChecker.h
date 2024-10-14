@@ -71,7 +71,8 @@ public:
 #pragma region GetReferences
 
 	static TArray<FString> GetAssetReferencesPath(
-		const FString& AssetPath);
+		const FString& AssetPath,
+		bool bLoadToCheck = false);
 
 	static TArray<FString> GetAssetReferencesPath(
 		const FAssetData& AssetData);
