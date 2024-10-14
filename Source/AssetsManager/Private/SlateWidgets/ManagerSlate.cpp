@@ -33,6 +33,8 @@
 
 #include "Engine/Texture.h"
 
+#include <iostream>
+#include <fstream>
 
 #pragma region Filter
 
@@ -2037,23 +2039,60 @@ TSharedRef<SButton> SManagerSlateTab::ConstructOutputViewListInfoButton()
 
 FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 {
-	FString Output;
 
-	// Construct Output
-	Output += L"Path Include:\n";
+
+	FString CSVContent;
+	
+	// Info
+	CSVContent += FString::Printf(L"%s\n", L"Path Included");
+
 	for (FString path : StoredFolderPaths)
 	{
-		Output += path;
-		Output += "\n";
+		CSVContent += FString::Printf(L"%s\n", *path);
 	}
 
-	Output += "\n";
-
-	Output += FString::Printf(L"%s:\n%s\n\n", CLASSFILTER, *ClassFilterComboDisplayText->GetText().ToString());
-	Output += FString::Printf(L"%s:\n%s(%s)\n\n", USAGEFILTER, *UsageFilterComboDisplayText->GetText().ToString(), ReverseCondition ? TEXT("Reverse") : TEXT(""));
-
-	Output += L"Files:\n";
+	CSVContent += FString::Printf(L"\n%s\t%s\t%s\t%s\n%s\t%s\t%s\t%s\n\n",
+#ifdef ZH_CN
+		CLASSFILTER, CATEGORYFILTER,USAGEFILTER,L"条件反向",
+#else
+		CLASSFILTER, CATEGORYFILTER, USAGEFILTER, L"Condition Reverse",
+#endif
+		* ClassFilterComboDisplayText->GetText().ToString(),
+		* CategoryFilterComboDisplayText->GetText().ToString(),
+		* UsageFilterComboDisplayText->GetText().ToString(),
+		ReverseCondition ? TEXT("√") : TEXT(""));
 	
+	// Header
+#ifdef ZH_CN
+	CSVContent += L"类\t资产名\t磁盘大小\t";
+
+	if (m_ClassCheckState == Texture)
+	{
+		CSVContent += L"压缩大小\t压缩尺寸\t源尺寸\t";
+	}
+
+	if (m_ClassCheckState == SkeletalMesh)
+	{
+		CSVContent += L"LOD层数\tLOD面数\tLOD顶点数\t";
+	}
+
+	CSVContent += L"资产路径\t\n";
+#else
+	CSVContent += L"Class\tAssetName\tDiskSize\t";
+
+	if (m_ClassCheckState == Texture)
+	{
+		CSVContent += L"ResourceSize\tMaxInGame\tSource\t";
+	}
+
+	if (m_ClassCheckState == SkeletalMesh)
+	{
+		CSVContent += L"LODNum\tLODTri\tLODVer\t";
+	}
+
+	CSVContent += L"AssetPath\t\n";
+#endif
+
 	TArray<TSharedPtr<FAssetData>> OutputData;
 	OutputData.Empty();
 
@@ -2066,32 +2105,50 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 		OutputData = this->CustomTableList->GetListItems();
 	}
 
+	if (m_ClassCheckState == Texture)
+	{
+		OutputData.Sort([](const TSharedPtr<FAssetData>& ip1, const TSharedPtr<FAssetData>& ip2) 
+			{
+				FCustomStandardTexture2DData T1(*ip1);
+				FCustomStandardTexture2DData T2(*ip2);
+				FVector2D c1 = T1.GetMaxInGameSize();
+				FVector2D c2 = T1.GetMaxInGameSize();
+				return  c1.X < c2.X;
+			});
+	}
+	else
+	{
+		OutputData.Sort([](const TSharedPtr<FAssetData>& ip1, const TSharedPtr<FAssetData>& ip2)
+			{
+				int c1 = (int)ip1->GetClass()->GetName()[0];
+				int c2 = (int)ip2->GetClass()->GetName()[0];
+				return  c1 < c2;
+			});
+	}
+
+	
+
 	int32 TaskNum = OutputData.Num();
 	FSlowTask WritingTask(TaskNum, FText::FromString("Writing Data ..."));
 	WritingTask.Initialize();
 	WritingTask.MakeDialog();
 
+	// Content
 	for (TSharedPtr<FAssetData> asset: OutputData)
 	{
 		WritingTask.EnterProgressFrame(.9f);
-
+		
+		
 		FCustomStandardAssetData StandardAsset(*asset);
-
-		FString AssetName = StandardAsset.AssetName.ToString();
-		FString AssetPath = StandardAsset.GetObjectPathString();
-		FString AssetClass = StandardAsset.GetClass()->GetName();
 		
 		FString DiskSize;
 		UAssetsChecker::ByteConversion(StandardAsset.GetDiskSize(), DiskSize, false);
 
+		CSVContent += FString::Printf(L"%s\t%s\t%s\t",
+			*StandardAsset.GetClass()->GetName(),
+			*StandardAsset.AssetName.ToString(),
+			*DiskSize);
 		
-		TArray<FStringFormatArg> args;
-		args.Add(FStringFormatArg(AssetClass)); // 0
-		args.Add(FStringFormatArg(AssetName)); // 1
-		args.Add(FStringFormatArg(AssetPath)); // 2
-		args.Add(FStringFormatArg(DiskSize)); // 3
-		
-
 		if (m_ClassCheckState == Texture)
 		{
 			FCustomStandardTexture2DData StandardTexture(*asset);
@@ -2105,13 +2162,10 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 			FString MaxInGameTextureSizeString = FString::Printf(L"(%dx%d)", (int32)MaxInGameTextureSize.X, (int32)MaxInGameTextureSize.Y);
 			FString SourceTextureSizeString = FString::Printf(L"(%dx%d)", (int32)SourceTextureSize.X, (int32)SourceTextureSize.Y);
 
-			args.Add(FStringFormatArg(ResourceSize)); // 4
-			args.Add(FStringFormatArg(MaxInGameTextureSizeString)); // 5
-			args.Add(FStringFormatArg(SourceTextureSizeString)); // 6
-
-			Output += FString::Format(TEXT("[{0}] [{1}] - [MaxInGameSize:{5}] [SourceGameSize:{6}] - [DiskSize:{3}] [ResourceSize:{4}] - [{2}]\n"),args);
-
-			continue;
+			CSVContent += FString::Printf(L"%s\t%s\t%s\t",
+				*ResourceSize,
+				*MaxInGameTextureSizeString,
+				*SourceTextureSizeString);
 		}
 
 		if (m_ClassCheckState == SkeletalMesh)
@@ -2134,22 +2188,20 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 					LODTri += L"/";
 				}
 			}
-			
-			args.Add(FStringFormatArg(LODNum)); // 4
-			args.Add(FStringFormatArg(LODVer)); // 5
-			args.Add(FStringFormatArg(LODTri)); // 6
 
-			Output += FString::Format(TEXT("[{0}] [{1}] - [LOD Layer:{4}] - [DiskSize:{3}] - [LODVer:{5}] [LODTri:{6}] - [{2}]\n"), args);
-			continue;
+			CSVContent += FString::Printf(L"%d\t%s\t%s\t",
+				LODNum,
+				*LODTri,
+				*LODVer);
+
 		}
-
 		
-		Output += FString::Format(TEXT("[{0}] [{1}] - [DiskSize:{3}] - [{2}]\n"), args);
+		CSVContent += FString::Printf(L"%s\t\n",
+			*StandardAsset.GetObjectPathString());
 	}
 
-
 	FDateTime Time = FDateTime::Now();
-	FString TimeStr = FString::Printf(L"%.2d%.2d%.2d%.2d%.2d%.2d_%.3d",
+	FString TimeStr = FString::Printf(L"%.2d%.2d%.2d%.2d%.2d%.2d%.3d",
 		Time.GetYear(),
 		Time.GetMonth(),
 		Time.GetDay(),
@@ -2160,13 +2212,17 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 
 	FString FileName = "AssetsManagerLog_"+ TimeStr + "_"
 		+ ClassFilterComboDisplayText->GetText().ToString()
-		+ "_"
-		+ UsageFilterComboDisplayText->GetText().ToString();
+		+ L"_"
+		+ CategoryFilterComboDisplayText->GetText().ToString()
+		+ L"_"
+		+ UsageFilterComboDisplayText->GetText().ToString()
+		+ (ReverseCondition ? L"(R)":L"");
+	
+	// CSV output
+	FString CSVFilePath = ASSETSMANAGER_LOGFOLDER + FileName + ".csv";
 
-	FString FilePath = ASSETSMANAGER_LOGFOLDER + FileName + ".log";
-
-	if (FFileHelper::SaveStringToFile(Output, *FilePath,
-		FFileHelper::EEncodingOptions::ForceUTF8,
+	if (FFileHelper::SaveStringToFile(CSVContent, *CSVFilePath,
+		FFileHelper::EEncodingOptions::ForceUnicode,
 		&IFileManager::Get(),
 		EFileWrite::FILEWRITE_Append))
 	{
@@ -2174,7 +2230,7 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 		WritingTask.Destroy();
 
 #ifdef ZH_CN
-		NtfyMsgLog(TEXT("成功输出文件到") + FilePath);
+		NtfyMsgLog(TEXT("成功输出文件到") + CSVFilePath);
 #else
 		NtfyMsgLog(TEXT("Successfully saved assets manager log to ") + FilePath);
 #endif
@@ -2185,7 +2241,7 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 	WritingTask.Destroy();
 
 #ifdef ZH_CN
-	NtfyMsgLog(TEXT("输出文件到") + FilePath + TEXT("失败"));
+	NtfyMsgLog(TEXT("输出文件到") + CSVFilePath + TEXT("失败"));
 #else
 	NtfyMsgLog(TEXT("Failed saving assets manager log to ") + FilePath);
 #endif
@@ -2749,27 +2805,6 @@ void SManagerSlateTab::UpdateUsageFilterAssetData()
 
 	if (m_UsageCheckState == Unused)
 	{
-		if (SListViewCategoryFilterAssetData.Num() > 64)
-		{
-#ifdef ZH_CN
-			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
-				TEXT("选择的文件太多[")
-				+ FString::FromInt(SListViewCategoryFilterAssetData.Num())
-				+ TEXT("个文件]\n由于需要查找所有引用项，这将会消耗大量时间!!!\n\n是否继续?"));
-#else
-			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
-				TEXT("The list selected to check is too large.[")
-				+ FString::FromInt(SListViewCategoryFilterAssetData.Num())
-				+ TEXT(" assets]\nFilter unused assets will cost a lot of time.\n\nReady to proceed?"));
-#endif
-
-			if (result != EAppReturnType::Yes)
-			{
-				UsageFilterComboBox->SetSelectedItem(UsageSelectedDefault);
-				return;
-			}
-		}
-
 		UAssetsChecker::FilterUnusedAssetsForAssetList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
 	}
 
