@@ -1523,12 +1523,14 @@ FString UAssetsChecker::IntStrAddColumn(FString SourceStr)
 
 bool UAssetsChecker::OpenLocalFolder(const FString& FolderPath)
 {
-	if (!FPaths::DirectoryExists(FolderPath))
+	FString AbsPath = FPaths::ConvertRelativePathToFull(FolderPath);
+
+	if (!FPaths::DirectoryExists(AbsPath))
 	{
 		return false;
 	}
 
-	FPlatformProcess::ExploreFolder(*FolderPath);
+	FPlatformProcess::ExploreFolder(*AbsPath);
 
 	return true;
 }
