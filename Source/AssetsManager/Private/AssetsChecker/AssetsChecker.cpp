@@ -1356,6 +1356,34 @@ void UAssetsChecker::ECopyAssetsPtrList(
 	}
 }
 
+bool UAssetsChecker::JudgeSort(FVector2D& A, FVector2D& B, bool bReverse)
+{
+	if (A.X == B.X)
+	{
+		return bReverse ? A.Y > B.Y : A.Y < B.Y;
+	}
+
+	return bReverse ? A.X > B.X : A.X < B.X;
+}
+
+bool UAssetsChecker::JudgeSort(FString& A, FString& B, bool bReverse)
+{
+	int AL = A.Len();
+	int BL = B.Len();
+
+	for (int Idx = 0; Idx < (AL<BL? AL:BL); ++Idx)
+	{
+		if(A[Idx] == B[Idx])
+		{
+			continue;
+		}
+
+		return bReverse ? A[Idx] > B[Idx] : A[Idx] < B[Idx];
+	}
+
+	return bReverse ? AL < BL : AL > BL;
+}
+
 
 double UAssetsChecker::ByteConversion(
 	uint64 ByteSize,

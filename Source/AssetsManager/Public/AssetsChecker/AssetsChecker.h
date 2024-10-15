@@ -27,6 +27,9 @@ public:
 		TArray<TSharedPtr<FAssetData>>& ListToCopy, 
 		TArray<TSharedPtr<FAssetData>>& ListToOutput);
 
+	static bool JudgeSort(FVector2D& A, FVector2D& B, bool bReverse = false);
+	static bool JudgeSort(FString& A, FString& B, bool bReverse = false);
+
 #pragma endregion
 
 #pragma region FileSize

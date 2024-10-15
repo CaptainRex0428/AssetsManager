@@ -2105,6 +2105,16 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 		OutputData = this->CustomTableList->GetListItems();
 	}
 
+	if (m_ClassCheckState == DefaultClassCheckState)
+	{
+		OutputData.Sort([](const TSharedPtr<FAssetData>& ip1, const TSharedPtr<FAssetData>& ip2)
+			{
+				FString c1 = ip1->GetClass()->GetName();
+				FString c2 = ip2->GetClass()->GetName();
+				return UAssetsChecker::JudgeSort(c1, c2);
+			});
+	}
+
 	if (m_ClassCheckState == Texture)
 	{
 		OutputData.Sort([](const TSharedPtr<FAssetData>& ip1, const TSharedPtr<FAssetData>& ip2) 
@@ -2112,17 +2122,8 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 				FCustomStandardTexture2DData T1(*ip1);
 				FCustomStandardTexture2DData T2(*ip2);
 				FVector2D c1 = T1.GetMaxInGameSize();
-				FVector2D c2 = T1.GetMaxInGameSize();
-				return  c1.X < c2.X;
-			});
-	}
-	else
-	{
-		OutputData.Sort([](const TSharedPtr<FAssetData>& ip1, const TSharedPtr<FAssetData>& ip2)
-			{
-				int c1 = (int)ip1->GetClass()->GetName()[0];
-				int c2 = (int)ip2->GetClass()->GetName()[0];
-				return  c1 < c2;
+				FVector2D c2 = T2.GetMaxInGameSize();
+				return UAssetsChecker::JudgeSort(c1,c2,true);
 			});
 	}
 
