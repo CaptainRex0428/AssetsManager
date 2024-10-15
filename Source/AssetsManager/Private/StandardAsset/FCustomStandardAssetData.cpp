@@ -310,9 +310,96 @@ int64 FCustomStandardAssetData::GetMemorySize(
 	return this->GetAsset()->GetResourceSizeBytes(bEstimatedTotal ? EResourceSizeMode::EstimatedTotal : EResourceSizeMode::Exclusive);;
 }
 
+int64 FCustomStandardAssetData::GetMemorySize(
+	AssetsInfoDisplayLevel& DisplayLevel, 
+	bool bEstimatedTotal)
+{
+	int64 MemorySize = GetMemorySize(bEstimatedTotal);
+	
+	FString AssetGlobalSection = "/AssetsManager/Global";
+
+	TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
+		*AssetGlobalSection,
+		L"AssetMemorySizeLevelDivide",
+		L"Level");
+
+	int32 LevelOut = 0;
+
+	for(int32 levelIdx = 0; levelIdx < ValidLevels.Num(); ++levelIdx)
+	{
+		TSharedPtr<FString> LevelValue = FConfigManager::Get().FindInSectionStructArray(
+			*AssetGlobalSection,
+			L"AssetMemorySizeLevelDivide",
+			L"Level",
+			FString::FromInt(levelIdx),
+			L"Value");
+
+		if(!LevelValue.IsValid())
+		{
+			continue;
+		}
+
+		int BorderSize = FConfigManager::Get().SToI(*LevelValue);
+
+		LevelOut = levelIdx;
+
+		if (MemorySize < BorderSize*1024*1024)
+		{
+			break;
+		}
+	}
+
+	DisplayLevel = UAssetsChecker::IntToDisplayLevel(LevelOut);
+
+	return MemorySize;
+}
+
 int64 FCustomStandardAssetData::GetDiskSize()
 {
 	return this->GetPackage()->GetFileSize();
+}
+
+int64 FCustomStandardAssetData::GetDiskSize(
+	AssetsInfoDisplayLevel& DisplayLevel)
+{
+	int64 DiskSize = GetDiskSize();
+
+	FString AssetGlobalSection = "/AssetsManager/Global";
+
+	TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
+		*AssetGlobalSection,
+		L"AssetDiskSizeLevelDivide",
+		L"Level");
+
+	int32 LevelOut = 0;
+
+	for (int32 levelIdx = 0; levelIdx < ValidLevels.Num(); ++levelIdx)
+	{
+		TSharedPtr<FString> LevelValue = FConfigManager::Get().FindInSectionStructArray(
+			*AssetGlobalSection,
+			L"AssetDiskSizeLevelDivide",
+			L"Level",
+			FString::FromInt(levelIdx),
+			L"Value");
+
+		if (!LevelValue.IsValid())
+		{
+			continue;
+		}
+
+		int BorderSize = FConfigManager::Get().SToI(*LevelValue);
+
+		LevelOut = levelIdx;
+
+		if (DiskSize < BorderSize * 1024 * 1024)
+		{
+			break;
+		}
+	}
+
+	DisplayLevel = UAssetsChecker::IntToDisplayLevel(LevelOut);
+
+	return DiskSize;
 }
 
 TArray<FString> FCustomStandardAssetData::SplitStringRecursive(

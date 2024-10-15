@@ -48,7 +48,7 @@ bool UAssetsChecker::bIsPowerOfTwo(const float num)
 	return bIsPowerOfTwo((double)num);
 }
 
-int UAssetsChecker::EDuplicateAssets(
+int UAssetsChecker::DuplicateAssets(
 	const TArray<FAssetData>& AssetsDataSelected, 
 	int NumOfDupicates, 
 	bool forced)
@@ -91,7 +91,7 @@ int UAssetsChecker::EDuplicateAssets(
 	return Counter;
 }
 
-bool UAssetsChecker::EConfirmPrefixes(
+bool UAssetsChecker::ConfirmPrefixes(
 	TArray< TSharedPtr<FAssetData>>& AssetsSelected,
 	TArray< TSharedPtr<FAssetData>>& ReadyToFixAssets)
 {
@@ -148,7 +148,7 @@ bool UAssetsChecker::EConfirmPrefixes(
 	return false;
 };
 
-void UAssetsChecker::EAddPrefixes(
+void UAssetsChecker::AddPrefixes(
 	const TArray<FAssetData>& AssetsSelected)
 {
 	uint32 SuccessCounter = 0;
@@ -212,7 +212,7 @@ void UAssetsChecker::EAddPrefixes(
 #endif
 }
 
-void UAssetsChecker::EAddPrefixes(
+void UAssetsChecker::AddPrefixes(
 	const TArray<UObject*>& AssetsSelected)
 {
 	uint32 SuccessCounter = 0;
@@ -278,7 +278,7 @@ void UAssetsChecker::EAddPrefixes(
 #endif
 }
 
-bool UAssetsChecker::EFixTextureMaxSizeInGame(
+bool UAssetsChecker::FixTextureMaxSizeInGame(
 	FAssetData& ClickedAssetData, 
 	double maxSize, 
 	bool forced)
@@ -288,27 +288,27 @@ bool UAssetsChecker::EFixTextureMaxSizeInGame(
 		return false;
 	}
 
-	FVector2D MaxInGameSize = EGetTextureAssetMaxInGameSize(ClickedAssetData);
+	FVector2D MaxInGameSize = GetTextureAssetMaxInGameSize(ClickedAssetData);
 	double GameSize = MaxInGameSize.X > MaxInGameSize.Y ? MaxInGameSize.X : MaxInGameSize.Y;
 
 	// NtfyMsg("MaxSize:" + FString::FromInt(MaxSize));
 
 	if(forced && GameSize != maxSize)
 	{
-		return ESetTextureSize(ClickedAssetData, maxSize);
+		return SetTextureSize(ClickedAssetData, maxSize);
 	}
 		
 	if( GameSize > maxSize &&
 		bIsPowerOfTwo(MaxInGameSize.X) && 
 		bIsPowerOfTwo(MaxInGameSize.Y))
 	{
-		return ESetTextureSize(ClickedAssetData, maxSize);
+		return SetTextureSize(ClickedAssetData, maxSize);
 	}
 
 	return false;
 }
 
-bool UAssetsChecker::ESetTextureSize(
+bool UAssetsChecker::SetTextureSize(
 	FAssetData& ClickedAssetData,
 	double maxSize)
 {
@@ -327,7 +327,7 @@ bool UAssetsChecker::ESetTextureSize(
 	return false;
 }
 
-bool UAssetsChecker::ESetTextureStandardSettings(FAssetData& ClickedAssetData)
+bool UAssetsChecker::SetTextureStandardSettings(FAssetData& ClickedAssetData)
 {
 	FCustomStandardTexture2DData SAsset(ClickedAssetData);
 
@@ -354,17 +354,17 @@ bool UAssetsChecker::ESetTextureStandardSettings(FAssetData& ClickedAssetData)
 		return false;
 	}
 
-	bool StandardResult_Compression = ESetTextureAssetCompressionSettings(
+	bool StandardResult_Compression = SetTextureAssetCompressionSettings(
 		ClickedAssetData, *SAsset.GetStandardCompressionSettings(true));
 
-	bool StandardResult_sRGB = ESetTextureSRGBSettings(
+	bool StandardResult_sRGB = SetTextureSRGBSettings(
 		ClickedAssetData, 
 		*SAsset.GetStandardsRGBSettings(true));
 
 	return  StandardResult_Compression && StandardResult_sRGB;
 }
 
-TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureLODGroup(const FAssetData& AssetData)
+TSharedPtr<TextureGroup> UAssetsChecker::GetTextureLODGroup(const FAssetData& AssetData)
 {
 	UObject* AssetOBJ = AssetData.GetAsset();
 
@@ -388,7 +388,7 @@ TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureLODGroup(const FAssetData& A
 	return nullptr;
 }
 
-bool UAssetsChecker::ESetTextureLODGroup(
+bool UAssetsChecker::SetTextureLODGroup(
 	FAssetData& AssetData, 
 	TextureGroup InTextureGroup)
 {
@@ -420,25 +420,26 @@ bool UAssetsChecker::ESetTextureLODGroup(
 	return false;
 }
 
-TArray<FString> UAssetsChecker::EGetAssetReferencesPath(
-	const FString& AssetPath)
+TArray<FString> UAssetsChecker::GetAssetReferencesPath(
+	const FString& AssetPath,
+	bool bLoadToCheck)
 {
-	return UEditorAssetLibrary::FindPackageReferencersForAsset(AssetPath, true);
+	return UEditorAssetLibrary::FindPackageReferencersForAsset(AssetPath, bLoadToCheck);
 }
 
-TArray<FString> UAssetsChecker::EGetAssetReferencesPath(
+TArray<FString> UAssetsChecker::GetAssetReferencesPath(
 	const FAssetData& AssetData)
 {
-	return EGetAssetReferencesPath(AssetData.GetObjectPathString());
+	return GetAssetReferencesPath(AssetData.GetObjectPathString());
 }
 
-TArray<FString> UAssetsChecker::EGetAssetReferencesPath(
+TArray<FString> UAssetsChecker::GetAssetReferencesPath(
 	const TSharedPtr<FAssetData>& AssetData)
 {
-	return EGetAssetReferencesPath(AssetData->GetObjectPathString());
+	return GetAssetReferencesPath(AssetData->GetObjectPathString());
 }
 
-FVector2D UAssetsChecker::EGetTextureAssetSourceSize(
+FVector2D UAssetsChecker::GetTextureAssetSourceSize(
 	const FAssetData& AssetData)
 {
 	FCustomStandardTexture2DData AsTextureData(AssetData);
@@ -451,7 +452,7 @@ FVector2D UAssetsChecker::EGetTextureAssetSourceSize(
 	return FVector2D(0, 0);
 }
 
-FVector2D UAssetsChecker::EGetTextureAssetMaxInGameSize(
+FVector2D UAssetsChecker::GetTextureAssetMaxInGameSize(
 	const FAssetData& AssetData)
 {
 	FCustomStandardTexture2DData AsTextureData(AssetData);
@@ -464,7 +465,7 @@ FVector2D UAssetsChecker::EGetTextureAssetMaxInGameSize(
 	return FVector2D(0, 0);
 }
 
-TSharedPtr<TextureCompressionSettings> UAssetsChecker::EGetTextureAssetCompressionSettings(
+TSharedPtr<TextureCompressionSettings> UAssetsChecker::GetTextureAssetCompressionSettings(
 	const FAssetData& AssetData)
 {
 	FCustomStandardTexture2DData AsTextureData(AssetData);
@@ -478,7 +479,7 @@ TSharedPtr<TextureCompressionSettings> UAssetsChecker::EGetTextureAssetCompressi
 	return nullptr;
 }
 
-TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureAssetTextureGroup(const FAssetData& AssetData)
+TSharedPtr<TextureGroup> UAssetsChecker::GetTextureAssetTextureGroup(const FAssetData& AssetData)
 {
 	UObject* AssetOBJ = AssetData.GetAsset();
 
@@ -502,7 +503,7 @@ TSharedPtr<TextureGroup> UAssetsChecker::EGetTextureAssetTextureGroup(const FAss
 	return nullptr;
 }
 
-bool UAssetsChecker::ESetTextureAssetCompressionSettings(
+bool UAssetsChecker::SetTextureAssetCompressionSettings(
 	const FAssetData& AssetData,
 	const TEnumAsByte<TextureCompressionSettings>& CompressionSetting)
 {
@@ -520,7 +521,7 @@ bool UAssetsChecker::ESetTextureAssetCompressionSettings(
 
 	UTexture2D* AssetT = Cast<UTexture2D>(AssetOBJ);
 
-	if (AssetT && (*EGetTextureAssetCompressionSettings(AssetData) != CompressionSetting))
+	if (AssetT && (*GetTextureAssetCompressionSettings(AssetData) != CompressionSetting))
 	{
 		
 		AssetT->CompressionSettings = CompressionSetting;
@@ -553,7 +554,7 @@ bool UAssetsChecker::ESetTextureAssetCompressionSettings(
 	return true;
 }
 
-TSharedPtr<bool> UAssetsChecker::EGetTextureAssetSRGBSettings(const FAssetData& AssetData)
+TSharedPtr<bool> UAssetsChecker::GetTextureAssetSRGBSettings(const FAssetData& AssetData)
 {
 	UObject* AssetOBJ = AssetData.GetAsset();
 
@@ -577,7 +578,7 @@ TSharedPtr<bool> UAssetsChecker::EGetTextureAssetSRGBSettings(const FAssetData& 
 	return nullptr;
 }
 
-bool UAssetsChecker::ESetTextureSRGBSettings(
+bool UAssetsChecker::SetTextureSRGBSettings(
 	const FAssetData& AssetData, 
 	const bool& sRGB)
 {
@@ -595,7 +596,7 @@ bool UAssetsChecker::ESetTextureSRGBSettings(
 
 	UTexture2D* AssetT = Cast<UTexture2D>(AssetOBJ);
 
-	if (AssetT && (*EGetTextureAssetSRGBSettings(AssetData) != sRGB))
+	if (AssetT && (*GetTextureAssetSRGBSettings(AssetData) != sRGB))
 	{
 
 		AssetT->SRGB = sRGB;
@@ -619,7 +620,7 @@ bool UAssetsChecker::ESetTextureSRGBSettings(
 	return true;
 }
 
-void UAssetsChecker::EListUnusedAssetsForAssetList(
+void UAssetsChecker::FilterUnusedAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
 	TArray<TSharedPtr<FAssetData>>& OutList,
 	bool isAdditiveMode)
@@ -635,7 +636,7 @@ void UAssetsChecker::EListUnusedAssetsForAssetList(
 
 	for (const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
 	{
-		TArray<FString> AssetReference = EGetAssetReferencesPath(AssetDPtr);
+		TArray<FString> AssetReference = GetAssetReferencesPath(AssetDPtr);
 
 		FindingProgress.EnterProgressFrame();
 
@@ -653,7 +654,7 @@ void UAssetsChecker::EListUnusedAssetsForAssetList(
 	FindingProgress.Destroy();
 }
 
-void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
+void UAssetsChecker::FilterPrefixErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
 	TArray<TSharedPtr<FAssetData>>& OutList,
 	bool isAdditiveMode)
@@ -663,11 +664,7 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 		OutList.Empty();
 	}
 
-	FSlowTask CollectingProgress(FindInList.Num(), FText::FromString(TEXT("Scaning Assets ...")));
-	CollectingProgress.Initialize();
-	CollectingProgress.MakeDialog();
-
-	for(const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
+	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
 		FCustomStandardAssetData StandardAsset(*AssetDPtr);
 
@@ -681,13 +678,11 @@ void UAssetsChecker::EListPrefixErrorAssetsForAssetList(
 			OutList.Add(AssetDPtr);
 		}
 
-		CollectingProgress.EnterProgressFrame();
 	}
 
-	CollectingProgress.Destroy();
 }
 
-void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
+void UAssetsChecker::FilterSameNameErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
 	TArray<TSharedPtr<FAssetData>>& OutList,
 	bool isAdditiveMode)
@@ -741,7 +736,7 @@ void UAssetsChecker::EListSameNameErrorAssetsForAssetList(
 	CollectingProgress.Destroy();
 }
 
-void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
+void UAssetsChecker::FilterMaxInGameSizeErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
 	TArray<TSharedPtr<FAssetData>>& OutList,
 	bool bStrictMode,
@@ -777,7 +772,7 @@ void UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
 	CollectingProgress.Destroy();
 }
 
-void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
+void UAssetsChecker::FilterSourceSizeErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
 	TArray<TSharedPtr<FAssetData>>& OutList,
 	bool bStrictMode,
@@ -812,7 +807,7 @@ void UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
 	CollectingProgress.Destroy();
 }
 
-void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
+void UAssetsChecker::FilterTextureSubfixErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
 	TArray<TSharedPtr<FAssetData>>& OutList,
 	bool isAdditiveMode)
@@ -851,7 +846,7 @@ void UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
 	CollectingProgress.Destroy();
 }
 
-void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
+void UAssetsChecker::FilterTextureSettingsErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
 	TArray<TSharedPtr<FAssetData>>& OutList,
 	bool isAdditiveMode)
@@ -890,7 +885,7 @@ void UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
 	CollectingProgress.Destroy();
 }
 
-void UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(
+void UAssetsChecker::FilterTextureLODGroupErrorAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
 	TArray<TSharedPtr<FAssetData>>& OutList, 
 	bool isAdditiveMode)
@@ -930,13 +925,13 @@ void UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(
 	CollectingProgress.Destroy();
 }
 
-uint32 UAssetsChecker::EDeleteAssets(
+uint32 UAssetsChecker::DeleteAssets(
 	const TArray<FAssetData>& AssetsData)
 {
 	return ObjectTools::DeleteAssets(AssetsData);
 }
 
-uint32 UAssetsChecker::EDeleteAsset(
+uint32 UAssetsChecker::DeleteAsset(
 	const FAssetData& AssetData)
 {
 	TArray<FAssetData> AssetsData;
@@ -945,10 +940,10 @@ uint32 UAssetsChecker::EDeleteAsset(
 	return ObjectTools::DeleteAssets(AssetsData);
 }
 
-void UAssetsChecker::ERemoveUnusedAssets(
+void UAssetsChecker::RemoveUnusedAssets(
 	const TArray<FAssetData>& AssetsDataSelected)
 {
-	EFixUpRedirectors();
+	FixUpRedirectors();
 
 	TArray<FAssetData> UnusedAssetsData;
 
@@ -980,7 +975,7 @@ void UAssetsChecker::ERemoveUnusedAssets(
 		return;
 	}
 
-	const uint32 NumOfAssetsDeleted = EDeleteAssets(UnusedAssetsData);
+	const uint32 NumOfAssetsDeleted = DeleteAssets(UnusedAssetsData);
 
 	if (NumOfAssetsDeleted == 0) return;
 
@@ -991,7 +986,7 @@ void UAssetsChecker::ERemoveUnusedAssets(
 #endif
 }
 
-void UAssetsChecker::ERemoveUnusedAssets(
+void UAssetsChecker::RemoveUnusedAssets(
 	const TArray<FString>& FolderPathSelected)
 {
 	if (FolderPathSelected.Num() < 1)
@@ -1001,7 +996,7 @@ void UAssetsChecker::ERemoveUnusedAssets(
 
 	for (const FString FolderPath : FolderPathSelected)
 	{
-		EFixUpRedirectors(FolderPath);
+		FixUpRedirectors(FolderPath);
 
 		TArray<FString> AssetPaths = UEditorAssetLibrary::ListAssets(FolderPath);
 
@@ -1014,7 +1009,7 @@ void UAssetsChecker::ERemoveUnusedAssets(
 				PATHLOOPIGNORE(assetPath);
 				ASSETPATHNOTEXISTIGNORE(assetPath)
 
-				if (EGetAssetReferencesPath(assetPath).Num() == 0)
+				if (GetAssetReferencesPath(assetPath).Num() == 0)
 				{
 					const FAssetData AssetData = UEditorAssetLibrary::FindAssetData(assetPath);
 					UnusedAssetsData.Add(AssetData);
@@ -1023,22 +1018,22 @@ void UAssetsChecker::ERemoveUnusedAssets(
 
 			if (UnusedAssetsData.Num() > 0)
 			{
-				EDeleteAssets(UnusedAssetsData);
+				DeleteAssets(UnusedAssetsData);
 			};
 		}
 	}
 }
 
-void UAssetsChecker::ERemoveEmptyFolder(
+void UAssetsChecker::RemoveEmptyFolder(
 	const FString FolderPathSelected)
 {
 	TArray<FString> path;
 	path.Add(FolderPathSelected);
 
-	ERemoveEmptyFolder(path);
+	RemoveEmptyFolder(path);
 }
 
-void UAssetsChecker::ERemoveEmptyFolder(
+void UAssetsChecker::RemoveEmptyFolder(
 	const TArray<FString>& FolderPathSelected)
 {
 	if (FolderPathSelected.Num() < 1)
@@ -1059,7 +1054,7 @@ void UAssetsChecker::ERemoveEmptyFolder(
 	// loop to collect empty path
 	for (const FString FolderPathCheck : FolderPathSelected)
 	{
-		EFixUpRedirectors(FolderPathCheck);
+		FixUpRedirectors(FolderPathCheck);
 
 		PATHLOOPIGNORE(FolderPathCheck);
 		if (UEditorAssetLibrary::ListAssets(FolderPathCheck).Num()==0) 
@@ -1163,17 +1158,17 @@ void UAssetsChecker::ERemoveEmptyFolder(
 }
 
 TArray<TSharedPtr<FAssetData>> 
-UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(
+UAssetsChecker::ListAssetsDataPtrUnderSelectedFolder(
 	const FString& FolderPathSelected)
 {
 	TArray<FString> path;
 	path.Add(FolderPathSelected);
 
-	return EListAssetsDataPtrUnderSelectedFolder(path);
+	return ListAssetsDataPtrUnderSelectedFolder(path);
 }
 
 TArray<TSharedPtr<FAssetData>> 
-UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(
+UAssetsChecker::ListAssetsDataPtrUnderSelectedFolder(
 	const TArray<FString>& FolderPathSelected)
 {
 	TArray<TSharedPtr<FAssetData>> AssetsDataArray;
@@ -1214,7 +1209,28 @@ UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(
 	return AssetsDataArray;
 }
 
-int UAssetsChecker::EReplaceName(
+void UAssetsChecker::FilterAssetsWithTagFromAssetList(
+	const TArray<TSharedPtr<FAssetData>>& FindInList, 
+	TArray<TSharedPtr<FAssetData>>& OutList, 
+	FName TagName)
+{
+	OutList.Empty();
+
+	if (FindInList.Num() < 1)
+	{
+		return;
+	}
+
+	for (TSharedPtr<FAssetData> AssetDataPtr : FindInList)
+	{
+		if (AssetDataPtr->AssetName.ToString().Contains(TagName.ToString()))
+		{
+			OutList.AddUnique(AssetDataPtr);
+		};
+	}
+}
+
+int UAssetsChecker::ReplaceName(
 	const TArray<UObject*>& AssetsSelected, 
 	const FString& OriginStr, 
 	const FString& ReplaceStr)
@@ -1247,7 +1263,7 @@ int UAssetsChecker::EReplaceName(
 	return Counter;
 }
 
-bool UAssetsChecker::ERenameAsset(
+bool UAssetsChecker::RenameAsset(
 	TSharedPtr<FAssetData> & AssetData, 
 	FString NewName)
 {
@@ -1274,22 +1290,22 @@ bool UAssetsChecker::ERenameAsset(
 	return true;
 }
 
-TSharedPtr<FString> UAssetsChecker::EGetAssetNameSubfix(const FAssetData& AssetSelected)
+TSharedPtr<FString> UAssetsChecker::GetAssetNameSubfix(const FAssetData& AssetSelected)
 {
 	FCustomStandardAssetData AssetS(AssetSelected);
 
 	return AssetS.GetAssetSuffix();
 }
 
-void UAssetsChecker::EFixUpRedirectors(
+void UAssetsChecker::FixUpRedirectors(
 	const FString & Path)
 {
 	TArray<FString> PathArray;
 	PathArray.Add(Path);
-	EFixUpRedirectors(PathArray);
+	FixUpRedirectors(PathArray);
 }
 
-void UAssetsChecker::EFixUpRedirectors(
+void UAssetsChecker::FixUpRedirectors(
 	const TArray<FString>& Path)
 {
 	TArray<UObjectRedirector*> RedirectorsToFixArray;
@@ -1338,6 +1354,34 @@ void UAssetsChecker::ECopyAssetsPtrList(
 	{
 		ListToOutput.Add(AssetD);
 	}
+}
+
+bool UAssetsChecker::JudgeSort(FVector2D& A, FVector2D& B, bool bReverse)
+{
+	if (A.X == B.X)
+	{
+		return bReverse ? A.Y > B.Y : A.Y < B.Y;
+	}
+
+	return bReverse ? A.X > B.X : A.X < B.X;
+}
+
+bool UAssetsChecker::JudgeSort(FString& A, FString& B, bool bReverse)
+{
+	int AL = A.Len();
+	int BL = B.Len();
+
+	for (int Idx = 0; Idx < (AL<BL? AL:BL); ++Idx)
+	{
+		if(A[Idx] == B[Idx])
+		{
+			continue;
+		}
+
+		return bReverse ? A[Idx] > B[Idx] : A[Idx] < B[Idx];
+	}
+
+	return bReverse ? AL < BL : AL > BL;
 }
 
 
@@ -1423,4 +1467,70 @@ double UAssetsChecker::ByteConversion(
 
 	return SizeResult;
 
+}
+
+AssetsInfoDisplayLevel UAssetsChecker::IntToDisplayLevel(int32 Idx)
+{
+	if (Idx < 0)
+	{
+		return AssetsInfoDisplayLevel::AssetsInfoDisplay_Display;
+	}
+
+	if (Idx < (int32)AssetsInfoDisplayLevel::AssetsInfoDisplayLevel_Max)
+	{
+		return (AssetsInfoDisplayLevel)Idx;
+	}
+
+	return AssetsInfoDisplayLevel::AssetsInfoDisplay_Exceed;
+}
+
+FColor UAssetsChecker::DisplayLevelToColor(AssetsInfoDisplayLevel & DisplayLevel)
+{
+	switch (DisplayLevel)
+	{
+	case AssetsInfoDisplayLevel::AssetsInfoDisplay_Display:
+		return FColor::White;
+	case AssetsInfoDisplayLevel::AssetsInfoDisplay_Tip:
+		return FColor::Cyan;
+	case AssetsInfoDisplayLevel::AssetsInfoDisplay_Attention:
+		return FColor::Green;
+	case AssetsInfoDisplayLevel::AssetsInfoDisplay_Warning:
+		return FColor::Yellow;
+	case AssetsInfoDisplayLevel::AssetsInfoDisplay_Risk:
+		return FColor::Orange;
+	case AssetsInfoDisplayLevel::AssetsInfoDisplay_Exceed:
+		return FColor::Red;
+	case AssetsInfoDisplayLevel::AssetsInfoDisplayLevel_Max:
+	default:
+		return FColor::White;
+		break;
+	}
+}
+
+FString UAssetsChecker::IntStrAddColumn(FString SourceStr)
+{
+	int Count = SourceStr.Len();
+	int ColumnCount = (Count-1) / 3;
+	int StartPos = Count % 3 ? Count % 3 : 3;
+
+	for (int Idx = 0; Idx < ColumnCount; ++ Idx)
+	{
+		SourceStr.InsertAt(StartPos+Idx*3, ",");
+	}
+
+	return SourceStr;
+}
+
+bool UAssetsChecker::OpenLocalFolder(const FString& FolderPath)
+{
+	FString AbsPath = FPaths::ConvertRelativePathToFull(FolderPath);
+
+	if (!FPaths::DirectoryExists(AbsPath))
+	{
+		return false;
+	}
+
+	FPlatformProcess::ExploreFolder(*AbsPath);
+
+	return true;
 }

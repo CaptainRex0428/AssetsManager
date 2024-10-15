@@ -127,7 +127,7 @@ void UAssetsHandler::DuplicateAssets(
 {
 	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
 
-	int Counter = UAssetsChecker::EDuplicateAssets(SelectedAssetsData, NumOfDupicates, forced);
+	int Counter = UAssetsChecker::DuplicateAssets(SelectedAssetsData, NumOfDupicates, forced);
 
 	if (Counter <= 0)
 	{
@@ -150,14 +150,14 @@ void UAssetsHandler::DuplicateAssets(
 void UAssetsHandler::RemoveUnusedAssets()
 {
 	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
-	UAssetsChecker::ERemoveUnusedAssets(SelectedAssetsData);
+	UAssetsChecker::RemoveUnusedAssets(SelectedAssetsData);
 }
 
 void UAssetsHandler::ReplaceName(const FString& OriginStr, const FString& ReplaceStr)
 {
 	
 	TArray<UObject*> AssetsSelected = UEditorUtilityLibrary::GetSelectedAssets();
-	int Counter = UAssetsChecker::EReplaceName(AssetsSelected, OriginStr, ReplaceStr);
+	int Counter = UAssetsChecker::ReplaceName(AssetsSelected, OriginStr, ReplaceStr);
 
 	if (Counter == -1)
 	{

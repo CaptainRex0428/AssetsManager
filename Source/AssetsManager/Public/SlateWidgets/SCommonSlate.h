@@ -32,10 +32,16 @@ public:
 		Column_TextureSRGB,
 		Column_TextureGroup,
 
+		//Skeletal Mesh
+		Column_SkeletalMeshLODNum,
+		Column_SkeletalVertices,
+		Column_SkeletalTriangles,
+		Column_SkeletalAllowCPUAccess,
+
 		//Asset Size
 		Column_DiskSize,
 		Column_MemorySize,
-		
+
 		//Border
 		Column_Max
 	};
@@ -53,6 +59,10 @@ public:
 		{Column_TextureSRGB,TEXT("sRGB")},
 		{Column_TextureGroup, TEXT("TextureGroup")},
 		{Column_DiskSize, TEXT("DiskSize(MB)")},
+		{Column_SkeletalMeshLODNum, TEXT("LODNum(SK)")},
+		{Column_SkeletalTriangles, TEXT("Triangles(SK)")},
+		{Column_SkeletalVertices, TEXT("Vertices(SK)")},
+		{Column_SkeletalAllowCPUAccess, TEXT("AllowCPUAccess")},
 		{Column_MemorySize, TEXT("MemorySize(MB)")}
 	};
 

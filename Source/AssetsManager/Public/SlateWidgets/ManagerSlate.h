@@ -6,6 +6,8 @@
 #include "SlateWidgets/SCustomTable.h"
 #include "SlateWidgets/SCustomEditableText.h"
 
+#include "StandardAsset/FCustomStandardAssetData.h"
+
 #define CONTENTFOLDER_MANAGERTAB_NAME "AssetsManager"
 
 class ASSETSMANAGER_API SManagerSlateTab: public SCommonSlate
@@ -52,6 +54,7 @@ private:
 	TArray<FString> StoredFolderPaths;
 	TArray<TSharedPtr<FAssetData>> StoredAssetsData;
 	TArray<TSharedPtr<FAssetData>> SListViewClassFilterAssetData;
+	TArray<TSharedPtr<FAssetData>> SListViewCategoryFilterAssetData;
 	TArray<TSharedPtr<FAssetData>> SListViewUsageFilterAssetData;
 
 	TArray<TSharedPtr<FAssetData>> SListViewAssetData;
@@ -59,6 +62,7 @@ private:
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
 
 	ClassCheckState m_ClassCheckState;
+	FCustomStandardAssetData::Category m_CategoryCheckState;
 	UsageCheckState m_UsageCheckState;
 
 	TSharedPtr<SCustomTable<TSharedPtr<FAssetData>>> CustomTableList;
@@ -127,7 +131,7 @@ private:
 	/* 
 	Construct standard editable name info box
 	*/
-	TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> ConstructEditAssetNameRowBox(
+	TSharedRef<SHorizontalBox> ConstructEditAssetNameRowBox(
 		TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
@@ -146,14 +150,14 @@ private:
 	/*
 	Construct standard name info box
 	*/
-	TSharedRef<STextBlock> ConstructAssetNameRowBox(
+	TSharedRef<SHorizontalBox> ConstructAssetNameRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
 	/*
 	Construct standard class info box
 	*/
-	TSharedRef<STextBlock> ConstructAssetClassRowBox(
+	TSharedRef<SHorizontalBox> ConstructAssetClassRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 		const FSlateFontInfo& FontInfo);
 	
@@ -188,16 +192,48 @@ private:
 	/*
 	* Construct disk size info box
 	*/
-	TSharedRef<STextBlock> ConstructAssetDiskSizeRowBox(
+	TSharedRef<SHorizontalBox> ConstructAssetDiskSizeRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
 
 	/*
 	* Construct memory size info box
 	*/
-	TSharedRef<STextBlock> ConstructAssetMemorySizeRowBox(
+	TSharedRef<SHorizontalBox> ConstructAssetMemorySizeRowBox(
 		const TSharedPtr<FAssetData>& AssetDataToDisplay,
 		const FSlateFontInfo& FontInfo);
+
+	/*
+	* Construct SkeletalMesh LODNumBox
+	*/
+	TSharedRef<SHorizontalBox> ConstructSkeletalMeshLODNumRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
+	/*
+	* Construct SkeletalMesh Vertices
+	*/
+	TSharedRef<SVerticalBox> ConstructSkeletalMeshVerticesNumRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo,
+		bool bStricWithCategory = false);
+
+	/*
+	* Construct SkeletalMesh LODNumBox
+	*/
+	TSharedRef<SVerticalBox> ConstructSkeletalMeshTrianglesNumRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo,
+		bool bStricWithCategory = false);
+
+	/*
+	* Construct SkeletalMesh LOD AllowCPUAccessInfoBox
+	*/
+	TSharedRef<SVerticalBox> ConstructSkeletalMeshLODAllowCPUAccessRowBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay,
+		const FSlateFontInfo& FontInfo);
+
+
 
 #pragma endregion
 
@@ -337,6 +373,12 @@ private:
 	FReply OnOutputViewListInfoButtonClicked();
 #pragma endregion
 
+#pragma region OpenLocalLogFolder
+	TSharedPtr<SButton> OpenLocalLogFolderButton;
+	TSharedRef<SButton> ConstructOpenLocalLogFolderButton();
+	FReply OnOpenLocalLogFolderButtonClicked();
+#pragma endregion
+
 #pragma region BatchRename
 	TSharedRef<SDockTab> OnSpawnBatchRenameTab(const FSpawnTabArgs& SpawnTabArgs);
 	void OnBatchRenameApply();
@@ -346,12 +388,20 @@ private:
 	FReply OnBatchRenameButtonClicked();
 #pragma endregion
 
+#pragma region SkeletonMeshBatchAudit
+
+
+
+#pragma endregion
+
 #pragma endregion
 
 
 #pragma region ComboListFilter
 
 	TSharedRef<SHorizontalBox> ConstructDropDownMenuBox();
+
+	void UpdateDisplayListSource();
 
 #pragma region ClassFilter
 
@@ -370,13 +420,37 @@ private:
 	TSharedRef<SWidget> OnGenerateClassFilterButton(
 		TSharedPtr<FString> SourceItem);
 
-	void ConstuctClassFilterList(
-		TSharedPtr<FString> SelectedOption);
-
 	void OnClassFilterButtonChanged(
-		TSharedPtr<FString> SelectedOption, 
+		TSharedPtr<FString> SelectedOption,
 		ESelectInfo::Type InSelectInfo);
 
+	void UpdateClassFilterList(
+		TSharedPtr<FString> SelectedOption);
+
+	
+
+#pragma endregion
+
+#pragma region CategoryFilter
+	TSharedPtr<SComboBox<TSharedPtr<FString>>> CategoryFilterComboBox;
+
+	TArray<TSharedPtr<FString>> CategoryFilterComboSourceItems;
+
+	TSharedPtr<STextBlock> CategoryFilterComboDisplayText;
+
+	TSharedPtr<FString> CategoryFilterCurrent;
+	TSharedPtr<FString> CategoryFilterDefault;
+
+	TSharedRef<SComboBox<TSharedPtr<FString>>> ConstructCategoryFilterButton();
+
+	TSharedRef<SWidget> OnGenerateCategoryFilterButton(
+		TSharedPtr<FString> SourceItem);
+
+	void OnCategoryFilterButtonChanged(
+		TSharedPtr<FString> SelectedOption,
+		ESelectInfo::Type InSelectInfo);
+
+	void UpdateCategoryFilterList();
 #pragma endregion
 	
 
@@ -409,8 +483,13 @@ private:
 		TSharedPtr<FString> SelectedOption, 
 		ESelectInfo::Type InSelectInfo);
 
-	void UpdateUsageFilterAssetData(
-		const FString& Selection);
+	void UpdateUsageFilterAssetData();
+
+#pragma endregion
+
+#pragma region CategoryFilter
+
+
 
 #pragma endregion
 

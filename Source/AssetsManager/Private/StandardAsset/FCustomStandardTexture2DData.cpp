@@ -4,6 +4,7 @@
 #include "StandardAsset/FCustomStandardTexture2DData.h"
 #include "ConfigManager.h"
 #include "ManagerLogger.h"
+#include "AssetsChecker/AssetsChecker.h"
 
 FCustomStandardTexture2DData::FCustomStandardTexture2DData(
 	const FAssetData& AssetData,
@@ -200,6 +201,51 @@ int64 FCustomStandardTexture2DData::GetMemorySize(bool bEstimatedTotal)
 
 	AssetT->PostLoad();
 	return AssetT->GetResourceSizeBytes(bEstimatedTotal ? EResourceSizeMode::EstimatedTotal : EResourceSizeMode::Exclusive);
+}
+
+int64 FCustomStandardTexture2DData::GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel, bool bEstimatedTotal)
+{
+	int64 MemorySize = GetMemorySize(bEstimatedTotal);
+
+	FString AssetGlobalSection = "/AssetsManager/Global";
+
+	TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
+		*AssetGlobalSection,
+		L"AssetMemorySizeLevelDivide",
+		L"Level");
+
+	int32 LevelOut = 0;
+
+	for (int32 levelIdx = 0; levelIdx < ValidLevels.Num(); ++levelIdx)
+	{
+		TSharedPtr<FString> LevelValue = FConfigManager::Get().FindInSectionStructArray(
+			*AssetGlobalSection,
+			L"AssetMemorySizeLevelDivide",
+			L"Level",
+			FString::FromInt(levelIdx),
+			L"Value");
+
+		if (!LevelValue.IsValid())
+		{
+			continue;
+		}
+
+		int BorderSize = FConfigManager::Get().SToI(*LevelValue);
+
+		LevelOut = levelIdx;
+
+		if (MemorySize < BorderSize * 1024 * 1024)
+		{
+			break;
+		}
+	}
+
+	DisplayLevel = UAssetsChecker::IntToDisplayLevel(LevelOut);
+
+	return MemorySize;
+
+
+	return int64();
 }
 
 FVector2D FCustomStandardTexture2DData::GetSourceSize()

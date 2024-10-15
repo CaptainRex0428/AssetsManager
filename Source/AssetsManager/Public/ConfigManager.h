@@ -20,9 +20,9 @@
 
 #define ModuleConfigMaster TEXT("/AssetsManager")
 
-#define ASSETSMANAGER_LOGFOLDER FPaths::ProjectDir() + "/Saved/AssetsManager/"
+#define ASSETSMANAGER_LOGFOLDER FPaths::ProjectDir() + L"Saved/AssetsManager/"
 
-#define ASSETSMANAGER_CONFIGFOLDER FPaths::ProjectDir() + "/Plugins/AssetsManager/Config/"
+#define ASSETSMANAGER_CONFIGFOLDER FPaths::ProjectDir() + L"Plugins/AssetsManager/Config/"
 
 UENUM(BlueprintType)
 enum class AssetSizeDisplayUnit : uint8
@@ -34,6 +34,18 @@ enum class AssetSizeDisplayUnit : uint8
 	GB = 4 UMETA(DisplayName="GB"),
 	TB = 5 UMETA(DisplayName="TB"),
 	AssetSizeDisplayUnit_Max
+};
+
+UENUM(BlueprintType)
+enum class AssetsInfoDisplayLevel : uint8
+{
+	AssetsInfoDisplay_Display = 0 UMETA(DisplayName = "Display"),
+	AssetsInfoDisplay_Tip = 1 UMETA(DisplayName = "Tip"),
+	AssetsInfoDisplay_Attention = 2 UMETA(DisplayName = "Attention"),
+	AssetsInfoDisplay_Warning = 3 UMETA(DisplayName = "Warning"),
+	AssetsInfoDisplay_Risk = 4 UMETA(DisplayName = "Risk"),
+	AssetsInfoDisplay_Exceed = 5 UMETA(DisplayNam = "Exceed"),
+	AssetsInfoDisplayLevel_Max
 };
 
 /**

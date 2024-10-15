@@ -17,6 +17,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraEmitter.h"
 #include "PhysicsEngine/PhysicsAsset.h"
+#include "WidgetBlueprint.h"
 
 #include "ConfigManager.h"
 
@@ -57,7 +58,9 @@ public:
 	bool IsCatogryStandarized();
 
 	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
+	virtual int64 GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel,bool bEstimatedTotal = true);
 	virtual int64 GetDiskSize();
+	virtual int64 GetDiskSize(AssetsInfoDisplayLevel& DisplayLevel);
 
 private:
 	TArray<FString> SplitStringRecursive(
@@ -99,6 +102,7 @@ static const TMap<UClass*, FString> UClassNameMap =
 	{VCLASSNAME_STRUCT(UTexture2D::StaticClass())},
 	{VCLASSNAME_STRUCT(UTexture2DArray::StaticClass())},
 	{VCLASSNAME_STRUCT(UUserWidget::StaticClass())},
+	{VCLASSNAME_STRUCT(UWidgetBlueprint::StaticClass())},
 	{VCLASSNAME_STRUCT(USkeletalMesh::StaticClass())},
 	{VCLASSNAME_STRUCT(UNiagaraSystem::StaticClass())},
 	{VCLASSNAME_STRUCT(UNiagaraEmitter::StaticClass())},

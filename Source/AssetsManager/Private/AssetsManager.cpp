@@ -39,12 +39,12 @@ void FAssetsManagerModule::ShutdownModule()
 // Third bind. The actual function to execute.
 void FAssetsManagerModule::OnDeleteUnusedAssetButtonClicked()
 {
-	UAssetsChecker::ERemoveUnusedAssets(SelectedContentFolderPaths);
+	UAssetsChecker::RemoveUnusedAssets(SelectedContentFolderPaths);
 }
 
 void FAssetsManagerModule::OnDeleteEmptyFolderButtonClicked()
 {
-	UAssetsChecker::ERemoveEmptyFolder(SelectedContentFolderPaths);
+	UAssetsChecker::RemoveEmptyFolder(SelectedContentFolderPaths);
 }
 
 void FAssetsManagerModule::OnAssetsManagerButtonClicked()
@@ -133,7 +133,7 @@ void FAssetsManagerModule::RegisterCustomEditorTab()
 
 TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs)
 {
-	TArray<TSharedPtr<FAssetData>> assets = UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(SelectedContentFolderPaths);
+	TArray<TSharedPtr<FAssetData>> assets = UAssetsChecker::ListAssetsDataPtrUnderSelectedFolder(SelectedContentFolderPaths);
 
 	return
 	SNew(SDockTab).TabRole(ETabRole::NomadTab)

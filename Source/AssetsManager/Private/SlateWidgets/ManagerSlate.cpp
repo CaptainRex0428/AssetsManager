@@ -33,14 +33,18 @@
 
 #include "Engine/Texture.h"
 
+#include <iostream>
+#include <fstream>
 
 #pragma region Filter
 
 #ifdef ZH_CN
 #define CLASSFILTER TEXT("资产类型过滤: ")
-#define USAGEFILTER TEXT("条件过滤")
+#define CATEGORYFILTER TEXT("资产分组过滤: ")
+#define USAGEFILTER TEXT("资产条件过滤")
 #else
 #define CLASSFILTER TEXT("Class Filter: ")
+#define CATEGORYFLTER TEXT("Category Filter: ")
 #define USAGEFILTER TEXT("Condition Filter: ")
 #endif
 
@@ -48,6 +52,32 @@
 
 #pragma region ClassFilterComboSourceItems
 #define CLASS_LISTALL TEXT("All")
+#pragma endregion
+
+#pragma region CategoryFilterComboSourceItems
+
+#ifdef ZH_CN
+
+#define CATEGORY_LISTALL TEXT("All")
+#define CATEGORY_NOGROUP TEXT("未分组")
+#define CATEGORY_CHARACTER TEXT("角色")
+#define CATEGORY_HAIR TEXT("头发")
+#define CATEGORY_SCENE TEXT("场景")
+#define CATEGORY_UI TEXT("界面")
+#define CATEGORY_EFFECT TEXT("特效")
+
+#else
+
+#define CATEGORY_LISTALL TEXT("All")
+#define CATEGORY_NOGROUP TEXT("Undefined Category")
+#define CATEGORY_CHARACTER TEXT("Character")
+#define CATEGORY_HAIR TEXT("Hair")
+#define CATEGORY_SCENE TEXT("Scene")
+#define CATEGORY_UI TEXT("UI")
+#define CATEGORY_EFFECT TEXT("Effect")
+
+#endif
+
 #pragma endregion
 
 #pragma region UsageFilterComboSourceItems
@@ -90,6 +120,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	RegistryTab();
 
 	m_ClassCheckState = DefaultClassCheckState;
+	m_CategoryCheckState = FCustomStandardAssetData::LastCatergory;
 	m_UsageCheckState = DefaultUsageCheckState;
 
 	FSlateFontInfo TitleTextFont = GetFontInfo(25);
@@ -117,7 +148,19 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 		ClassFilterComboSourceItems.Add(MakeShared<FString>(Key));
 	}
 
+	CategoryFilterDefault = MakeShared<FString>(CATEGORY_LISTALL);
+	CategoryFilterCurrent = CategoryFilterDefault;
+
+	CategoryFilterComboSourceItems.Add(CategoryFilterDefault);
+	CategoryFilterComboSourceItems.Add(MakeShared<FString>(CATEGORY_NOGROUP));
+	CategoryFilterComboSourceItems.Add(MakeShared<FString>(CATEGORY_CHARACTER));
+	CategoryFilterComboSourceItems.Add(MakeShared<FString>(CATEGORY_HAIR));
+	CategoryFilterComboSourceItems.Add(MakeShared<FString>(CATEGORY_UI));
+	CategoryFilterComboSourceItems.Add(MakeShared<FString>(CATEGORY_SCENE));
+	CategoryFilterComboSourceItems.Add(MakeShared<FString>(CATEGORY_EFFECT));
+
 	UsageSelectedDefault = MakeShared<FString>(USAGE_NONE);
+
 	UsageSelectionMaxInGameSizeError = MakeShared<FString>(USAGE_MAXINGAMESIZEERROR);
 	UsageSelectionSourceSizeError = MakeShared<FString>(USAGE_SOURCESIZEERROR);
 	UsageSelectionTextureSubfixError = MakeShared<FString>(USAGE_TEXTURESUBFIXERROR);
@@ -135,6 +178,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	ConstructFixSelectedButton();
 	ConstructFixUpRedirectorButton();
 	ConstructOutputViewListInfoButton();
+	ConstructOpenLocalLogFolderButton();
 	ConstructBatchRenameButton();
 
 	ConstructDynamicHandleAllBox();
@@ -334,11 +378,15 @@ void SManagerSlateTab::ConstructHeaderRow()
 	if (DetailMode)
 	{
 		SManagerCustomTableTitleRowColumnsType.Add(Column_DiskSize);
-		SManagerCustomTableTitleRowColumnsType.Add(Column_MemorySize);
 	}
 
 	if (m_ClassCheckState == Texture)
 	{
+		if (DetailMode)
+		{
+			SManagerCustomTableTitleRowColumnsType.Add(Column_MemorySize);
+		}
+
 		SManagerCustomTableTitleRowColumnsType.Add(
 			m_UsageCheckState == SourceSizeError ? 
 			Column_TextureSourceSize :Column_TextureMaxInGameSize);
@@ -353,6 +401,17 @@ void SManagerSlateTab::ConstructHeaderRow()
 			SManagerCustomTableTitleRowColumnsType.Add(Column_TextureSRGB);
 			
 			SManagerCustomTableTitleRowColumnsType.Add(Column_TextureCompressionSettings);
+		}
+	}
+
+	if (m_ClassCheckState == SkeletalMesh)
+	{
+		if (DetailMode)
+		{
+			SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalMeshLODNum);
+			SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalVertices);
+			SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalTriangles);
+			SManagerCustomTableTitleRowColumnsType.Add(Column_SkeletalAllowCPUAccess);
 		}
 	}
 
@@ -422,6 +481,22 @@ TSharedRef<SHeaderRow> SManagerSlateTab::OnTableGenerateHeaderRow(
 			ColumnBoxArgs.FillWidth(0.1f);
 			break;
 
+		case Column_SkeletalMeshLODNum:
+			ColumnBoxArgs.FillWidth(0.05f);
+			break;
+
+		case Column_SkeletalVertices:
+			ColumnBoxArgs.FillWidth(0.12f);
+			break;
+
+		case Column_SkeletalTriangles:
+			ColumnBoxArgs.FillWidth(0.12f);
+			break;
+
+		case Column_SkeletalAllowCPUAccess:
+			ColumnBoxArgs.FillWidth(0.1f);
+			break;
+
 		default:
 			ColumnBoxArgs.FillWidth(0.1f);
 			break;
@@ -456,18 +531,15 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 
 		case Column_UClass:
 		{
-			TSharedPtr<STextBlock> ClassWidget = 
+			TSharedPtr<SHorizontalBox> ClassWidget =
 				ConstructAssetClassRowBox(AssetToDisplay, GetFontInfo(9));
-			ClassWidget->SetAutoWrapText(true);
-			ClassWidget->SetJustification(ETextJustify::Center);
-			ClassWidget->SetMargin(FMargin(3.f));
-
+			
 			return ClassWidget.ToSharedRef();
 		}
 
 		case Column_AssetName:
 		{
-			TSharedPtr<SCustomEditableText<TSharedPtr<FAssetData>>> NameWidget =
+			TSharedPtr<SHorizontalBox> NameWidget =
 				ConstructEditAssetNameRowBox(AssetToDisplay, GetFontInfo(9));
 
 			return NameWidget.ToSharedRef();
@@ -533,24 +605,51 @@ TSharedRef<SWidget> SManagerSlateTab::OnTableGenerateListColumn(
 
 		case Column_MemorySize:
 		{
-			TSharedPtr<STextBlock> MemorySizeBox =
+			TSharedPtr<SHorizontalBox> MemorySizeBox =
 				ConstructAssetMemorySizeRowBox(AssetToDisplay, GetFontInfo(9));
-			MemorySizeBox->SetAutoWrapText(true);
-			MemorySizeBox->SetJustification(ETextJustify::Center);
-			MemorySizeBox->SetMargin(FMargin(3.f));
 
 			return MemorySizeBox.ToSharedRef();
 		}
 
 		case Column_DiskSize:
 		{
-			TSharedPtr<STextBlock> DiskSizeBox = 
+			TSharedPtr<SHorizontalBox> DiskSizeBox =
 				ConstructAssetDiskSizeRowBox(AssetToDisplay, GetFontInfo(9));
-			DiskSizeBox->SetAutoWrapText(true);
-			DiskSizeBox->SetJustification(ETextJustify::Center);
-			DiskSizeBox->SetMargin(FMargin(3.f));
+			
 
 			return DiskSizeBox.ToSharedRef();
+		}
+
+		case Column_SkeletalMeshLODNum:
+		{
+			TSharedPtr<SHorizontalBox> LODNumBox =
+				ConstructSkeletalMeshLODNumRowBox(AssetToDisplay, GetFontInfo(9));
+			
+			return LODNumBox.ToSharedRef();
+		}
+
+		case Column_SkeletalTriangles:
+		{
+			TSharedPtr<SVerticalBox> TriangleBox =
+				ConstructSkeletalMeshTrianglesNumRowBox(AssetToDisplay, GetFontInfo(9));
+
+			return TriangleBox.ToSharedRef();
+		}
+
+		case Column_SkeletalVertices:
+		{
+			TSharedPtr<SVerticalBox> VerticesBox =
+				ConstructSkeletalMeshVerticesNumRowBox(AssetToDisplay, GetFontInfo(9));
+
+			return VerticesBox.ToSharedRef();
+		}
+
+		case Column_SkeletalAllowCPUAccess:
+		{
+			TSharedPtr<SVerticalBox> AllowCPUAccessBox =
+				ConstructSkeletalMeshLODAllowCPUAccessRowBox(AssetToDisplay, GetFontInfo(9));
+
+			return AllowCPUAccessBox.ToSharedRef();
 		}
 
 		case Column_PerAssetHandle:
@@ -830,7 +929,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructListAssetsCountInfo(
 	return ListAssetsCountInfo;
 }
 
-TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> SManagerSlateTab::ConstructEditAssetNameRowBox(
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructEditAssetNameRowBox(
 	TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
@@ -844,7 +943,7 @@ TSharedRef<SCustomEditableText<TSharedPtr<FAssetData>>> SManagerSlateTab::Constr
 		.OnItemToTipText(this,&SManagerSlateTab::OnAssetDataToAssetEditableTextTip)
 		.OnItemCommit(this,&SManagerSlateTab::OnItemDataCommitted);
 
-	return AssetNameBox.ToSharedRef();
+	return SNew(SHorizontalBox) + SHorizontalBox::Slot().VAlign(VAlign_Center)[AssetNameBox.ToSharedRef()];
 }
 
 FText SManagerSlateTab::OnAssetDataToAssetNameEditableText(
@@ -870,12 +969,12 @@ bool SManagerSlateTab::OnItemDataCommitted(
 
 	const FString NewName = TextIn.ToString();
 	
-	bool result = UAssetsChecker::ERenameAsset(AssetDataToDisplay, NewName);
+	bool result = UAssetsChecker::RenameAsset(AssetDataToDisplay, NewName);
 
 	return result;
 }
 
-TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetNameRowBox(
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetNameRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
@@ -889,10 +988,10 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetNameRowBox(
 			ETextJustify::Left, 
 			FColor::White,DisplayAssetPath);
 
-	return AssetNameBox.ToSharedRef();
+	return SNew(SHorizontalBox) + SHorizontalBox::Slot().VAlign(VAlign_Center)[AssetNameBox.ToSharedRef()];
 }
 
-TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetClassRowBox(
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetClassRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
@@ -907,8 +1006,12 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetClassRowBox(
 		DisplayAssetClass = "[Undefined]";
 	}
 
-	TSharedRef<STextBlock> AssetClassBox = ConstructNormalTextBlock(DisplayAssetClass,FontInfo);
-	return AssetClassBox;
+	TSharedRef<STextBlock> ClassWidget = ConstructNormalTextBlock(DisplayAssetClass,FontInfo);
+	ClassWidget->SetAutoWrapText(true);
+	ClassWidget->SetJustification(ETextJustify::Center);
+	ClassWidget->SetMargin(FMargin(3.f));
+
+	return SNew(SHorizontalBox) + SHorizontalBox::Slot().VAlign(VAlign_Center)[ClassWidget];
 }
 
 TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureSizeRowBox(
@@ -919,11 +1022,11 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureSizeRowBox(
 
 	if (m_ClassCheckState == Texture && m_UsageCheckState == SourceSizeError)
 	{
-		TextureAssetSize = UAssetsChecker::EGetTextureAssetSourceSize(*AssetDataToDisplay);
+		TextureAssetSize = UAssetsChecker::GetTextureAssetSourceSize(*AssetDataToDisplay);
 	}
 	else
 	{
-		TextureAssetSize = UAssetsChecker::EGetTextureAssetMaxInGameSize(*AssetDataToDisplay);
+		TextureAssetSize = UAssetsChecker::GetTextureAssetMaxInGameSize(*AssetDataToDisplay);
 	}
 	
 	const FString ShowString = FString::FromInt(TextureAssetSize.X) + "x" + FString::FromInt(TextureAssetSize.Y);
@@ -937,7 +1040,7 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureCompressionSetting
 	const FSlateFontInfo& FontInfo)
 {
 	TSharedPtr<TextureCompressionSettings> CompressionSettings 
-		= UAssetsChecker::EGetTextureAssetCompressionSettings(*AssetDataToDisplay);
+		= UAssetsChecker::GetTextureAssetCompressionSettings(*AssetDataToDisplay);
 
 	if (CompressionSettings.IsValid())
 	{
@@ -962,11 +1065,11 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureSRGBRowBox(
 	const FSlateFontInfo& FontInfo)
 {
 	TSharedPtr<bool> SRGBSettings
-		= UAssetsChecker::EGetTextureAssetSRGBSettings(*AssetDataToDisplay);
+		= UAssetsChecker::GetTextureAssetSRGBSettings(*AssetDataToDisplay);
 
 	if (SRGBSettings.IsValid())
 	{
-		const FString ShowString = *SRGBSettings ? "sRGB" : "NsRGB";
+		const FString ShowString = *SRGBSettings ? L"[ √ ]" : L"[    ]";
 		TSharedRef<STextBlock> TextureCompressionSettinsBox = ConstructNormalTextBlock(ShowString, FontInfo);
 		return TextureCompressionSettinsBox;
 	};
@@ -981,7 +1084,7 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureLODGroupRowBox(
 	const FSlateFontInfo& FontInfo)
 {
 	TSharedPtr<TextureGroup> TextureGroupResult
-		= UAssetsChecker::EGetTextureAssetTextureGroup(*AssetDataToDisplay);
+		= UAssetsChecker::GetTextureAssetTextureGroup(*AssetDataToDisplay);
 
 	if (TextureGroupResult.IsValid())
 	{
@@ -995,108 +1098,184 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureLODGroupRowBox(
 	return TextureCompressionSettinsBox;
 }
 
-TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetDiskSizeRowBox(
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetDiskSizeRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
 	FCustomStandardAssetData StandardAsset(*AssetDataToDisplay);
-	double AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetDiskSize(), AssetSizeDisplayUnit::MB);
+	AssetsInfoDisplayLevel DisplayLevel = AssetsInfoDisplayLevel::AssetsInfoDisplay_Display;
+	double AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetDiskSize(DisplayLevel), AssetSizeDisplayUnit::MB);
 
 	FString AssetSizeStr =FString::Printf(L"%.4f%s", AssetSize, L"MB");
 
 	TSharedRef<STextBlock> DiskSizeBox = ConstructNormalTextBlock(AssetSizeStr, FontInfo);
 
-	FColor TextColor(255,255,255);
+	DiskSizeBox->SetColorAndOpacity(UAssetsChecker::DisplayLevelToColor(DisplayLevel));
+	DiskSizeBox->SetAutoWrapText(true);
+	DiskSizeBox->SetJustification(ETextJustify::Center);
+	DiskSizeBox->SetMargin(FMargin(3.f));
 
-	if (AssetSize > 2)
-	{
-		TextColor = FColor::Cyan;
-	}
-
-	if (AssetSize > 4)
-	{
-		TextColor = FColor::Green;
-	}
-
-	if (AssetSize > 8)
-	{
-		TextColor = FColor::Orange;
-	}
-
-	if (AssetSize > 16)
-	{
-		TextColor = FColor::Yellow;
-	}
-
-	if (AssetSize > 32)
-	{
-		TextColor = FColor::Purple;
-	}
-
-	if (AssetSize > 32)
-	{
-		TextColor = FColor::Red;
-	}
-	
-	DiskSizeBox->SetColorAndOpacity(TextColor);
-
-	return DiskSizeBox;
+	return SNew(SHorizontalBox) + SHorizontalBox::Slot().VAlign(VAlign_Center)[DiskSizeBox];
 }
 
-TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetMemorySizeRowBox(const TSharedPtr<FAssetData>& AssetDataToDisplay, const FSlateFontInfo& FontInfo)
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetMemorySizeRowBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	const FSlateFontInfo& FontInfo)
 {
 	double AssetSize = 0;
+	AssetsInfoDisplayLevel DisplayLevel = AssetsInfoDisplayLevel::AssetsInfoDisplay_Display;
 
 	if (AssetDataToDisplay->GetAsset()->IsA<UTexture2D>())
 	{
 		FCustomStandardTexture2DData StandardAsset(*AssetDataToDisplay);
-		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetMemorySize(), AssetSizeDisplayUnit::MB);
+		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetMemorySize(DisplayLevel), AssetSizeDisplayUnit::MB);
 	}
 	else
 	{
 		FCustomStandardAssetData StandardAsset(*AssetDataToDisplay);
-		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetMemorySize(), AssetSizeDisplayUnit::MB);
+		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetMemorySize(DisplayLevel), AssetSizeDisplayUnit::MB);
 	}
 
 	FString AssetSizeStr = FString::Printf(L"%.4f%s", AssetSize, L"MB");
 
 	TSharedRef<STextBlock> MemorySizeBox = ConstructNormalTextBlock(AssetSizeStr, FontInfo);
 
-	FColor TextColor(255, 255, 255);
+	MemorySizeBox->SetColorAndOpacity(UAssetsChecker::DisplayLevelToColor(DisplayLevel));
+	MemorySizeBox->SetAutoWrapText(true);
+	MemorySizeBox->SetJustification(ETextJustify::Center);
+	MemorySizeBox->SetMargin(FMargin(3.f));
 
-	if (AssetSize > 2)
+	return SNew(SHorizontalBox) +SHorizontalBox::Slot().VAlign(VAlign_Center)[MemorySizeBox];
+}
+
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSkeletalMeshLODNumRowBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	const FSlateFontInfo& FontInfo)
+{
+	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
+
+	if(!StandardSkeletal.IsSkeletalMesh())
 	{
-		TextColor = FColor::Cyan;
+		return SNew(SHorizontalBox) + SHorizontalBox::Slot().VAlign(VAlign_Center)[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
-	if (AssetSize > 4)
+	TSharedRef<STextBlock> LODNumBox = 
+		ConstructNormalTextBlock(FString::FromInt(StandardSkeletal.GetLODNum()), FontInfo);
+
+	LODNumBox->SetAutoWrapText(true);
+	LODNumBox->SetJustification(ETextJustify::Center);
+	LODNumBox->SetMargin(FMargin(3.f));
+
+	return SNew(SHorizontalBox) +SHorizontalBox::Slot().VAlign(VAlign_Center)[LODNumBox];
+}
+
+TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshVerticesNumRowBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	const FSlateFontInfo& FontInfo,
+	bool bStricWithCategory)
+{
+	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
+
+	if (!StandardSkeletal.IsSkeletalMesh())
 	{
-		TextColor = FColor::Green;
+		return SNew(SVerticalBox) +SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
-	if (AssetSize > 8)
+	int32 LODNum = StandardSkeletal.GetLODNum();
+	FString DisplayContent;
+
+	TSharedPtr<SVerticalBox> InfoList = SNew(SVerticalBox);
+
+	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
 	{
-		TextColor = FColor::Orange;
+		AssetsInfoDisplayLevel DisplayLevel;
+		int32 VerticesCount = StandardSkeletal.GetLODVerticesNum(LODIdx, DisplayLevel,bStricWithCategory);
+
+		DisplayContent =
+			FString::Printf(L"LOD%d:%8.2fw",
+				LODIdx, VerticesCount / 10000.0f);
+
+		TSharedPtr<STextBlock> DisplayBox = ConstructNormalTextBlock(DisplayContent, FontInfo);
+		DisplayBox->SetColorAndOpacity(UAssetsChecker::DisplayLevelToColor(DisplayLevel));
+		DisplayBox->SetAutoWrapText(true);
+		DisplayBox->SetJustification(ETextJustify::Center);
+		DisplayBox->SetMargin(FMargin(1.f));
+
+		InfoList->AddSlot().HAlign(HAlign_Fill).Padding(FMargin(1.f))[DisplayBox.ToSharedRef()];
+	}
+	
+	return InfoList.ToSharedRef();
+}
+
+TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshTrianglesNumRowBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	const FSlateFontInfo& FontInfo,
+	bool bStricWithCategory)
+{
+	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
+
+	if (!StandardSkeletal.IsSkeletalMesh())
+	{
+		return SNew(SVerticalBox) +SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
-	if (AssetSize > 16)
+	int32 LODNum = StandardSkeletal.GetLODNum();
+	FString DisplayContent;
+
+	TSharedPtr<SVerticalBox> InfoList = SNew(SVerticalBox);
+
+	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
 	{
-		TextColor = FColor::Yellow;
+		AssetsInfoDisplayLevel DisplayLevel;
+		int32 VerticesCount = StandardSkeletal.GetLODTrianglesNum(LODIdx, DisplayLevel, bStricWithCategory);
+
+		DisplayContent =
+			FString::Printf(L"LOD%d:%8.2fw",
+				LODIdx, VerticesCount / 10000.0f);
+
+		TSharedPtr<STextBlock> DisplayBox = ConstructNormalTextBlock(DisplayContent, FontInfo);
+		DisplayBox->SetColorAndOpacity(UAssetsChecker::DisplayLevelToColor(DisplayLevel));
+		DisplayBox->SetAutoWrapText(true);
+		DisplayBox->SetJustification(ETextJustify::Center);
+		DisplayBox->SetMargin(FMargin(1.f));
+
+		InfoList->AddSlot().HAlign(HAlign_Fill).Padding(FMargin(1.f))[DisplayBox.ToSharedRef()];
 	}
 
-	if (AssetSize > 32)
+	return InfoList.ToSharedRef();
+}
+
+TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshLODAllowCPUAccessRowBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
+	const FSlateFontInfo& FontInfo)
+{
+	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
+
+	if (!StandardSkeletal.IsSkeletalMesh())
 	{
-		TextColor = FColor::Purple;
+		return SNew(SVerticalBox)+SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
-	if (AssetSize > 32)
+	int32 LODNum = StandardSkeletal.GetLODNum();
+	FString DisplayContent;
+
+	TSharedPtr<SVerticalBox> InfoList = SNew(SVerticalBox);
+
+	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
 	{
-		TextColor = FColor::Red;
+		DisplayContent =
+			FString::Printf(L"LOD%d: %s",
+				LODIdx, StandardSkeletal.GetAllowCPUAccess(LODIdx) ? L"[ √ ]" : L"[    ]");
+
+		TSharedPtr<STextBlock> DisplayBox = ConstructNormalTextBlock(DisplayContent, FontInfo);
+		DisplayBox->SetAutoWrapText(true);
+		DisplayBox->SetJustification(ETextJustify::Center);
+		DisplayBox->SetMargin(FMargin(1.f));
+
+		InfoList->AddSlot().HAlign(HAlign_Fill).Padding(FMargin(1.f))[DisplayBox.ToSharedRef()];
 	}
 
-	MemorySizeBox->SetColorAndOpacity(TextColor);
-
-	return MemorySizeBox;
+	return InfoList.ToSharedRef();
 }
 
 #pragma endregion
@@ -1125,7 +1304,7 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetDeleteButtonBox(
 FReply SManagerSlateTab::OnSingleAssetDeleteButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	if (UAssetsChecker::EGetAssetReferencesPath(ClickedAssetData).Num() > 0)
+	if (UAssetsChecker::GetAssetReferencesPath(ClickedAssetData).Num() > 0)
 	{
 #ifdef ZH_CN
 		EAppReturnType::Type result = DlgMsg(EAppMsgType::OkCancel,
@@ -1143,7 +1322,7 @@ FReply SManagerSlateTab::OnSingleAssetDeleteButtonClicked(
 		}
 	}
 
-	if (UAssetsChecker::EDeleteAsset(*ClickedAssetData))
+	if (UAssetsChecker::DeleteAsset(*ClickedAssetData))
 	{
 		// log
 #ifdef ZH_CN
@@ -1252,7 +1431,7 @@ FReply SManagerSlateTab::OnSingleTextureAsset2KButtonClicked(
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1304,7 +1483,7 @@ FReply SManagerSlateTab::OnSingleTextureAsset1KButtonClicked(
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() 
@@ -1356,7 +1535,7 @@ FReply SManagerSlateTab::OnSingleTextureAsset512ButtonClicked(
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1408,7 +1587,7 @@ FReply SManagerSlateTab::OnSingleTextureAssetResetButtonClicked(
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::EFixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1459,7 +1638,7 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleTextureAssetSettingsFixButt
 FReply SManagerSlateTab::OnSingleTextureAssetSettingsFixButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	UAssetsChecker::ESetTextureStandardSettings(*ClickedAssetData);
+	UAssetsChecker::SetTextureStandardSettings(*ClickedAssetData);
 	RefreshAssetsListView();
 	return FReply::Handled();
 }
@@ -1493,7 +1672,7 @@ FReply SManagerSlateTab::OnSingleTextureLODGroupStandardFixButtonClicked(
 
 	if (STLODGroup)
 	{
-		UAssetsChecker::ESetTextureLODGroup(*ClickedAssetData, *STLODGroup);
+		UAssetsChecker::SetTextureLODGroup(*ClickedAssetData, *STLODGroup);
 
 		RefreshAssetsListView(false);
 	}
@@ -1580,10 +1759,17 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllBox()
 				SNew(SHorizontalBox)
 
 					+ SHorizontalBox::Slot()
-					.FillWidth(.5f)
+					.FillWidth(.95f)
 					.Padding(5.f)
 					[
 						this->OutputViewListInfoButton.ToSharedRef()
+					]
+
+					+ SHorizontalBox::Slot()
+					.FillWidth(.05f)
+					.Padding(5.f)
+					[
+						this->OpenLocalLogFolderButton.ToSharedRef()
 					]
 			];
 
@@ -1652,7 +1838,7 @@ FReply SManagerSlateTab::OnDeleteAllSelectedButtonClicked()
 		AssetsDataToDelete.Add(*AssetDataPtr.Get());
 	}
 
-	if (UAssetsChecker::EDeleteAssets(AssetsDataToDelete))
+	if (UAssetsChecker::DeleteAssets(AssetsDataToDelete))
 	{
 		for (TSharedPtr<FAssetData> AssetDataPtr : AssetList)
 		{
@@ -1749,7 +1935,7 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 			AssetsReadyRename.Add(AssetData);
 		}
 
-		bool result = UAssetsChecker::EConfirmPrefixes(AssetsReadyRename, AssetShouldRename);
+		bool result = UAssetsChecker::ConfirmPrefixes(AssetsReadyRename, AssetShouldRename);
 
 		if (result)
 		{
@@ -1760,9 +1946,9 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 				AssetToRename.Add(*Asset);
 			}
 
-			UAssetsChecker::EAddPrefixes(AssetToRename);
-			StoredAssetsData = UAssetsChecker::EListAssetsDataPtrUnderSelectedFolder(StoredFolderPaths);
-			ConstuctClassFilterList(ClassFilterCurrent);
+			UAssetsChecker::AddPrefixes(AssetToRename);
+			StoredAssetsData = UAssetsChecker::ListAssetsDataPtrUnderSelectedFolder(StoredFolderPaths);
+			UpdateClassFilterList(ClassFilterCurrent);
 		}
 
 		RefreshAssetsListView(false);
@@ -1773,7 +1959,7 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 	{
 		for (TSharedPtr<FAssetData> AssetData : AssetsList)
 		{
-			if(UAssetsChecker::ESetTextureStandardSettings(*AssetData))
+			if(UAssetsChecker::SetTextureStandardSettings(*AssetData))
 			{
 				if (SListViewUsageFilterAssetData.Contains(AssetData))
 				{
@@ -1797,7 +1983,7 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 
 			if (STLODGroup)
 			{
-				UAssetsChecker::ESetTextureLODGroup(*AssetData, *STLODGroup);
+				UAssetsChecker::SetTextureLODGroup(*AssetData, *STLODGroup);
 			}
 		}
 
@@ -1836,7 +2022,7 @@ TSharedRef<SButton> SManagerSlateTab::ConstructFixUpRedirectorButton()
 
 FReply SManagerSlateTab::OnFixUpRedirectorButtonClicked()
 {
-	UAssetsChecker::EFixUpRedirectors(StoredFolderPaths);
+	UAssetsChecker::FixUpRedirectors(StoredFolderPaths);
 	return FReply::Handled();
 }
 #pragma endregion
@@ -1861,36 +2047,60 @@ TSharedRef<SButton> SManagerSlateTab::ConstructOutputViewListInfoButton()
 
 FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 {
-	// Construct Output
 
-	FString Output;
 
-	Output += L"Path Include:\n";
+	FString CSVContent;
+	
+	// Info
+	CSVContent += FString::Printf(L"%s\n", L"Path Included");
 
 	for (FString path : StoredFolderPaths)
 	{
-		Output += path;
-		Output += "\n";
+		CSVContent += FString::Printf(L"%s\n", *path);
 	}
 
-	Output += "\n";
-	Output += CLASSFILTER;
-	Output += L":\n";
-	Output += ClassFilterComboDisplayText->GetText().ToString();
-	Output += "\n\n";
-
-	Output += USAGEFILTER;
-	Output += L":\n";
-	Output += UsageFilterComboDisplayText->GetText().ToString();
+	CSVContent += FString::Printf(L"\n%s\t%s\t%s\t%s\n%s\t%s\t%s\t%s\n\n",
 #ifdef ZH_CN
-	Output += ReverseCondition ? TEXT("(反选)") : TEXT("");
+		CLASSFILTER, CATEGORYFILTER,USAGEFILTER,L"条件反向",
 #else
-	Output += ReverseCondition ? TEXT("(Reverse)") : TEXT("");
+		CLASSFILTER, CATEGORYFILTER, USAGEFILTER, L"Condition Reverse",
 #endif
-	Output += "\n\n";
-
-	Output += L"Files:\n";
+		* ClassFilterComboDisplayText->GetText().ToString(),
+		* CategoryFilterComboDisplayText->GetText().ToString(),
+		* UsageFilterComboDisplayText->GetText().ToString(),
+		ReverseCondition ? TEXT("√") : TEXT(""));
 	
+	// Header
+#ifdef ZH_CN
+	CSVContent += L"类\t资产名\t磁盘大小\t";
+
+	if (m_ClassCheckState == Texture)
+	{
+		CSVContent += L"压缩大小\t压缩尺寸\t源尺寸\t";
+	}
+
+	if (m_ClassCheckState == SkeletalMesh)
+	{
+		CSVContent += L"LOD层数\tLOD面数\tLOD顶点数\t";
+	}
+
+	CSVContent += L"资产路径\t\n";
+#else
+	CSVContent += L"Class\tAssetName\tDiskSize\t";
+
+	if (m_ClassCheckState == Texture)
+	{
+		CSVContent += L"ResourceSize\tMaxInGame\tSource\t";
+	}
+
+	if (m_ClassCheckState == SkeletalMesh)
+	{
+		CSVContent += L"LODNum\tLODTri\tLODVer\t";
+	}
+
+	CSVContent += L"AssetPath\t\n";
+#endif
+
 	TArray<TSharedPtr<FAssetData>> OutputData;
 	OutputData.Empty();
 
@@ -1903,92 +2113,199 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 		OutputData = this->CustomTableList->GetListItems();
 	}
 
-	float TargetNum = OutputData.Num();
-
-	FSlowTask WritingTask(TargetNum, FText::FromString("Writing Data ..."));
-	WritingTask.Initialize();
-	WritingTask.MakeDialog();
-
-	for (TSharedPtr<FAssetData> asset: OutputData)
+	if (m_ClassCheckState == DefaultClassCheckState)
 	{
-		WritingTask.EnterProgressFrame(.9f);
+		OutputData.Sort([](const TSharedPtr<FAssetData>& ip1, const TSharedPtr<FAssetData>& ip2)
+			{
+				FString c1 = ip1->GetClass()->GetName();
+				FString c2 = ip2->GetClass()->GetName();
+				return UAssetsChecker::JudgeSort(c1, c2);
+			});
+	}
 
-		FString AssetName = asset->AssetName.ToString();
-		FString AssetPath = asset->GetObjectPathString();
-		FString AssetClass = asset->GetClass()->GetName();
-
-		FVector2D MaxInGameTextureSize = UAssetsChecker::EGetTextureAssetMaxInGameSize(*asset);
-		FVector2D SourceTextureSize = UAssetsChecker::EGetTextureAssetSourceSize(*asset);
-
-		FString MaxInGameTextureSizeString = FString::FromInt(MaxInGameTextureSize.X) + "x" + FString::FromInt(MaxInGameTextureSize.Y);
-		FString SourceTextureSizeString = FString::FromInt(SourceTextureSize.X) + "x" + FString::FromInt(SourceTextureSize.Y);
-
-		TArray<FStringFormatArg> args;
-		args.Add(FStringFormatArg(AssetClass));
-		args.Add(FStringFormatArg(AssetName));
-		args.Add(FStringFormatArg(AssetPath));
-		args.Add(FStringFormatArg(MaxInGameTextureSizeString));
-		args.Add(FStringFormatArg(SourceTextureSizeString));
-
-		if (m_ClassCheckState == Texture)
-		{
-			Output += FString::Format(TEXT("[{0}] [MaxInGameSize:{3}] [SourceGameSize:{4}] {1} ({2})\n"),args);
-		}
-		else
-		{
-			Output += FString::Format(TEXT("[{0}] {1} ({2})\n"), args);
-		}
+	if (m_ClassCheckState == Texture)
+	{
+		OutputData.Sort([](const TSharedPtr<FAssetData>& ip1, const TSharedPtr<FAssetData>& ip2) 
+			{
+				FCustomStandardTexture2DData T1(*ip1);
+				FCustomStandardTexture2DData T2(*ip2);
+				FVector2D c1 = T1.GetMaxInGameSize();
+				FVector2D c2 = T2.GetMaxInGameSize();
+				return UAssetsChecker::JudgeSort(c1,c2,true);
+			});
 	}
 
 	
 
-	// Output
+	int32 TaskNum = OutputData.Num();
+	FSlowTask WritingTask(TaskNum, FText::FromString("Writing Data ..."));
+	WritingTask.Initialize();
+	WritingTask.MakeDialog();
 
-	// DlgMsg(EAppMsgType::Ok, Output);
+	// Content
+	for (TSharedPtr<FAssetData> asset: OutputData)
+	{
+		WritingTask.EnterProgressFrame(.9f);
+		
+		
+		FCustomStandardAssetData StandardAsset(*asset);
+		
+		FString DiskSize;
+		UAssetsChecker::ByteConversion(StandardAsset.GetDiskSize(), DiskSize, false);
+
+		CSVContent += FString::Printf(L"%s\t%s\t%s\t",
+			*StandardAsset.GetClass()->GetName(),
+			*StandardAsset.AssetName.ToString(),
+			*DiskSize);
+		
+		if (m_ClassCheckState == Texture)
+		{
+			FCustomStandardTexture2DData StandardTexture(*asset);
+
+			FString ResourceSize;
+			UAssetsChecker::ByteConversion(StandardTexture.GetMemorySize(), ResourceSize, false);
+
+			FVector2D MaxInGameTextureSize = StandardTexture.GetMaxInGameSize();
+			FVector2D SourceTextureSize = StandardTexture.GetSourceSize();
+
+			FString MaxInGameTextureSizeString = FString::Printf(L"(%dx%d)", (int32)MaxInGameTextureSize.X, (int32)MaxInGameTextureSize.Y);
+			FString SourceTextureSizeString = FString::Printf(L"(%dx%d)", (int32)SourceTextureSize.X, (int32)SourceTextureSize.Y);
+
+			CSVContent += FString::Printf(L"%s\t%s\t%s\t",
+				*ResourceSize,
+				*MaxInGameTextureSizeString,
+				*SourceTextureSizeString);
+		}
+
+		if (m_ClassCheckState == SkeletalMesh)
+		{
+			FCustomStandardSkeletalMeshData StandardSkeletal(*asset);
+
+			int32 LODNum = StandardSkeletal.GetLODNum();
+			
+			FString LODVer;
+			FString LODTri;
+
+			for (int32 Idx = 0; Idx < LODNum; ++Idx)
+			{
+				LODVer += UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d",StandardSkeletal.GetLODVerticesNum(Idx)));
+				LODTri += UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d",StandardSkeletal.GetLODTrianglesNum(Idx)));
+				
+				if (Idx < LODNum - 1)
+				{
+					LODVer += L"/";
+					LODTri += L"/";
+				}
+			}
+
+			CSVContent += FString::Printf(L"%d\t%s\t%s\t",
+				LODNum,
+				*LODTri,
+				*LODVer);
+
+		}
+		
+		CSVContent += FString::Printf(L"%s\t\n",
+			*StandardAsset.GetObjectPathString());
+	}
 
 	FDateTime Time = FDateTime::Now();
-	FString FileName = "AssetsManagerLog_"
-		+FString::FromInt(Time.GetYear())
-		+ FString::FromInt(Time.GetMonth())
-		+ FString::FromInt(Time.GetDay())
-		+ FString::FromInt(Time.GetHour())
-		+ FString::FromInt(Time.GetMinute())
-		+ FString::FromInt(Time.GetSecond())
-		+ "_"
-		+ FString::FromInt(Time.GetMillisecond())
-		+ "_"
+	FString TimeStr = FString::Printf(L"%.2d%.2d%.2d%.2d%.2d%.2d%.3d",
+		Time.GetYear(),
+		Time.GetMonth(),
+		Time.GetDay(),
+		Time.GetHour(),
+		Time.GetMinute(),
+		Time.GetSecond(),
+		Time.GetMillisecond());
+
+	FString FileName = "AssetsManagerLog_"+ TimeStr + "_"
 		+ ClassFilterComboDisplayText->GetText().ToString()
-		+ "_"
-		+ UsageFilterComboDisplayText->GetText().ToString();
+		+ L"_"
+		+ CategoryFilterComboDisplayText->GetText().ToString()
+		+ L"_"
+		+ UsageFilterComboDisplayText->GetText().ToString()
+		+ (ReverseCondition ? L"(R)":L"");
+	
+	// CSV output
+	FString CSVFilePath = ASSETSMANAGER_LOGFOLDER + FileName + ".csv";
 
-	FString FilePath = ASSETSMANAGER_LOGFOLDER + FileName + ".log";
-
-	if (FFileHelper::SaveStringToFile(Output, *FilePath,
-		FFileHelper::EEncodingOptions::ForceUTF8,
+	if (FFileHelper::SaveStringToFile(CSVContent, *CSVFilePath,
+		FFileHelper::EEncodingOptions::ForceUnicode,
 		&IFileManager::Get(),
 		EFileWrite::FILEWRITE_Append))
 	{
-		WritingTask.EnterProgressFrame(.1f * TargetNum);
+		WritingTask.EnterProgressFrame(.1f * TaskNum);
 		WritingTask.Destroy();
 
 #ifdef ZH_CN
-		NtfyMsgLog(TEXT("成功输出文件到") + FilePath);
+		NtfyMsgLog(TEXT("成功输出文件到") + CSVFilePath);
 #else
 		NtfyMsgLog(TEXT("Successfully saved assets manager log to ") + FilePath);
 #endif
+
+		UAssetsChecker::OpenLocalFolder(ASSETSMANAGER_LOGFOLDER);
+
 		return FReply::Handled();
 	};
 
-	WritingTask.EnterProgressFrame(.1f * TargetNum);
+	WritingTask.EnterProgressFrame(.1f * TaskNum);
 	WritingTask.Destroy();
 
 #ifdef ZH_CN
-	NtfyMsgLog(TEXT("输出文件到") + FilePath + TEXT("失败"));
+	NtfyMsgLog(TEXT("输出文件到") + CSVFilePath + TEXT("失败"));
 #else
 	NtfyMsgLog(TEXT("Failed saving assets manager log to ") + FilePath);
 #endif
 	;	return FReply::Handled();
 	
+}
+
+TSharedRef<SButton> SManagerSlateTab::ConstructOpenLocalLogFolderButton()
+{
+	this->OpenLocalLogFolderButton =
+		SNew(SButton)
+		.OnClicked(this, &SManagerSlateTab::OnOpenLocalLogFolderButtonClicked)
+		.ContentPadding(FMargin(1.f))
+		.ButtonColorAndOpacity(FColor::Transparent)
+		.OnHovered(FSimpleDelegate::CreateLambda([this]() {this->OpenLocalLogFolderButton->SetColorAndOpacity(FColor::Cyan); }))
+		.OnPressed(FSimpleDelegate::CreateLambda([this]() {this->OpenLocalLogFolderButton->SetColorAndOpacity(FColor::Green); }))
+		.OnUnhovered(FSimpleDelegate::CreateLambda([this]() {this->OpenLocalLogFolderButton->SetColorAndOpacity(FColor::White); }))
+		.ToolTipText(FText::FromString(L"Open Assets Manager log folder."));
+
+	const FSlateBrush* ButtonImg = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.ManagerLogFolder");
+	TSharedRef<SImage> ButtonImgComponent = SNew(SImage).Image(ButtonImg);
+	
+	TSharedRef<SScaleBox> ButtonImgScaler =
+		SNew(SScaleBox)
+		.Stretch(EStretch::ScaleToFitY)
+		.OverrideScreenSize(FVector2D(8,8))
+		[
+			ButtonImgComponent
+		];
+
+	this->OpenLocalLogFolderButton->SetContent(ButtonImgScaler);
+
+//#ifdef ZH_CN
+//	this->OpenLocalLogFolderButton->SetContent(ConstructTextForButtons(TEXT("-- 打开日志文件夹 --")));
+//#else
+//	this->OpenLocalLogFolderButton->SetContent(ConstructTextForButtons(TEXT("-- Open Log Folder --")));
+//#endif
+
+	return this->OpenLocalLogFolderButton.ToSharedRef();
+}
+
+FReply SManagerSlateTab::OnOpenLocalLogFolderButtonClicked()
+{
+	if (!UAssetsChecker::OpenLocalFolder(ASSETSMANAGER_LOGFOLDER))
+	{
+#ifdef ZH_CN
+		NtfyMsgLog(FString::Printf(L"打开日志文件夹失败[%s]",*(ASSETSMANAGER_LOGFOLDER)));
+#else
+		NtfyMsgLog(FString::Printf(L"Open log folder failed.[%s]", *(ASSETSMANAGER_LOGFOLDER)));
+#endif
+	};
+	return FReply::Handled();
 }
 
 TSharedRef<SButton> SManagerSlateTab::ConstructBatchRenameButton()
@@ -2057,7 +2374,30 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDropDownMenuBox()
 		];
 
 	DropDownContent->AddSlot()
-		.FillWidth(.25f)
+		.FillWidth(.12f)
+		.Padding(FMargin(2.f))
+		[
+			SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				[
+					SNew(STextBlock)
+						.Font(GetFontInfo(12))
+						.Text(FText::FromString(CATEGORYFILTER))
+						.Justification(ETextJustify::Right)
+						.ColorAndOpacity(FColor::White)
+				]
+
+				+ SHorizontalBox::Slot()
+				.FillWidth(.5f)
+				[
+					ConstructCategoryFilterButton()
+				]
+		];
+
+
+	DropDownContent->AddSlot()
+		.FillWidth(.2f)
 		.Padding(FMargin(2.f))
 		[
 			SNew(SHorizontalBox)
@@ -2112,6 +2452,124 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDropDownMenuBox()
 	return DropDownMenu;
 }
 
+void SManagerSlateTab::UpdateDisplayListSource()
+{
+	/*-------------------------- Class filter----------------------------*/
+
+	UpdateClassFilterList(ClassFilterCurrent);
+
+	// Construct Only Texture Selections
+	{
+		TArray<TSharedPtr<FString>> OnlyTextureCollection =
+		{
+			UsageSelectionMaxInGameSizeError,
+			UsageSelectionSourceSizeError,
+			UsageSelectionTextureSubfixError,
+			UsageSelectionTextureSettinsError,
+			UsageSelectionTextureLODGroupError
+		};
+
+		if (m_ClassCheckState == Texture)
+		{
+			for (TSharedPtr<FString>& TextureSelect : OnlyTextureCollection)
+			{
+				if (!UsageFilterComboSourceItems.Contains(TextureSelect))
+				{
+					UsageFilterComboSourceItems.Add(TextureSelect);
+				}
+			}
+		}
+		else
+		{
+			for (TSharedPtr<FString>& TextureSelect : OnlyTextureCollection)
+			{
+				if (UsageFilterComboSourceItems.Contains(TextureSelect))
+				{
+					UsageFilterComboSourceItems.Remove(TextureSelect);
+				}
+			}
+		}
+	}
+
+	// Construct SkeletalMesh Selections
+	{
+		TArray<TSharedPtr<FString>> OnlySkeletalCollection =
+		{
+		};
+
+		if (m_ClassCheckState == SkeletalMesh)
+		{
+			for (TSharedPtr<FString>& SkeletalSelect : OnlySkeletalCollection)
+			{
+				if (!UsageFilterComboSourceItems.Contains(SkeletalSelect))
+				{
+					UsageFilterComboSourceItems.Add(SkeletalSelect);
+				}
+			}
+		}
+		else
+		{
+			for (TSharedPtr<FString>& SkeletalSelect : OnlySkeletalCollection)
+			{
+				if (UsageFilterComboSourceItems.Contains(SkeletalSelect))
+				{
+					UsageFilterComboSourceItems.Remove(SkeletalSelect);
+				}
+			}
+		}
+	}
+
+	/*-------------------------- Category filter----------------------------*/
+
+	UpdateCategoryFilterList();
+
+
+	/*-------------------------- Usage filter----------------------------*/
+
+	UpdateUsageFilterAssetData();
+	
+
+	UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
+
+	/*-------------------------- Dynamic Buttons Component----------------------------*/
+
+	ConstructDynamicHandleAllBox();
+
+	/*-------------------------- Strict Check Component----------------------------*/
+
+	if (m_UsageCheckState == MaxInGameSizeError || m_UsageCheckState == SourceSizeError)
+	{
+		if (bTextureSizeCheckStrictCheckBoxConstructed)
+		{
+			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
+		}
+
+		DropDownContent->InsertSlot(3)
+			.FillWidth(.05f)
+			.Padding(FMargin(2.f))
+			[
+				ConstructTextureSizeStrictCheckBox(
+					bTextureSizeCheckStrictMode ?
+					ECheckBoxState::Checked : ECheckBoxState::Unchecked)
+			];
+	}
+	else
+	{
+		if (bTextureSizeCheckStrictCheckBoxConstructed)
+		{
+			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
+		}
+	}
+
+	/*-------------------------- Reverse Check Component----------------------------*/
+
+	if (ReverseCondition)
+	{
+		ReverseConditionCheckBox->SetIsChecked(ECheckBoxState::Unchecked);
+		ReverseCondition = false;
+	}
+}
+
 #pragma endregion
 
 #pragma region SComboListFilter
@@ -2143,7 +2601,7 @@ TSharedRef<SWidget> SManagerSlateTab::OnGenerateClassFilterButton(
 	return SourceItemWidget;
 }
 
-void SManagerSlateTab::ConstuctClassFilterList(
+void SManagerSlateTab::UpdateClassFilterList(
 	TSharedPtr<FString> SelectedOption)
 {
 	if (*SelectedOption.Get() == CLASS_LISTALL)
@@ -2181,68 +2639,135 @@ void SManagerSlateTab::ConstuctClassFilterList(
 		UAssetsChecker::ECopyAssetsPtrList(NewAssetViewList, SListViewClassFilterAssetData);
 		
 	}
+
+	// Update count
+	ClassListViewCountBlock->SetText(FText::FromString(FString::FromInt(SListViewClassFilterAssetData.Num())));
+}
+
+TSharedRef<SComboBox<TSharedPtr<FString>>> SManagerSlateTab::ConstructCategoryFilterButton()
+{
+	TSharedRef<SComboBox<TSharedPtr<FString>>> CategoryFilterButton =
+		SNew(SComboBox<TSharedPtr<FString>>)
+		.OptionsSource(&CategoryFilterComboSourceItems)
+		.OnGenerateWidget(this, &SManagerSlateTab::OnGenerateCategoryFilterButton)
+		.OnSelectionChanged(this, &SManagerSlateTab::OnCategoryFilterButtonChanged)
+		[
+			SAssignNew(CategoryFilterComboDisplayText, STextBlock)
+				.Text(FText::FromString(CATEGORY_LISTALL))
+		];
+
+	this->CategoryFilterComboBox = CategoryFilterButton.ToSharedPtr();
+
+	return CategoryFilterButton;
+}
+
+TSharedRef<SWidget> SManagerSlateTab::OnGenerateCategoryFilterButton(
+	TSharedPtr<FString> SourceItem)
+{
+	TSharedRef<SWidget> SourceItemWidget =
+		SNew(STextBlock)
+		.Text(FText::FromString(*SourceItem.Get()));
+
+	return SourceItemWidget;
+}
+
+void SManagerSlateTab::OnCategoryFilterButtonChanged(
+	TSharedPtr<FString> SelectedOption, 
+	ESelectInfo::Type InSelectInfo)
+{
+	CategoryFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
+
+	CategoryFilterCurrent = SelectedOption;
+
+	// add option
+
+	m_CategoryCheckState = FCustomStandardAssetData::Category::LastCatergory;
+
+	if(*SelectedOption.Get() == CATEGORY_NOGROUP)
+	{
+		m_CategoryCheckState = FCustomStandardAssetData::Category::Undefined;
+	}
+
+	if (*SelectedOption.Get() == CATEGORY_CHARACTER)
+	{
+		m_CategoryCheckState = FCustomStandardAssetData::Category::Character;
+	}
+
+	if (*SelectedOption.Get() == CATEGORY_HAIR)
+	{
+		m_CategoryCheckState = FCustomStandardAssetData::Category::Hair;
+	}
+
+	if (*SelectedOption.Get() == CATEGORY_UI)
+	{
+		m_CategoryCheckState = FCustomStandardAssetData::Category::UI;
+	}
+
+	if (*SelectedOption.Get() == CATEGORY_SCENE)
+	{
+		m_CategoryCheckState = FCustomStandardAssetData::Category::Scene;
+	}
+
+	if (*SelectedOption.Get() == CATEGORY_EFFECT)
+	{
+		m_CategoryCheckState = FCustomStandardAssetData::Category::Effect;
+	}
+
+	UpdateDisplayListSource();
+	RefreshAssetsListView();
+}
+
+void SManagerSlateTab::UpdateCategoryFilterList()
+{
+	if (m_CategoryCheckState == FCustomStandardAssetData::Category::LastCatergory)
+	{
+		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewCategoryFilterAssetData);
+	}
+	else
+	{
+		TArray<TSharedPtr<FAssetData>> NewAssetsList;
+		NewAssetsList.Empty();
+
+		for (TSharedPtr<FAssetData> AssetData : SListViewClassFilterAssetData)
+		{
+			FCustomStandardAssetData StandardAsset(*AssetData);
+
+			if (StandardAsset.GetCommonAssetCategory() == m_CategoryCheckState)
+			{
+				NewAssetsList.AddUnique(AssetData);
+			};
+		}
+
+		UAssetsChecker::ECopyAssetsPtrList(NewAssetsList, SListViewCategoryFilterAssetData);
+	}
 }
 
 void SManagerSlateTab::OnClassFilterButtonChanged(
 	TSharedPtr<FString> SelectedOption, 
 	ESelectInfo::Type InSelectInfo)
 {
-	ClassFilterCurrent = SelectedOption;
-
 	ClassFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
 
-	ConstuctClassFilterList(ClassFilterCurrent);
-	UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-	UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
-	
-	// Update count
-
-	ClassListViewCountBlock->SetText(FText::FromString(FString::FromInt(SListViewClassFilterAssetData.Num())));
+	ClassFilterCurrent = SelectedOption;
 	
 	// add option
 
 	m_ClassCheckState = DefaultClassCheckState;
-
-	// Construct Only Texture Selections
+	
+	if (*SelectedOption.Get() == UTexture2D::StaticClass()->GetName() ||
+		*SelectedOption.Get() == UTexture2DArray::StaticClass()->GetName())
 	{
-		TArray<TSharedPtr<FString>> OnlyTextureCollection =
-		{
-			UsageSelectionMaxInGameSizeError,
-			UsageSelectionSourceSizeError,
-			UsageSelectionTextureSubfixError,
-			UsageSelectionTextureSettinsError,
-			UsageSelectionTextureLODGroupError
-		};
+		m_ClassCheckState = Texture;
+	}
+	
+	if (*SelectedOption.Get() == USkeletalMesh::StaticClass()->GetName())
+	{
+		m_ClassCheckState = SkeletalMesh;
 
-		if (*SelectedOption.Get() == UTexture2D::StaticClass()->GetName() ||
-			*SelectedOption.Get() == UTexture2DArray::StaticClass()->GetName())
-		{
-			m_ClassCheckState = Texture;
-
-			for (TSharedPtr<FString>& TextureSelect : OnlyTextureCollection)
-			{
-				if (!UsageFilterComboSourceItems.Contains(TextureSelect))
-				{
-					UsageFilterComboSourceItems.Add(TextureSelect);
-				}
-			}
-		}
-		else
-		{
-			for (TSharedPtr<FString>& TextureSelect : OnlyTextureCollection)
-			{
-				if (UsageFilterComboSourceItems.Contains(TextureSelect))
-				{
-					UsageFilterComboSourceItems.Remove(TextureSelect);
-				}
-			}
-		}
 	}
 
+	UpdateDisplayListSource();
 	RefreshAssetsListView();
-
-	//set Usage Filter to default 
-	UsageFilterComboBox->SetSelectedItem(UsageSelectedDefault);
 }
 
 TSharedRef<SComboBox<TSharedPtr<FString>>> SManagerSlateTab::ConstructUsageFilterButton()
@@ -2278,172 +2803,119 @@ void SManagerSlateTab::OnUsageFilterButtonChanged(
 	ESelectInfo::Type InSelectInfo)
 {
 	UsageFilterComboDisplayText->SetText(FText::FromString(*SelectedOption.Get()));
-	
-	if (ReverseCondition)
-	{
-		ReverseConditionCheckBox->SetIsChecked(ECheckBoxState::Unchecked);
-		ReverseCondition = false;
-	}
 
 	UsageFilterCurrent = *SelectedOption.Get();
 
-	UpdateUsageFilterAssetData(*SelectedOption.Get());
+	if (UsageFilterCurrent == USAGE_NONE)
+	{
+		m_UsageCheckState = DefaultUsageCheckState;
+	}
 
+	if (UsageFilterCurrent == USAGE_UNUSED)
+	{
+		m_UsageCheckState = Unused;
+	}
+
+	if (UsageFilterCurrent == USAGE_PREFIXERROR)
+	{
+		m_UsageCheckState = PrefixError;
+	}
+
+	if (UsageFilterCurrent == USAGE_SAMENAMEASSETERROR)
+	{
+		m_UsageCheckState = SameNameAssetError;
+	}
+
+	if (UsageFilterCurrent == USAGE_MAXINGAMESIZEERROR)
+	{
+		m_UsageCheckState = MaxInGameSizeError;
+	}
+
+	if (UsageFilterCurrent == USAGE_SOURCESIZEERROR)
+	{
+		m_UsageCheckState = SourceSizeError;
+	}
+
+	if (UsageFilterCurrent == USAGE_TEXTURESUBFIXERROR)
+	{
+		m_UsageCheckState = SubfixError;
+	}
+
+	if (UsageFilterCurrent == USAGE_TEXTURESETTINGSERROR)
+	{
+		m_UsageCheckState = TextureSettingsError;
+	}
+
+	if (UsageFilterCurrent == USAGE_TEXTUREGROUPERROR)
+	{
+		m_UsageCheckState = TextureGroupError;
+	}
+
+	UpdateDisplayListSource();
 	RefreshAssetsListView();
 }
 
-void SManagerSlateTab::UpdateUsageFilterAssetData(const FString& Selection)
+void SManagerSlateTab::UpdateUsageFilterAssetData()
 {
-	if (Selection == USAGE_NONE)
+	if (m_UsageCheckState == DefaultUsageCheckState)
 	{
-		m_UsageCheckState = DefaultUsageCheckState;
-		ConstructDynamicHandleAllBox();
-
-		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
+		UAssetsChecker::ECopyAssetsPtrList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
 	}
 
-	if (Selection == USAGE_UNUSED)
+	if (m_UsageCheckState == Unused)
 	{
-		m_UsageCheckState = Unused;
-		ConstructDynamicHandleAllBox();
+		UAssetsChecker::FilterUnusedAssetsForAssetList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
+	}
 
-		if (SListViewClassFilterAssetData.Num() > 64)
-		{
-#ifdef ZH_CN
-			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
-				TEXT("选择的文件太多[")
-				+ FString::FromInt(SListViewClassFilterAssetData.Num())
-				+ TEXT("个文件]\n由于需要查找所有引用项，这将会消耗大量时间!!!\n\n是否继续?"));
-#else
-			EAppReturnType::Type result = DlgMsgLog(EAppMsgType::YesNo,
-				TEXT("The list selected to check is too large.[")
-				+ FString::FromInt(SListViewClassFilterAssetData.Num())
-				+ TEXT(" assets]\nFilter unused assets will cost a lot of time.\n\nReady to proceed?"));
-#endif
-
-			if (result != EAppReturnType::Yes)
-			{
-				UsageFilterComboBox->SetSelectedItem(UsageSelectedDefault);
-				return;
-			}
-		}
-
-		UAssetsChecker::EListUnusedAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
+	if (m_UsageCheckState == PrefixError)
+	{
+		UAssetsChecker::FilterPrefixErrorAssetsForAssetList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
 	}
 
 
-	if (Selection == USAGE_PREFIXERROR)
+	if (m_UsageCheckState == SameNameAssetError)
 	{
-		m_UsageCheckState = PrefixError;
-		ConstructDynamicHandleAllBox();
-
-		UAssetsChecker::EListPrefixErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
+		UAssetsChecker::FilterSameNameErrorAssetsForAssetList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
 	}
 
 
-	if (Selection == USAGE_SAMENAMEASSETERROR)
+	if (m_UsageCheckState == MaxInGameSizeError)
 	{
-		m_UsageCheckState = SameNameAssetError;
-		ConstructDynamicHandleAllBox();
-
-		UAssetsChecker::EListSameNameErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
-	}
-
-
-	if (Selection == USAGE_MAXINGAMESIZEERROR)
-	{
-		m_UsageCheckState = MaxInGameSizeError;
-		ConstructDynamicHandleAllBox();
-
-		UAssetsChecker::EListMaxInGameSizeErrorAssetsForAssetList(
-			SListViewClassFilterAssetData, 
+		UAssetsChecker::FilterMaxInGameSizeErrorAssetsForAssetList(
+			SListViewCategoryFilterAssetData,
 			SListViewUsageFilterAssetData, 
 			bTextureSizeCheckStrictMode);
-
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
-
-	if (Selection == USAGE_SOURCESIZEERROR)
+	if (m_UsageCheckState == SourceSizeError)
 	{
-		m_UsageCheckState = SourceSizeError;
-		ConstructDynamicHandleAllBox();
-
-		UAssetsChecker::EListSourceSizeErrorAssetsForAssetList(
-			SListViewClassFilterAssetData, 
+		UAssetsChecker::FilterSourceSizeErrorAssetsForAssetList(
+			SListViewCategoryFilterAssetData,
 			SListViewUsageFilterAssetData, 
 			bTextureSizeCheckStrictMode);
-
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
 	}
 
 
-	if (Selection == USAGE_TEXTURESUBFIXERROR)
+	if (m_UsageCheckState == SubfixError)
 	{
-		m_UsageCheckState = SubfixError;
-		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListTextureSubfixErrorAssetsForAssetList(
-			SListViewClassFilterAssetData, 
+		UAssetsChecker::FilterTextureSubfixErrorAssetsForAssetList(
+			SListViewCategoryFilterAssetData,
 			SListViewUsageFilterAssetData);
-
-		UAssetsChecker::ECopyAssetsPtrList(
-			SListViewUsageFilterAssetData, 
-			SListViewAssetData);
 	}
 
 
-	if (Selection == USAGE_TEXTURESETTINGSERROR)
+	if (m_UsageCheckState == TextureSettingsError)
 	{
-		m_UsageCheckState = TextureSettingsError;
-		ConstructDynamicHandleAllBox();
 
-		UAssetsChecker::EListTextureSettingsErrorAssetsForAssetList(
-			SListViewClassFilterAssetData, 
+		UAssetsChecker::FilterTextureSettingsErrorAssetsForAssetList(
+			SListViewCategoryFilterAssetData,
 			SListViewUsageFilterAssetData);
-
-		UAssetsChecker::ECopyAssetsPtrList(
-			SListViewUsageFilterAssetData, 
-			SListViewAssetData);
 	}
 
-	if (Selection == USAGE_TEXTUREGROUPERROR)
+	if (m_UsageCheckState == TextureGroupError)
 	{
-		m_UsageCheckState = TextureGroupError;
-		ConstructDynamicHandleAllBox();
-
-		UAssetsChecker::EListTextureLODGroupErrorAssetsForAssetList(SListViewClassFilterAssetData, SListViewUsageFilterAssetData);
-		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
-	}
-
-	// dynamic components
-
-	if (Selection == USAGE_MAXINGAMESIZEERROR || Selection == USAGE_SOURCESIZEERROR)
-	{
-		if (bTextureSizeCheckStrictCheckBoxConstructed)
-		{
-			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
-		}
-
-		DropDownContent->InsertSlot(2)
-			.FillWidth(.05f)
-			.Padding(FMargin(2.f))
-			[
-				ConstructTextureSizeStrictCheckBox(
-					bTextureSizeCheckStrictMode ?
-					ECheckBoxState::Checked : ECheckBoxState::Unchecked)
-			];
-	}
-	else
-	{
-		if(bTextureSizeCheckStrictCheckBoxConstructed)
-		{
-			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
-		}
+		UAssetsChecker::FilterTextureLODGroupErrorAssetsForAssetList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
 	}
 }
 
@@ -2501,7 +2973,7 @@ void SManagerSlateTab::OnTextureSizeStrictCheckBoxStateChanged(
 				ReverseConditionCheckBox->ToggleCheckedState();
 			}
 
-			UpdateUsageFilterAssetData(this->UsageFilterCurrent);
+			UpdateDisplayListSource();
 			RefreshAssetsListView(false);
 		}
 		break;
@@ -2517,7 +2989,7 @@ void SManagerSlateTab::OnTextureSizeStrictCheckBoxStateChanged(
 				ReverseConditionCheckBox->ToggleCheckedState();
 			}
 
-			UpdateUsageFilterAssetData(this->UsageFilterCurrent);
+			UpdateDisplayListSource();
 			RefreshAssetsListView(false);
 		}
 		break;
@@ -2575,7 +3047,7 @@ void SManagerSlateTab::OnReverseConditionCheckBoxStateChanged(
 		{
 			ReverseCondition = false;
 
-			UpdateUsageFilterAssetData(this->UsageFilterCurrent);
+			UpdateDisplayListSource();
 
 			RefreshAssetsListView(false);
 
