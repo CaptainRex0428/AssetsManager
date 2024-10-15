@@ -333,6 +333,11 @@ void SManagerSlateTab::SListViewRemoveAssetData(
 		SListViewUsageFilterAssetData.Remove(AssetData);
 	}
 
+	if (SListViewCategoryFilterAssetData.Contains(AssetData))
+	{
+		SListViewCategoryFilterAssetData.Remove(AssetData);
+	}
+
 	if (SListViewAssetData.Contains(AssetData))
 	{
 		SListViewAssetData.Remove(AssetData);
@@ -362,7 +367,8 @@ void SManagerSlateTab::RefreshAssetsListView(
 	{
 		CustomTableList->RefreshTable(bRefreshTableHeader);
 	}
-
+	
+	AllInFolderViewCountBlock->SetText(FText::FromString(FString::FromInt(StoredAssetsData.Num())));
 	ListViewCountBlock->SetText(FText::FromString(FString::FromInt(CustomTableList->GetListItems().Num())));
 	SelectedCountBlock->SetText(FText::FromString(FString::FromInt(CustomTableList->GetSelectedItems().Num())));
 	
@@ -803,6 +809,7 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructListPathsInfo(
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructListAssetsCountInfo(
 	const FSlateFontInfo& FontInfo)
 {
+	AllInFolderViewCountBlock = ConstructNormalTextBlock(FString::FromInt(StoredAssetsData.Num()), FontInfo, ETextJustify::Left, FColor::Orange);
 	ClassListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewClassFilterAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Yellow);
 	ListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewUsageFilterAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Green);
 	SelectedCountBlock = ConstructNormalTextBlock(FString::FromInt(CustomTableList->GetSelectedItems().Num()), FontInfo, ETextJustify::Left, FColor::Emerald);
@@ -835,7 +842,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructListAssetsCountInfo(
 				.HAlign(HAlign_Left)
 				.VAlign(VAlign_Center)
 				[
-					ConstructNormalTextBlock(FString::FromInt(StoredAssetsData.Num()), FontInfo, ETextJustify::Left, FColor::Orange)
+					AllInFolderViewCountBlock.ToSharedRef()
 				]
 		]
 
@@ -1845,6 +1852,7 @@ FReply SManagerSlateTab::OnDeleteAllSelectedButtonClicked()
 			SListViewRemoveAssetData(AssetDataPtr);
 		}
 
+		UpdateDisplayListSource();
 		RefreshAssetsListView();
 	}
 

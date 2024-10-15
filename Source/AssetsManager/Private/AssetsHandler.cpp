@@ -191,10 +191,12 @@ void UAssetsHandler::Check()
 
 	for (FAssetData AssetData : SelectedAssetsData)
 	{
-		FCustomStandardTexture2DData AssetSelect(AssetData);
-		FString OutUnit;
-		UAssetsChecker::ByteConversion(AssetSelect.GetMemorySize(true), OutUnit, false);
+		FCustomStandardAssetData AssetSelect(AssetData);
+		for (FString path : UAssetsChecker::GetAssetReferencesPath(AssetSelect))
+		{
+			NtfyMsg(path);
+		};
 
-		NtfyMsg(OutUnit);
+		
 	}
 }

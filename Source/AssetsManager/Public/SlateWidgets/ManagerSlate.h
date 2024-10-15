@@ -120,6 +120,7 @@ private:
 	TSharedRef<SHorizontalBox> ConstructListAssetsCountInfo(
 		const FSlateFontInfo& FontInfo);
 
+	TSharedPtr<STextBlock> AllInFolderViewCountBlock;
 	TSharedPtr<STextBlock> ListViewCountBlock;
 	TSharedPtr<STextBlock> ClassListViewCountBlock;
 	TSharedPtr<STextBlock> SelectedCountBlock;
