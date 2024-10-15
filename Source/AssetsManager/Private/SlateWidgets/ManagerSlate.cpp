@@ -2872,7 +2872,12 @@ void SManagerSlateTab::UpdateUsageFilterAssetData()
 
 	if (m_UsageCheckState == Unused)
 	{
-		UAssetsChecker::FilterUnusedAssetsForAssetList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
+		//UAssetsChecker::FilterUnusedAssetsForAssetList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::FilterUnusedAssetsForAssetList(
+			SListViewCategoryFilterAssetData, 
+			SListViewUsageFilterAssetData, 
+			StoredFolderPaths,
+			true);
 	}
 
 	if (m_UsageCheckState == PrefixError)

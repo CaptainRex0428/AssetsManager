@@ -198,6 +198,8 @@ public:
 	static void FilterUnusedAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
 		TArray<TSharedPtr<FAssetData>>& OutList,
+		TArray<FString> StoredFolderPaths = TArray<FString>{},
+		bool bRecursive = false,
 		bool isAdditiveMode = false);
 
 	static void FilterPrefixErrorAssetsForAssetList(

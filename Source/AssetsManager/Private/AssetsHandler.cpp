@@ -192,6 +192,7 @@ void UAssetsHandler::Check()
 	for (FAssetData AssetData : SelectedAssetsData)
 	{
 		FCustomStandardAssetData AssetSelect(AssetData);
+
 		for (FString path : UAssetsChecker::GetAssetReferencesPath(AssetSelect))
 		{
 			NtfyMsg(path);

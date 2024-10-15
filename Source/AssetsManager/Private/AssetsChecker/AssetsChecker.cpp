@@ -623,35 +623,119 @@ bool UAssetsChecker::SetTextureSRGBSettings(
 void UAssetsChecker::FilterUnusedAssetsForAssetList(
 	const TArray<TSharedPtr<FAssetData>>& FindInList, 
 	TArray<TSharedPtr<FAssetData>>& OutList,
+	TArray<FString> StoredFolderPaths,
+	bool bRecursive,
 	bool isAdditiveMode)
 {
 	if (!isAdditiveMode) 
 	{
 		OutList.Empty();
 	}
-	
-	FSlowTask FindingProgress(FindInList.Num(), FText::FromString(TEXT("Checking References...")));
-	FindingProgress.Initialize();
-	FindingProgress.MakeDialog();
 
-	for (const TSharedPtr<FAssetData> & AssetDPtr : FindInList)
+	TArray<FString> AssetPkgToRemove;
+	TArray<FString> AssetPkgCannotRemove;
+	TArray<TSharedPtr<FAssetData>> AssetsRest;
+
+	AssetPkgToRemove.Empty();
+	AssetPkgCannotRemove.Empty();
+	AssetsRest.Empty();
+
+	for (const TSharedPtr<FAssetData>& AssetDPtr : FindInList)
 	{
 		TArray<FString> AssetReference = GetAssetReferencesPath(AssetDPtr);
 
-		FindingProgress.EnterProgressFrame();
-
-		if(AssetReference.Num() == 0)
+		if (AssetReference.Num() == 0)
 		{
 			if (isAdditiveMode)
 			{
 				if (OutList.Contains(AssetDPtr)) continue;
 			}
 
-			OutList.Add(AssetDPtr);
+			OutList.AddUnique(AssetDPtr);
+
+			AssetPkgToRemove.AddUnique(AssetDPtr->PackageName.ToString());
+		}
+		else
+		{
+			AssetsRest.AddUnique(AssetDPtr);
 		}
 	}
 
-	FindingProgress.Destroy();
+	if (!bRecursive)
+	{
+		return;
+	}
+
+	bool CanEndLoop = false;
+
+	while (!CanEndLoop)
+	{
+		bool EndCondition = true;
+
+		TArray<TSharedPtr<FAssetData>> AssetsRestNew;
+		AssetsRestNew.Empty();
+
+		for (const TSharedPtr<FAssetData>& AssetDPtr : AssetsRest)
+		{
+			TArray<FString> AssetReferences = GetAssetReferencesPath(AssetDPtr);
+
+			bool NeedToDelete = true;
+			bool CannotDelete = false;
+
+			for (FString& reference : AssetReferences)
+			{
+				if (StoredFolderPaths.Num()!=0)
+				{
+					bool ReferenceOutOfFolders = true;
+
+					for (FString folderPath : StoredFolderPaths)
+					{
+						if (FPaths::IsUnderDirectory(reference, folderPath))
+						{
+							ReferenceOutOfFolders = false;
+						};
+					}
+
+					if (ReferenceOutOfFolders)
+					{
+						AssetPkgCannotRemove.AddUnique(AssetDPtr->PackageName.ToString());
+						NeedToDelete = false;
+						CannotDelete = true;
+						break;
+					}
+				}
+
+				if (!AssetPkgToRemove.Contains(reference))
+				{
+					NeedToDelete = false;
+					break;
+				}
+			}
+
+			if (CannotDelete) continue;
+
+			if (NeedToDelete)
+			{
+				EndCondition = false;
+
+				if (isAdditiveMode)
+				{
+					if (OutList.Contains(AssetDPtr)) continue;
+				}
+
+				OutList.AddUnique(AssetDPtr);
+				AssetPkgToRemove.AddUnique(AssetDPtr->PackageName.ToString());
+				continue;
+			}
+
+			AssetsRestNew.AddUnique(AssetDPtr);
+		}
+
+		AssetsRest = AssetsRestNew;
+
+		CanEndLoop = EndCondition;
+	}
+	
 }
 
 void UAssetsChecker::FilterPrefixErrorAssetsForAssetList(
