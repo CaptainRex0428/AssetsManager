@@ -20,9 +20,9 @@
 
 #define ModuleConfigMaster TEXT("/AssetsManager")
 
-#define ASSETSMANAGER_LOGFOLDER FPaths::ProjectDir() + "/Saved/AssetsManager/"
+#define ASSETSMANAGER_LOGFOLDER FPaths::ProjectDir() + L"/Saved/AssetsManager/"
 
-#define ASSETSMANAGER_CONFIGFOLDER FPaths::ProjectDir() + "/Plugins/AssetsManager/Config/"
+#define ASSETSMANAGER_CONFIGFOLDER FPaths::ProjectDir() + L"/Plugins/AssetsManager/Config/"
 
 UENUM(BlueprintType)
 enum class AssetSizeDisplayUnit : uint8

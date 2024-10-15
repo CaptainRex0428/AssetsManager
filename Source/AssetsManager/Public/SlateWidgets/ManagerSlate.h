@@ -373,6 +373,12 @@ private:
 	FReply OnOutputViewListInfoButtonClicked();
 #pragma endregion
 
+#pragma region OpenLocalLogFolder
+	TSharedPtr<SButton> OpenLocalLogFolderButton;
+	TSharedRef<SButton> ConstructOpenLocalLogFolderButton();
+	FReply OnOpenLocalLogFolderButtonClicked();
+#pragma endregion
+
 #pragma region BatchRename
 	TSharedRef<SDockTab> OnSpawnBatchRenameTab(const FSpawnTabArgs& SpawnTabArgs);
 	void OnBatchRenameApply();

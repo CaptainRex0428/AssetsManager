@@ -178,6 +178,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	ConstructFixSelectedButton();
 	ConstructFixUpRedirectorButton();
 	ConstructOutputViewListInfoButton();
+	ConstructOpenLocalLogFolderButton();
 	ConstructBatchRenameButton();
 
 	ConstructDynamicHandleAllBox();
@@ -1758,10 +1759,17 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllBox()
 				SNew(SHorizontalBox)
 
 					+ SHorizontalBox::Slot()
-					.FillWidth(.5f)
+					.FillWidth(.95f)
 					.Padding(5.f)
 					[
 						this->OutputViewListInfoButton.ToSharedRef()
+					]
+
+					+ SHorizontalBox::Slot()
+					.FillWidth(.05f)
+					.Padding(5.f)
+					[
+						this->OpenLocalLogFolderButton.ToSharedRef()
 					]
 			];
 
@@ -2235,6 +2243,9 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 #else
 		NtfyMsgLog(TEXT("Successfully saved assets manager log to ") + FilePath);
 #endif
+
+		UAssetsChecker::OpenLocalFolder(ASSETSMANAGER_LOGFOLDER);
+
 		return FReply::Handled();
 	};
 
@@ -2248,6 +2259,53 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 #endif
 	;	return FReply::Handled();
 	
+}
+
+TSharedRef<SButton> SManagerSlateTab::ConstructOpenLocalLogFolderButton()
+{
+	this->OpenLocalLogFolderButton =
+		SNew(SButton)
+		.OnClicked(this, &SManagerSlateTab::OnOpenLocalLogFolderButtonClicked)
+		.ContentPadding(FMargin(1.f))
+		.ButtonColorAndOpacity(FColor::Transparent)
+		.OnHovered(FSimpleDelegate::CreateLambda([this]() {this->OpenLocalLogFolderButton->SetColorAndOpacity(FColor::Cyan); }))
+		.OnPressed(FSimpleDelegate::CreateLambda([this]() {this->OpenLocalLogFolderButton->SetColorAndOpacity(FColor::Green); }))
+		.OnUnhovered(FSimpleDelegate::CreateLambda([this]() {this->OpenLocalLogFolderButton->SetColorAndOpacity(FColor::White); }))
+		.ToolTipText(FText::FromString(L"Open Assets Manager log folder."));
+
+	const FSlateBrush* ButtonImg = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.ManagerLogFolder");
+	TSharedRef<SImage> ButtonImgComponent = SNew(SImage).Image(ButtonImg);
+	
+	TSharedRef<SScaleBox> ButtonImgScaler =
+		SNew(SScaleBox)
+		.Stretch(EStretch::ScaleToFitY)
+		.OverrideScreenSize(FVector2D(8,8))
+		[
+			ButtonImgComponent
+		];
+
+	this->OpenLocalLogFolderButton->SetContent(ButtonImgScaler);
+
+//#ifdef ZH_CN
+//	this->OpenLocalLogFolderButton->SetContent(ConstructTextForButtons(TEXT("-- 打开日志文件夹 --")));
+//#else
+//	this->OpenLocalLogFolderButton->SetContent(ConstructTextForButtons(TEXT("-- Open Log Folder --")));
+//#endif
+
+	return this->OpenLocalLogFolderButton.ToSharedRef();
+}
+
+FReply SManagerSlateTab::OnOpenLocalLogFolderButtonClicked()
+{
+	if (!UAssetsChecker::OpenLocalFolder(ASSETSMANAGER_LOGFOLDER))
+	{
+#ifdef ZH_CN
+		NtfyMsgLog(FString::Printf(L"打开日志文件夹失败[%s]",*(ASSETSMANAGER_LOGFOLDER)));
+#else
+		NtfyMsgLog(FString::Printf(L"Open log folder failed.[%s]", *(ASSETSMANAGER_LOGFOLDER)));
+#endif
+	};
+	return FReply::Handled();
 }
 
 TSharedRef<SButton> SManagerSlateTab::ConstructBatchRenameButton()

@@ -29,7 +29,6 @@ public:
 
 	static bool JudgeSort(FVector2D& A, FVector2D& B, bool bReverse = false);
 	static bool JudgeSort(FString& A, FString& B, bool bReverse = false);
-
 #pragma endregion
 
 #pragma region FileSize
@@ -47,7 +46,10 @@ public:
 	static FColor DisplayLevelToColor(AssetsInfoDisplayLevel & DisplayLevel);
 
 	static FString IntStrAddColumn(FString SourceStr);
+#pragma endregion
 
+#pragma region DesktopOperator
+	static bool OpenLocalFolder(const FString& FolderPath);
 #pragma endregion
 
 #pragma region Standard Check Tools

@@ -1520,3 +1520,15 @@ FString UAssetsChecker::IntStrAddColumn(FString SourceStr)
 
 	return SourceStr;
 }
+
+bool UAssetsChecker::OpenLocalFolder(const FString& FolderPath)
+{
+	if (!FPaths::DirectoryExists(FolderPath))
+	{
+		return false;
+	}
+
+	FPlatformProcess::ExploreFolder(*FolderPath);
+
+	return true;
+}

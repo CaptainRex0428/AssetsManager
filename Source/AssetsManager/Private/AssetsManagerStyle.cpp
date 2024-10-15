@@ -87,5 +87,9 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
 		"ContentBrowser.BatchRenameTile",
 		new FSlateImageBrush(IconDirectory / "BatchRenameBar.png", TitleBar));
 
+	CustomStyleSet->Set(
+		"ContentBrowser.ManagerLogFolder",
+		new FSlateImageBrush(IconDirectory / "Icon_Log_32.png", Icon32x32));
+
 	return CustomStyleSet;
 }
