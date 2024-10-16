@@ -117,6 +117,9 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	this->bTextureSizeCheckStrictMode = false;
 	this->bTextureSizeCheckStrictCheckBoxConstructed = false;
 
+	this->bUnusedCheckRecursiveMode = false;
+	this->bUnusedRecursiveCheckBoxConstructed = false;
+
 	RegistryTab();
 
 	m_ClassCheckState = DefaultClassCheckState;
@@ -2547,25 +2550,55 @@ void SManagerSlateTab::UpdateDisplayListSource()
 
 	if (m_UsageCheckState == MaxInGameSizeError || m_UsageCheckState == SourceSizeError)
 	{
-		if (bTextureSizeCheckStrictCheckBoxConstructed)
+		if (!bTextureSizeCheckStrictCheckBoxConstructed)
 		{
-			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
-		}
+			ConstructTextureSizeStrictCheckBox(
+				bTextureSizeCheckStrictMode ? 
+				ECheckBoxState::Checked : ECheckBoxState::Unchecked);
+			
+			DropDownContent->InsertSlot(3)
+				.FillWidth(.05f)
+				.Padding(FMargin(2.f))
+				[
+					TextureSizeCheckStrictBox.ToSharedRef()
+				];
 
-		DropDownContent->InsertSlot(3)
-			.FillWidth(.05f)
-			.Padding(FMargin(2.f))
-			[
-				ConstructTextureSizeStrictCheckBox(
-					bTextureSizeCheckStrictMode ?
-					ECheckBoxState::Checked : ECheckBoxState::Unchecked)
-			];
+			bTextureSizeCheckStrictCheckBoxConstructed = true;
+		}
 	}
 	else
 	{
 		if (bTextureSizeCheckStrictCheckBoxConstructed)
 		{
 			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
+			bTextureSizeCheckStrictCheckBoxConstructed = false;
+		}
+	}
+
+	if (m_UsageCheckState == Unused)
+	{
+		if (!bUnusedRecursiveCheckBoxConstructed)
+		{
+			ConstructUnusedRecursiveCheckBox(
+				bUnusedCheckRecursiveMode ?
+				ECheckBoxState::Checked : ECheckBoxState::Unchecked);
+
+			DropDownContent->InsertSlot(3)
+				.FillWidth(.05f)
+				.Padding(FMargin(2.f))
+				[
+					UnusedRecursiveHorizontalBox.ToSharedRef()
+				];
+
+			bUnusedRecursiveCheckBoxConstructed = true;
+		}
+	}
+	else
+	{
+		if (bTextureSizeCheckStrictCheckBoxConstructed)
+		{
+			DropDownContent->RemoveSlot(UnusedRecursiveHorizontalBox.ToSharedRef());
+			bUnusedRecursiveCheckBoxConstructed = false;
 		}
 	}
 
@@ -2877,7 +2910,7 @@ void SManagerSlateTab::UpdateUsageFilterAssetData()
 			SListViewCategoryFilterAssetData, 
 			SListViewUsageFilterAssetData, 
 			StoredFolderPaths,
-			true);
+			bUnusedCheckRecursiveMode);
 	}
 
 	if (m_UsageCheckState == PrefixError)
@@ -2938,7 +2971,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructTextureSizeStrictCheckBox(
 	TextureSizeCheckStrictBox =
 		SNew(SHorizontalBox);
 
-	bTextureSizeCheckStrictCheckBoxConstructed = true;
+	// bTextureSizeCheckStrictCheckBoxConstructed = true;
 
 	TextureSizeCheckStrictCheckBox =
 		SNew(SCheckBox)
@@ -3005,6 +3038,75 @@ void SManagerSlateTab::OnTextureSizeStrictCheckBoxStateChanged(
 			UpdateDisplayListSource();
 			RefreshAssetsListView(false);
 		}
+		break;
+	}
+	case ECheckBoxState::Undetermined:
+		break;
+	default:
+		break;
+	}
+}
+
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructUnusedRecursiveCheckBox(ECheckBoxState State)
+{
+	UnusedRecursiveHorizontalBox =
+		SNew(SHorizontalBox);
+
+	UnusedRecursiveCheckBox =
+		SNew(SCheckBox)
+		.Type(ESlateCheckBoxType::CheckBox)
+		.Padding(FMargin(3.f))
+		.HAlign(HAlign_Center)
+		.IsChecked(State)
+		.Visibility(EVisibility::Visible)
+		.OnCheckStateChanged(this, &SManagerSlateTab::OnUnusedRecursiveCheckBoxStateChanged);
+
+	UnusedRecursiveHorizontalBox->AddSlot()
+		.AutoWidth()
+		.Padding(FMargin(2.f))
+		[
+			UnusedRecursiveCheckBox.ToSharedRef()
+		];
+
+	UnusedRecursiveHorizontalBox->AddSlot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+#ifdef ZH_CN
+			ConstructNormalTextBlock(TEXT("递归引用"), GetFontInfo(12))
+#else
+			ConstructNormalTextBlock(TEXT("Recursive Ref"), GetFontInfo(12))
+#endif
+		];
+
+	return 	UnusedRecursiveHorizontalBox.ToSharedRef();
+}
+
+void SManagerSlateTab::OnUnusedRecursiveCheckBoxStateChanged(
+	ECheckBoxState NewState)
+{
+	switch (NewState)
+	{
+	case ECheckBoxState::Unchecked:
+	{
+		if (bUnusedCheckRecursiveMode)
+		{
+			bUnusedCheckRecursiveMode = false;
+			UpdateDisplayListSource();
+			RefreshAssetsListView();
+		}
+
+		break;
+	}
+	case ECheckBoxState::Checked:
+	{
+		if (!bUnusedCheckRecursiveMode)
+		{
+			bUnusedCheckRecursiveMode = true;
+			UpdateDisplayListSource();
+			RefreshAssetsListView();
+		}
+
 		break;
 	}
 	case ECheckBoxState::Undetermined:

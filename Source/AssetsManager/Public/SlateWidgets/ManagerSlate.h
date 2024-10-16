@@ -506,6 +506,18 @@ private:
 
 #pragma endregion
 
+#pragma region UnusedCheckRecursiveMode
+	bool bRecursiveRefMode;
+	bool bRecursiveRefBoxConstructed;
+	TSharedPtr<SCheckBox> RecursiveRefCheckBox;
+	TSharedPtr<SHorizontalBox> RecursiveRefHorizontalBox;
+	TSharedRef<SHorizontalBox> ConstructRecursiveRefCheckBox(
+		ECheckBoxState State = ECheckBoxState::Unchecked);
+	void OnRecursiveRefCheckBoxStateChanged(
+		ECheckBoxState NewState);
+
+#pragma endregion
+
 #pragma region ReverseCondition
 	bool ReverseCondition;
 
