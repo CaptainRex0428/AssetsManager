@@ -117,8 +117,8 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	this->bTextureSizeCheckStrictMode = false;
 	this->bTextureSizeCheckStrictCheckBoxConstructed = false;
 
-	this->bUnusedCheckRecursiveMode = false;
-	this->bUnusedRecursiveCheckBoxConstructed = false;
+	this->bRecursiveRefMode = false;
+	this->bRecursiveRefBoxConstructed = false;
 
 	RegistryTab();
 
@@ -2577,28 +2577,28 @@ void SManagerSlateTab::UpdateDisplayListSource()
 
 	if (m_UsageCheckState == Unused)
 	{
-		if (!bUnusedRecursiveCheckBoxConstructed)
+		if (!bRecursiveRefBoxConstructed)
 		{
-			ConstructUnusedRecursiveCheckBox(
-				bUnusedCheckRecursiveMode ?
+			ConstructRecursiveRefCheckBox(
+				bRecursiveRefMode ?
 				ECheckBoxState::Checked : ECheckBoxState::Unchecked);
 
 			DropDownContent->InsertSlot(3)
 				.FillWidth(.05f)
 				.Padding(FMargin(2.f))
 				[
-					UnusedRecursiveHorizontalBox.ToSharedRef()
+					RecursiveRefHorizontalBox.ToSharedRef()
 				];
 
-			bUnusedRecursiveCheckBoxConstructed = true;
+			bRecursiveRefBoxConstructed = true;
 		}
 	}
 	else
 	{
 		if (bTextureSizeCheckStrictCheckBoxConstructed)
 		{
-			DropDownContent->RemoveSlot(UnusedRecursiveHorizontalBox.ToSharedRef());
-			bUnusedRecursiveCheckBoxConstructed = false;
+			DropDownContent->RemoveSlot(RecursiveRefHorizontalBox.ToSharedRef());
+			bRecursiveRefBoxConstructed = false;
 		}
 	}
 
@@ -2910,7 +2910,7 @@ void SManagerSlateTab::UpdateUsageFilterAssetData()
 			SListViewCategoryFilterAssetData, 
 			SListViewUsageFilterAssetData, 
 			StoredFolderPaths,
-			bUnusedCheckRecursiveMode);
+			bRecursiveRefMode);
 	}
 
 	if (m_UsageCheckState == PrefixError)
@@ -3047,28 +3047,28 @@ void SManagerSlateTab::OnTextureSizeStrictCheckBoxStateChanged(
 	}
 }
 
-TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructUnusedRecursiveCheckBox(ECheckBoxState State)
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructRecursiveRefCheckBox(ECheckBoxState State)
 {
-	UnusedRecursiveHorizontalBox =
+	RecursiveRefHorizontalBox =
 		SNew(SHorizontalBox);
 
-	UnusedRecursiveCheckBox =
+	RecursiveRefCheckBox =
 		SNew(SCheckBox)
 		.Type(ESlateCheckBoxType::CheckBox)
 		.Padding(FMargin(3.f))
 		.HAlign(HAlign_Center)
 		.IsChecked(State)
 		.Visibility(EVisibility::Visible)
-		.OnCheckStateChanged(this, &SManagerSlateTab::OnUnusedRecursiveCheckBoxStateChanged);
+		.OnCheckStateChanged(this, &SManagerSlateTab::OnRecursiveRefCheckBoxStateChanged);
 
-	UnusedRecursiveHorizontalBox->AddSlot()
+	RecursiveRefHorizontalBox->AddSlot()
 		.AutoWidth()
 		.Padding(FMargin(2.f))
 		[
-			UnusedRecursiveCheckBox.ToSharedRef()
+			RecursiveRefCheckBox.ToSharedRef()
 		];
 
-	UnusedRecursiveHorizontalBox->AddSlot()
+	RecursiveRefHorizontalBox->AddSlot()
 		.AutoWidth()
 		.VAlign(VAlign_Center)
 		[
@@ -3079,19 +3079,19 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructUnusedRecursiveCheckBox(EC
 #endif
 		];
 
-	return 	UnusedRecursiveHorizontalBox.ToSharedRef();
+	return 	RecursiveRefHorizontalBox.ToSharedRef();
 }
 
-void SManagerSlateTab::OnUnusedRecursiveCheckBoxStateChanged(
+void SManagerSlateTab::OnRecursiveRefCheckBoxStateChanged(
 	ECheckBoxState NewState)
 {
 	switch (NewState)
 	{
 	case ECheckBoxState::Unchecked:
 	{
-		if (bUnusedCheckRecursiveMode)
+		if (bRecursiveRefMode)
 		{
-			bUnusedCheckRecursiveMode = false;
+			bRecursiveRefMode = false;
 			UpdateDisplayListSource();
 			RefreshAssetsListView();
 		}
@@ -3100,9 +3100,9 @@ void SManagerSlateTab::OnUnusedRecursiveCheckBoxStateChanged(
 	}
 	case ECheckBoxState::Checked:
 	{
-		if (!bUnusedCheckRecursiveMode)
+		if (!bRecursiveRefMode)
 		{
-			bUnusedCheckRecursiveMode = true;
+			bRecursiveRefMode = true;
 			UpdateDisplayListSource();
 			RefreshAssetsListView();
 		}
