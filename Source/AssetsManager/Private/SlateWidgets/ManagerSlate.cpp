@@ -2595,7 +2595,7 @@ void SManagerSlateTab::UpdateDisplayListSource()
 	}
 	else
 	{
-		if (bTextureSizeCheckStrictCheckBoxConstructed)
+		if (bRecursiveRefBoxConstructed)
 		{
 			DropDownContent->RemoveSlot(RecursiveRefHorizontalBox.ToSharedRef());
 			bRecursiveRefBoxConstructed = false;
