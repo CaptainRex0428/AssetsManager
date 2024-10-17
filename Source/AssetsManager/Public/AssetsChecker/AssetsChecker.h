@@ -29,6 +29,11 @@ public:
 
 	static bool JudgeSort(FVector2D& A, FVector2D& B, bool bReverse = false);
 	static bool JudgeSort(FString& A, FString& B, bool bReverse = false);
+
+	static TArray<FString> SplitStringRecursive(
+		const FString& InStr,
+		const FString& SpliteTag);
+
 #pragma endregion
 
 #pragma region FileSize

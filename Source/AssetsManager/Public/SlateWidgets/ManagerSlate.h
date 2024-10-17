@@ -543,6 +543,15 @@ private:
 		ECheckBoxState NewState);
 #pragma endregion
 
+#pragma region SearchableBox
+	FString SearchString;
+	TArray<TSharedPtr<FAssetData>> SListViewSearchFilterAssetData;
+	TSharedPtr<SSearchBox> ListSearchBox;
+	TSharedRef<SVerticalBox> ConstructSearchableBox();
+	void OnSearchTextChanged(const FText& InSearchText);
+	void UpdateSearchablbeBox();
+#pragma endregion
+
 #pragma endregion
 
 };

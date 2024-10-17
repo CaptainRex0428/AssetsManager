@@ -33,6 +33,8 @@
 
 #include "Engine/Texture.h"
 
+#include "Widgets/Input/SSearchBox.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -242,6 +244,12 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 			ConstructDropDownMenuBox()
 		];
 
+	HandleListBox->AddSlot()
+		.AutoHeight()
+		[
+			ConstructSearchableBox()
+		];
+
 
 	/*
 	*	BuildList
@@ -339,6 +347,11 @@ void SManagerSlateTab::SListViewRemoveAssetData(
 	if (SListViewCategoryFilterAssetData.Contains(AssetData))
 	{
 		SListViewCategoryFilterAssetData.Remove(AssetData);
+	}
+
+	if (SListViewSearchFilterAssetData.Contains(AssetData))
+	{
+		SListViewSearchFilterAssetData.Remove(AssetData);
 	}
 
 	if (SListViewAssetData.Contains(AssetData))
@@ -2533,8 +2546,9 @@ void SManagerSlateTab::UpdateDisplayListSource()
 
 	UpdateUsageFilterAssetData();
 	
+	UpdateSearchablbeBox();
 
-	UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
+	UAssetsChecker::ECopyAssetsPtrList(SListViewSearchFilterAssetData, SListViewAssetData);
 
 	/*-------------------------- Dynamic Buttons Component----------------------------*/
 
@@ -3306,6 +3320,54 @@ void SManagerSlateTab::OnOnlyCheckBoxStateChanged(ECheckBoxState NewState)
 		break;
 	default:
 		break;
+	}
+}
+
+TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSearchableBox()
+{
+	ListSearchBox = SNew(SSearchBox)
+		.OnTextChanged(this, &SManagerSlateTab::OnSearchTextChanged)
+		.ToolTipText(FText::FromString(L"Input Tag to filter current list."));
+
+	return SNew(SVerticalBox) + SVerticalBox::Slot()
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Fill)
+		.Padding(FMargin(2.0f))
+		[ListSearchBox.ToSharedRef()];
+}
+
+void SManagerSlateTab::OnSearchTextChanged(const FText& InSearchText)
+{
+	SearchString = InSearchText.ToString();
+
+	UpdateDisplayListSource();
+	RefreshAssetsListView();
+}
+
+void SManagerSlateTab::UpdateSearchablbeBox()
+{
+	if (SearchString.IsEmpty())
+	{
+		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewSearchFilterAssetData);
+		return;
+	}
+
+	TArray<FString> SubString = UAssetsChecker::SplitStringRecursive(SearchString, L" ");
+
+	SListViewSearchFilterAssetData.Empty();
+
+	for (TSharedPtr<FAssetData>& AssetD : SListViewUsageFilterAssetData)
+	{
+		FString AssetName = AssetD->AssetName.ToString();
+
+		for (FString& str : SubString)
+		{
+			if (AssetName.Contains(str))
+			{
+				SListViewSearchFilterAssetData.Add(AssetD);
+				break;
+			}
+		}
 	}
 }
 

@@ -1468,6 +1468,35 @@ bool UAssetsChecker::JudgeSort(FString& A, FString& B, bool bReverse)
 	return bReverse ? AL < BL : AL > BL;
 }
 
+TArray<FString> UAssetsChecker::SplitStringRecursive(
+	const FString& InStr, 
+	const FString& SpliteTag)
+{
+	TArray<FString> OutList;
+	OutList.Empty();
+
+	FString LStr;
+	FString RStr;
+
+	if (InStr.Split(SpliteTag, &LStr, &RStr))
+	{
+		OutList.Add(LStr);
+
+		while (RStr.Split(SpliteTag, &LStr, &RStr))
+		{
+			OutList.Add(LStr);
+		}
+
+		OutList.Add(RStr);
+	}
+	else
+	{
+		OutList.Add(InStr);
+	}
+
+	return OutList;
+}
+
 
 double UAssetsChecker::ByteConversion(
 	uint64 ByteSize,

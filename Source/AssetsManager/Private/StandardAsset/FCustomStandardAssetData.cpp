@@ -37,7 +37,7 @@ FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData, 
 	FString AssetSelectedName = AssetData.AssetName.ToString();
 
 	m_AssetNameInfoList.Empty();
-	m_AssetNameInfoList = SplitStringRecursive(AssetSelectedName, "_");
+	m_AssetNameInfoList = UAssetsChecker::SplitStringRecursive(AssetSelectedName, "_");
 
 	/*
 	* Judge if the asset has standard prefix
@@ -400,35 +400,6 @@ int64 FCustomStandardAssetData::GetDiskSize(
 	DisplayLevel = UAssetsChecker::IntToDisplayLevel(LevelOut);
 
 	return DiskSize;
-}
-
-TArray<FString> FCustomStandardAssetData::SplitStringRecursive(
-	const FString& InStr, 
-	const FString& SpliteTag)
-{
-	TArray<FString> OutList;
-	OutList.Empty();
-
-	FString LStr;
-	FString RStr;
-
-	if (InStr.Split(SpliteTag,&LStr,&RStr))
-	{
-		OutList.Add(LStr);
-
-		while (RStr.Split(SpliteTag, &LStr, &RStr))
-		{
-			OutList.Add(LStr);
-		}
-
-		OutList.Add(RStr);
-	}
-	else
-	{
-		OutList.Add(InStr);
-	}	
-
-	return OutList;
 }
 
 TArray<FString> FCustomStandardAssetData::GetValidCategoryTag(
