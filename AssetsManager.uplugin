@@ -1,7 +1,7 @@
 {
 	"FileVersion": 1,
 	"Version": 6,
-	"VersionName": "1.6.4",
+	"VersionName": "1.7.8",
 	"FriendlyName": "AssetsManager",
 	"Description": "Assets Manager is an Unreal C++ based asset management project plugin.\nIt includes asset screening, asset specification custom detection and other functions, and integrates asset modification, deletion, reference search and other operations, which is convenient for developers to achieve batch asset management and modification in a single interface, and improve the efficiency of project assets management.",
 	"Category": "Other",

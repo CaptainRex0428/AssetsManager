@@ -1497,6 +1497,36 @@ TArray<FString> UAssetsChecker::SplitStringRecursive(
 	return OutList;
 }
 
+bool UAssetsChecker::StringMatchPattern(
+	const FString & Pattern, 
+	FString& StringToMatch)
+{
+	TArray<FString> Subpatterns =  SplitStringRecursive(Pattern,L"&");
+
+	for (FString subpattern : Subpatterns)
+	{
+		bool matched = false;
+
+		TArray<FString> SubConditions = SplitStringRecursive(subpattern,L" ");
+		
+		for (FString Condition : SubConditions)
+		{
+			if (StringToMatch.Contains(Condition))
+			{
+				matched = true;
+				break;
+			}
+		}
+
+		if (!matched)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 
 double UAssetsChecker::ByteConversion(
 	uint64 ByteSize,

@@ -2159,19 +2159,19 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 			});
 	}
 
-	
-
 	int32 TaskNum = OutputData.Num();
 	FSlowTask WritingTask(TaskNum, FText::FromString("Writing Data ..."));
 	WritingTask.Initialize();
 	WritingTask.MakeDialog();
+	
+	TArray<int64> LODVerticesAudit;
+	TArray<int64> LODTrianglesAudit;
 
 	// Content
 	for (TSharedPtr<FAssetData> asset: OutputData)
 	{
 		WritingTask.EnterProgressFrame(.9f);
-		
-		
+
 		FCustomStandardAssetData StandardAsset(*asset);
 		
 		FString DiskSize;
@@ -2212,8 +2212,29 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 
 			for (int32 Idx = 0; Idx < LODNum; ++Idx)
 			{
-				LODVer += UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d",StandardSkeletal.GetLODVerticesNum(Idx)));
-				LODTri += UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d",StandardSkeletal.GetLODTrianglesNum(Idx)));
+				int32 VerN = StandardSkeletal.GetLODVerticesNum(Idx);
+				int32 TriN = StandardSkeletal.GetLODTrianglesNum(Idx);
+
+				if (LODVerticesAudit.Num()-1 < Idx)
+				{
+					LODVerticesAudit.Add(VerN);
+				}
+				else
+				{
+					LODVerticesAudit[Idx] += VerN;
+				}
+
+				if (LODTrianglesAudit.Num() - 1 < Idx)
+				{
+					LODTrianglesAudit.Add(TriN);
+				}
+				else
+				{
+					LODTrianglesAudit[Idx] += TriN;
+				}
+
+				LODVer += UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d", VerN));
+				LODTri += UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d", TriN));
 				
 				if (Idx < LODNum - 1)
 				{
@@ -2231,6 +2252,22 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 		
 		CSVContent += FString::Printf(L"%s\t\n",
 			*StandardAsset.GetObjectPathString());
+	}
+
+	if (m_ClassCheckState == SkeletalMesh)
+	{
+		CSVContent += L"\nLODAudit\tTri\tVer\n";
+
+		int32 Layers = LODTrianglesAudit.Num() > LODVerticesAudit.Num() ? LODTrianglesAudit.Num() : LODVerticesAudit.Num();
+
+		for (int32 Idx = 0; Idx < Layers; ++Idx)
+		{
+			CSVContent += FString::Printf(L"%d\t%s\t%s\n",
+				Idx,
+				(Idx < LODTrianglesAudit.Num() ? *UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d", LODTrianglesAudit[Idx])) : L"0"),
+				(Idx < LODVerticesAudit.Num() ? *UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d", LODVerticesAudit[Idx])) : L"0"));
+		}
+
 	}
 
 	FDateTime Time = FDateTime::Now();
@@ -3352,21 +3389,15 @@ void SManagerSlateTab::UpdateSearchablbeBox()
 		return;
 	}
 
-	TArray<FString> SubString = UAssetsChecker::SplitStringRecursive(SearchString, L" ");
-
 	SListViewSearchFilterAssetData.Empty();
 
 	for (TSharedPtr<FAssetData>& AssetD : SListViewUsageFilterAssetData)
 	{
 		FString AssetName = AssetD->AssetName.ToString();
 
-		for (FString& str : SubString)
+		if(UAssetsChecker::StringMatchPattern(SearchString,AssetName))
 		{
-			if (AssetName.Contains(str))
-			{
-				SListViewSearchFilterAssetData.Add(AssetD);
-				break;
-			}
+			SListViewSearchFilterAssetData.Add(AssetD);
 		}
 	}
 }
