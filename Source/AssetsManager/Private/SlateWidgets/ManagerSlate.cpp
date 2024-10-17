@@ -2297,12 +2297,6 @@ TSharedRef<SButton> SManagerSlateTab::ConstructOpenLocalLogFolderButton()
 
 	this->OpenLocalLogFolderButton->SetContent(ButtonImgScaler);
 
-//#ifdef ZH_CN
-//	this->OpenLocalLogFolderButton->SetContent(ConstructTextForButtons(TEXT("-- 打开日志文件夹 --")));
-//#else
-//	this->OpenLocalLogFolderButton->SetContent(ConstructTextForButtons(TEXT("-- Open Log Folder --")));
-//#endif
-
 	return this->OpenLocalLogFolderButton.ToSharedRef();
 }
 
