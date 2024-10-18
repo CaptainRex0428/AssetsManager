@@ -2583,6 +2583,7 @@ void SManagerSlateTab::UpdateDisplayListSource()
 
 	UpdateUsageFilterAssetData();
 	
+	/*-------------------------- Usage filter----------------------------*/
 	UpdateSearchablbeBox();
 
 	UAssetsChecker::ECopyAssetsPtrList(SListViewSearchFilterAssetData, SListViewAssetData);
@@ -3377,7 +3378,9 @@ void SManagerSlateTab::OnSearchTextChanged(const FText& InSearchText)
 {
 	SearchString = InSearchText.ToString();
 
-	UpdateDisplayListSource();
+	//UpdateDisplayListSource();
+	UpdateSearchablbeBox();
+	UAssetsChecker::ECopyAssetsPtrList(SListViewSearchFilterAssetData, SListViewAssetData);
 	RefreshAssetsListView();
 }
 
