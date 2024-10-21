@@ -33,6 +33,8 @@
 
 #include "Engine/Texture.h"
 
+#include "Widgets/Input/SSearchBox.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -116,6 +118,9 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	this->bTextureSizeCheckStrictMode = false;
 	this->bTextureSizeCheckStrictCheckBoxConstructed = false;
+
+	this->bRecursiveRefMode = false;
+	this->bRecursiveRefBoxConstructed = false;
 
 	RegistryTab();
 
@@ -239,6 +244,12 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 			ConstructDropDownMenuBox()
 		];
 
+	HandleListBox->AddSlot()
+		.AutoHeight()
+		[
+			ConstructSearchableBox()
+		];
+
 
 	/*
 	*	BuildList
@@ -333,6 +344,16 @@ void SManagerSlateTab::SListViewRemoveAssetData(
 		SListViewUsageFilterAssetData.Remove(AssetData);
 	}
 
+	if (SListViewCategoryFilterAssetData.Contains(AssetData))
+	{
+		SListViewCategoryFilterAssetData.Remove(AssetData);
+	}
+
+	if (SListViewSearchFilterAssetData.Contains(AssetData))
+	{
+		SListViewSearchFilterAssetData.Remove(AssetData);
+	}
+
 	if (SListViewAssetData.Contains(AssetData))
 	{
 		SListViewAssetData.Remove(AssetData);
@@ -362,7 +383,8 @@ void SManagerSlateTab::RefreshAssetsListView(
 	{
 		CustomTableList->RefreshTable(bRefreshTableHeader);
 	}
-
+	
+	AllInFolderViewCountBlock->SetText(FText::FromString(FString::FromInt(StoredAssetsData.Num())));
 	ListViewCountBlock->SetText(FText::FromString(FString::FromInt(CustomTableList->GetListItems().Num())));
 	SelectedCountBlock->SetText(FText::FromString(FString::FromInt(CustomTableList->GetSelectedItems().Num())));
 	
@@ -803,6 +825,7 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructListPathsInfo(
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructListAssetsCountInfo(
 	const FSlateFontInfo& FontInfo)
 {
+	AllInFolderViewCountBlock = ConstructNormalTextBlock(FString::FromInt(StoredAssetsData.Num()), FontInfo, ETextJustify::Left, FColor::Orange);
 	ClassListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewClassFilterAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Yellow);
 	ListViewCountBlock = ConstructNormalTextBlock(FString::FromInt(SListViewUsageFilterAssetData.Num()), FontInfo, ETextJustify::Left, FColor::Green);
 	SelectedCountBlock = ConstructNormalTextBlock(FString::FromInt(CustomTableList->GetSelectedItems().Num()), FontInfo, ETextJustify::Left, FColor::Emerald);
@@ -835,7 +858,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructListAssetsCountInfo(
 				.HAlign(HAlign_Left)
 				.VAlign(VAlign_Center)
 				[
-					ConstructNormalTextBlock(FString::FromInt(StoredAssetsData.Num()), FontInfo, ETextJustify::Left, FColor::Orange)
+					AllInFolderViewCountBlock.ToSharedRef()
 				]
 		]
 
@@ -1845,6 +1868,7 @@ FReply SManagerSlateTab::OnDeleteAllSelectedButtonClicked()
 			SListViewRemoveAssetData(AssetDataPtr);
 		}
 
+		UpdateDisplayListSource();
 		RefreshAssetsListView();
 	}
 
@@ -2135,19 +2159,19 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 			});
 	}
 
-	
-
 	int32 TaskNum = OutputData.Num();
 	FSlowTask WritingTask(TaskNum, FText::FromString("Writing Data ..."));
 	WritingTask.Initialize();
 	WritingTask.MakeDialog();
+	
+	TArray<int64> LODVerticesAudit;
+	TArray<int64> LODTrianglesAudit;
 
 	// Content
 	for (TSharedPtr<FAssetData> asset: OutputData)
 	{
 		WritingTask.EnterProgressFrame(.9f);
-		
-		
+
 		FCustomStandardAssetData StandardAsset(*asset);
 		
 		FString DiskSize;
@@ -2188,8 +2212,29 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 
 			for (int32 Idx = 0; Idx < LODNum; ++Idx)
 			{
-				LODVer += UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d",StandardSkeletal.GetLODVerticesNum(Idx)));
-				LODTri += UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d",StandardSkeletal.GetLODTrianglesNum(Idx)));
+				int32 VerN = StandardSkeletal.GetLODVerticesNum(Idx);
+				int32 TriN = StandardSkeletal.GetLODTrianglesNum(Idx);
+
+				if (LODVerticesAudit.Num()-1 < Idx)
+				{
+					LODVerticesAudit.Add(VerN);
+				}
+				else
+				{
+					LODVerticesAudit[Idx] += VerN;
+				}
+
+				if (LODTrianglesAudit.Num() - 1 < Idx)
+				{
+					LODTrianglesAudit.Add(TriN);
+				}
+				else
+				{
+					LODTrianglesAudit[Idx] += TriN;
+				}
+
+				LODVer += UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d", VerN));
+				LODTri += UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d", TriN));
 				
 				if (Idx < LODNum - 1)
 				{
@@ -2207,6 +2252,22 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 		
 		CSVContent += FString::Printf(L"%s\t\n",
 			*StandardAsset.GetObjectPathString());
+	}
+
+	if (m_ClassCheckState == SkeletalMesh)
+	{
+		CSVContent += L"\nLODAudit\tTri\tVer\n";
+
+		int32 Layers = LODTrianglesAudit.Num() > LODVerticesAudit.Num() ? LODTrianglesAudit.Num() : LODVerticesAudit.Num();
+
+		for (int32 Idx = 0; Idx < Layers; ++Idx)
+		{
+			CSVContent += FString::Printf(L"%d\t%s\t%s\n",
+				Idx,
+				(Idx < LODTrianglesAudit.Num() ? *UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d", LODTrianglesAudit[Idx])) : L"0"),
+				(Idx < LODVerticesAudit.Num() ? *UAssetsChecker::IntStrAddColumn(FString::Printf(L"%d", LODVerticesAudit[Idx])) : L"0"));
+		}
+
 	}
 
 	FDateTime Time = FDateTime::Now();
@@ -2285,12 +2346,6 @@ TSharedRef<SButton> SManagerSlateTab::ConstructOpenLocalLogFolderButton()
 		];
 
 	this->OpenLocalLogFolderButton->SetContent(ButtonImgScaler);
-
-//#ifdef ZH_CN
-//	this->OpenLocalLogFolderButton->SetContent(ConstructTextForButtons(TEXT("-- 打开日志文件夹 --")));
-//#else
-//	this->OpenLocalLogFolderButton->SetContent(ConstructTextForButtons(TEXT("-- Open Log Folder --")));
-//#endif
 
 	return this->OpenLocalLogFolderButton.ToSharedRef();
 }
@@ -2528,8 +2583,10 @@ void SManagerSlateTab::UpdateDisplayListSource()
 
 	UpdateUsageFilterAssetData();
 	
+	/*-------------------------- Usage filter----------------------------*/
+	UpdateSearchablbeBox();
 
-	UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewAssetData);
+	UAssetsChecker::ECopyAssetsPtrList(SListViewSearchFilterAssetData, SListViewAssetData);
 
 	/*-------------------------- Dynamic Buttons Component----------------------------*/
 
@@ -2539,25 +2596,55 @@ void SManagerSlateTab::UpdateDisplayListSource()
 
 	if (m_UsageCheckState == MaxInGameSizeError || m_UsageCheckState == SourceSizeError)
 	{
-		if (bTextureSizeCheckStrictCheckBoxConstructed)
+		if (!bTextureSizeCheckStrictCheckBoxConstructed)
 		{
-			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
-		}
+			ConstructTextureSizeStrictCheckBox(
+				bTextureSizeCheckStrictMode ? 
+				ECheckBoxState::Checked : ECheckBoxState::Unchecked);
+			
+			DropDownContent->InsertSlot(3)
+				.FillWidth(.05f)
+				.Padding(FMargin(2.f))
+				[
+					TextureSizeCheckStrictBox.ToSharedRef()
+				];
 
-		DropDownContent->InsertSlot(3)
-			.FillWidth(.05f)
-			.Padding(FMargin(2.f))
-			[
-				ConstructTextureSizeStrictCheckBox(
-					bTextureSizeCheckStrictMode ?
-					ECheckBoxState::Checked : ECheckBoxState::Unchecked)
-			];
+			bTextureSizeCheckStrictCheckBoxConstructed = true;
+		}
 	}
 	else
 	{
 		if (bTextureSizeCheckStrictCheckBoxConstructed)
 		{
 			DropDownContent->RemoveSlot(TextureSizeCheckStrictBox.ToSharedRef());
+			bTextureSizeCheckStrictCheckBoxConstructed = false;
+		}
+	}
+
+	if (m_UsageCheckState == Unused)
+	{
+		if (!bRecursiveRefBoxConstructed)
+		{
+			ConstructRecursiveRefCheckBox(
+				bRecursiveRefMode ?
+				ECheckBoxState::Checked : ECheckBoxState::Unchecked);
+
+			DropDownContent->InsertSlot(3)
+				.FillWidth(.05f)
+				.Padding(FMargin(2.f))
+				[
+					RecursiveRefHorizontalBox.ToSharedRef()
+				];
+
+			bRecursiveRefBoxConstructed = true;
+		}
+	}
+	else
+	{
+		if (bRecursiveRefBoxConstructed)
+		{
+			DropDownContent->RemoveSlot(RecursiveRefHorizontalBox.ToSharedRef());
+			bRecursiveRefBoxConstructed = false;
 		}
 	}
 
@@ -2864,7 +2951,12 @@ void SManagerSlateTab::UpdateUsageFilterAssetData()
 
 	if (m_UsageCheckState == Unused)
 	{
-		UAssetsChecker::FilterUnusedAssetsForAssetList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
+		//UAssetsChecker::FilterUnusedAssetsForAssetList(SListViewCategoryFilterAssetData, SListViewUsageFilterAssetData);
+		UAssetsChecker::FilterUnusedAssetsForAssetList(
+			SListViewCategoryFilterAssetData, 
+			SListViewUsageFilterAssetData, 
+			StoredFolderPaths,
+			bRecursiveRefMode);
 	}
 
 	if (m_UsageCheckState == PrefixError)
@@ -2925,7 +3017,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructTextureSizeStrictCheckBox(
 	TextureSizeCheckStrictBox =
 		SNew(SHorizontalBox);
 
-	bTextureSizeCheckStrictCheckBoxConstructed = true;
+	// bTextureSizeCheckStrictCheckBoxConstructed = true;
 
 	TextureSizeCheckStrictCheckBox =
 		SNew(SCheckBox)
@@ -3001,6 +3093,75 @@ void SManagerSlateTab::OnTextureSizeStrictCheckBoxStateChanged(
 	}
 }
 
+TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructRecursiveRefCheckBox(ECheckBoxState State)
+{
+	RecursiveRefHorizontalBox =
+		SNew(SHorizontalBox);
+
+	RecursiveRefCheckBox =
+		SNew(SCheckBox)
+		.Type(ESlateCheckBoxType::CheckBox)
+		.Padding(FMargin(3.f))
+		.HAlign(HAlign_Center)
+		.IsChecked(State)
+		.Visibility(EVisibility::Visible)
+		.OnCheckStateChanged(this, &SManagerSlateTab::OnRecursiveRefCheckBoxStateChanged);
+
+	RecursiveRefHorizontalBox->AddSlot()
+		.AutoWidth()
+		.Padding(FMargin(2.f))
+		[
+			RecursiveRefCheckBox.ToSharedRef()
+		];
+
+	RecursiveRefHorizontalBox->AddSlot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+#ifdef ZH_CN
+			ConstructNormalTextBlock(TEXT("递归引用"), GetFontInfo(12))
+#else
+			ConstructNormalTextBlock(TEXT("Recursive Ref"), GetFontInfo(12))
+#endif
+		];
+
+	return 	RecursiveRefHorizontalBox.ToSharedRef();
+}
+
+void SManagerSlateTab::OnRecursiveRefCheckBoxStateChanged(
+	ECheckBoxState NewState)
+{
+	switch (NewState)
+	{
+	case ECheckBoxState::Unchecked:
+	{
+		if (bRecursiveRefMode)
+		{
+			bRecursiveRefMode = false;
+			UpdateDisplayListSource();
+			RefreshAssetsListView();
+		}
+
+		break;
+	}
+	case ECheckBoxState::Checked:
+	{
+		if (!bRecursiveRefMode)
+		{
+			bRecursiveRefMode = true;
+			UpdateDisplayListSource();
+			RefreshAssetsListView();
+		}
+
+		break;
+	}
+	case ECheckBoxState::Undetermined:
+		break;
+	default:
+		break;
+	}
+}
+
 TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructReverseConditionCheckBox()
 {
 	TSharedPtr<SHorizontalBox> HorizontalBox =
@@ -3047,8 +3208,10 @@ void SManagerSlateTab::OnReverseConditionCheckBoxStateChanged(
 		{
 			ReverseCondition = false;
 
-			UpdateDisplayListSource();
-
+			UAssetsChecker::ECopyAssetsPtrList(ReversedTempArray, SListViewUsageFilterAssetData);
+			ReversedTempArray.Empty();
+			UpdateSearchablbeBox();
+			UAssetsChecker::ECopyAssetsPtrList(SListViewSearchFilterAssetData, SListViewAssetData);
 			RefreshAssetsListView(false);
 
 		}
@@ -3061,16 +3224,22 @@ void SManagerSlateTab::OnReverseConditionCheckBoxStateChanged(
 		{
 			ReverseCondition = true;
 
-			SListViewAssetData.Empty();
+			UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, ReversedTempArray);
 
-			for (TSharedPtr<FAssetData> assetData : SListViewClassFilterAssetData)
+			TArray<TSharedPtr<FAssetData>> RestArray;
+			RestArray.Empty();
+
+			for (TSharedPtr<FAssetData> assetData : SListViewCategoryFilterAssetData)
 			{
 				if(!SListViewUsageFilterAssetData.Contains(assetData))
 				{
-					SListViewAssetData.Add(assetData);
+					RestArray.Add(assetData);
 				}
 			}
 
+			UAssetsChecker::ECopyAssetsPtrList(RestArray, SListViewUsageFilterAssetData);
+			UpdateSearchablbeBox();
+			UAssetsChecker::ECopyAssetsPtrList(SListViewSearchFilterAssetData, SListViewAssetData);
 			RefreshAssetsListView(false);
 		}
 		break;
@@ -3197,6 +3366,50 @@ void SManagerSlateTab::OnOnlyCheckBoxStateChanged(ECheckBoxState NewState)
 		break;
 	default:
 		break;
+	}
+}
+
+TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSearchableBox()
+{
+	ListSearchBox = SNew(SSearchBox)
+		.OnTextChanged(this, &SManagerSlateTab::OnSearchTextChanged)
+		.ToolTipText(FText::FromString(L"Input Tag to filter current list."));
+
+	return SNew(SVerticalBox) + SVerticalBox::Slot()
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Fill)
+		.Padding(FMargin(2.0f))
+		[ListSearchBox.ToSharedRef()];
+}
+
+void SManagerSlateTab::OnSearchTextChanged(const FText& InSearchText)
+{
+	SearchString = InSearchText.ToString();
+
+	//UpdateDisplayListSource();
+	UpdateSearchablbeBox();
+	UAssetsChecker::ECopyAssetsPtrList(SListViewSearchFilterAssetData, SListViewAssetData);
+	RefreshAssetsListView();
+}
+
+void SManagerSlateTab::UpdateSearchablbeBox()
+{
+	if (SearchString.IsEmpty())
+	{
+		UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewSearchFilterAssetData);
+		return;
+	}
+
+	SListViewSearchFilterAssetData.Empty();
+
+	for (TSharedPtr<FAssetData>& AssetD : SListViewUsageFilterAssetData)
+	{
+		FString AssetName = AssetD->AssetName.ToString();
+
+		if(UAssetsChecker::StringMatchPattern(SearchString,AssetName))
+		{
+			SListViewSearchFilterAssetData.Add(AssetD);
+		}
 	}
 }
 

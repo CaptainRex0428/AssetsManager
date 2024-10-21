@@ -63,9 +63,6 @@ public:
 	virtual int64 GetDiskSize(AssetsInfoDisplayLevel& DisplayLevel);
 
 private:
-	TArray<FString> SplitStringRecursive(
-		const FString& InStr,
-		const FString& SpliteTag);
 
 	TArray<FString> GetValidCategoryTag(
 		Category Cate);

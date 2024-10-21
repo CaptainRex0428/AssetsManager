@@ -29,6 +29,22 @@ public:
 
 	static bool JudgeSort(FVector2D& A, FVector2D& B, bool bReverse = false);
 	static bool JudgeSort(FString& A, FString& B, bool bReverse = false);
+
+	static TArray<FString> SplitStringRecursive(
+		const FString& InStr,
+		const FString& SpliteTag);
+
+	/*
+	* Pattern logic:
+	* pattern between "&" is sub-pattern
+	* all sub-pattern should be matched at the same time
+	* sub-pattern will be split by space " "
+	* only one condition in sub-pattern matched will be judged as sub-pattern matched
+	*/
+	static bool StringMatchPattern(
+		const FString& Pattern, 
+		FString& StringToMatch);
+
 #pragma endregion
 
 #pragma region FileSize
@@ -198,6 +214,8 @@ public:
 	static void FilterUnusedAssetsForAssetList(
 		const TArray<TSharedPtr<FAssetData>>& FindInList, 
 		TArray<TSharedPtr<FAssetData>>& OutList,
+		TArray<FString> StoredFolderPaths = TArray<FString>{},
+		bool bRecursive = false,
 		bool isAdditiveMode = false);
 
 	static void FilterPrefixErrorAssetsForAssetList(
