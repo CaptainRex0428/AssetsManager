@@ -520,7 +520,7 @@ private:
 
 #pragma region ReverseCondition
 	bool ReverseCondition;
-
+	TArray<TSharedPtr<FAssetData>> ReversedTempArray;
 	TSharedPtr<SCheckBox> ReverseConditionCheckBox;
 	TSharedRef<SHorizontalBox> ConstructReverseConditionCheckBox();
 	void OnReverseConditionCheckBoxStateChanged(

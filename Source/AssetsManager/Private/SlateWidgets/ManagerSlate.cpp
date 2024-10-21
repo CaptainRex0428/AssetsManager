@@ -3208,8 +3208,10 @@ void SManagerSlateTab::OnReverseConditionCheckBoxStateChanged(
 		{
 			ReverseCondition = false;
 
-			UpdateDisplayListSource();
-
+			UAssetsChecker::ECopyAssetsPtrList(ReversedTempArray, SListViewUsageFilterAssetData);
+			ReversedTempArray.Empty();
+			UpdateSearchablbeBox();
+			UAssetsChecker::ECopyAssetsPtrList(SListViewSearchFilterAssetData, SListViewAssetData);
 			RefreshAssetsListView(false);
 
 		}
@@ -3222,16 +3224,22 @@ void SManagerSlateTab::OnReverseConditionCheckBoxStateChanged(
 		{
 			ReverseCondition = true;
 
-			SListViewAssetData.Empty();
+			UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, ReversedTempArray);
 
-			for (TSharedPtr<FAssetData> assetData : SListViewClassFilterAssetData)
+			TArray<TSharedPtr<FAssetData>> RestArray;
+			RestArray.Empty();
+
+			for (TSharedPtr<FAssetData> assetData : SListViewCategoryFilterAssetData)
 			{
 				if(!SListViewUsageFilterAssetData.Contains(assetData))
 				{
-					SListViewAssetData.Add(assetData);
+					RestArray.Add(assetData);
 				}
 			}
 
+			UAssetsChecker::ECopyAssetsPtrList(RestArray, SListViewUsageFilterAssetData);
+			UpdateSearchablbeBox();
+			UAssetsChecker::ECopyAssetsPtrList(SListViewSearchFilterAssetData, SListViewAssetData);
 			RefreshAssetsListView(false);
 		}
 		break;
