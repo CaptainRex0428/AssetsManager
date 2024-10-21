@@ -247,7 +247,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	HandleListBox->AddSlot()
 		.AutoHeight()
 		[
-			ConstructSearchableBox()
+			ConstructOverlayOpaque(ConstructSearchableBox(),3)
 		];
 
 
@@ -3379,7 +3379,9 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSearchableBox()
 		.HAlign(HAlign_Fill)
 		.VAlign(VAlign_Fill)
 		.Padding(FMargin(2.0f))
-		[ListSearchBox.ToSharedRef()];
+		[
+			ListSearchBox.ToSharedRef()
+		];
 }
 
 void SManagerSlateTab::OnSearchTextChanged(const FText& InSearchText)
