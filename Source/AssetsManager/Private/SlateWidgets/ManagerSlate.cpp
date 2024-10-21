@@ -1869,7 +1869,7 @@ FReply SManagerSlateTab::OnDeleteAllSelectedButtonClicked()
 		}
 
 		UpdateDisplayListSource();
-		RefreshAssetsListView();
+		RefreshAssetsListView(false);
 	}
 
 	return FReply::Handled();
