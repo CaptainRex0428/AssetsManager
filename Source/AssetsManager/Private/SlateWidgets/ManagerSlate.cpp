@@ -747,6 +747,17 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(
 				];
 		}
 	}
+	DealPanel->AddSlot()
+		.HAlign(HAlign_Fill)
+		[
+			ConstructSingleAssetEditButtonBox(ClickedAssetData)
+		];
+
+	DealPanel->AddSlot()
+		.HAlign(HAlign_Fill)
+		[
+			ConstructSingleAssetSizeMapButtonBox(ClickedAssetData)
+		];
 
 	DealPanel->AddSlot()
 		.HAlign(HAlign_Fill)
@@ -1391,6 +1402,59 @@ FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 		SKAsset.SetLODsAllowCPUAccess(0);
 		//NtfyMsg(SKAsset.IsLODModifiable(1)?"Yes":"No");
 	}
+
+	return FReply::Handled();
+}
+
+TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetEditButtonBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay)
+{
+	TSharedRef<SButton> SingleAssetEditButtonBox =
+		SNew(SButton)
+#ifdef ZH_CN
+		.Text(FText::FromString(TEXT("编辑")))
+#else
+		.Text(FText::FromString(TEXT("Edit")))
+#endif
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
+		.OnClicked(this,
+			&SManagerSlateTab::OnSingleAssetEditButtonClicked,
+			AssetDataToDisplay);
+
+	return SingleAssetEditButtonBox;
+}
+
+FReply SManagerSlateTab::OnSingleAssetEditButtonClicked(
+	TSharedPtr<FAssetData> ClickedAssetData)
+{
+	UAssetsChecker::OpenEditorUI(ClickedAssetData);
+	return FReply::Handled();
+}
+
+TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetSizeMapButtonBox(
+	const TSharedPtr<FAssetData>& AssetDataToDisplay)
+{
+	TSharedRef<SButton> SingleAssetSizeMapButtonBox =
+		SNew(SButton)
+#ifdef ZH_CN
+		.Text(FText::FromString(TEXT("SizeMap")))
+#else
+		.Text(FText::FromString(TEXT("SizeMap")))
+#endif
+		.HAlign(HAlign_Center)
+		.VAlign(VAlign_Center)
+		.OnClicked(this,
+			&SManagerSlateTab::OnSingleAssetSizeMapButtonClicked,
+			AssetDataToDisplay);
+
+	return SingleAssetSizeMapButtonBox;
+}
+
+FReply SManagerSlateTab::OnSingleAssetSizeMapButtonClicked(
+	TSharedPtr<FAssetData> ClickedAssetData)
+{
+	UAssetsChecker::OpenSizeMapUI(ClickedAssetData);
 
 	return FReply::Handled();
 }

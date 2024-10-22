@@ -257,6 +257,16 @@ private:
 	FReply OnSingleAssetDebugButtonClicked(
 		TSharedPtr<FAssetData> ClickedAssetData);
 
+	TSharedRef<SButton> ConstructSingleAssetEditButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleAssetEditButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
+
+	TSharedRef<SButton> ConstructSingleAssetSizeMapButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleAssetSizeMapButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
+
 	/*
 	Construct Delete Button
 	To delete the asset referenced in table row
