@@ -1677,3 +1677,31 @@ bool UAssetsChecker::OpenLocalFolder(const FString& FolderPath)
 
 	return true;
 }
+
+bool UAssetsChecker::OpenSizeMapUI(TArray<TSharedPtr<FAssetData>> AssetsIn)
+{
+	TArray<FAssetIdentifier> list;
+
+	for (TSharedPtr<FAssetData> AssetData : AssetsIn)
+	{
+		list.Add(FAssetIdentifier(AssetData->PackageName));
+	}
+
+	IAssetManagerEditorModule::Get().OpenSizeMapUI(list);
+	
+	return true;
+}
+
+bool UAssetsChecker::OpenSizeMapUI(TSharedPtr<FAssetData> AssetIn)
+{
+	TArray<TSharedPtr<FAssetData>> Assets;
+	Assets.Add(AssetIn);
+
+	return UAssetsChecker::OpenSizeMapUI(Assets);
+}
+
+bool UAssetsChecker::OpenEditorUI(TSharedPtr<FAssetData> AssetIn)
+{
+	GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(AssetIn->GetObjectPathString());
+	return true;
+}

@@ -7,6 +7,8 @@
 
 #include "ConfigManager.h"
 
+#include "AssetManagerEditorModule.h"
+
 /*
  * 
  */
@@ -66,6 +68,11 @@ public:
 
 #pragma region DesktopOperator
 	static bool OpenLocalFolder(const FString& FolderPath);
+
+	static bool OpenSizeMapUI(TArray<TSharedPtr<FAssetData>> AssetsIn);
+	static bool OpenSizeMapUI(TSharedPtr<FAssetData> AssetIn);
+
+	static bool OpenEditorUI(TSharedPtr<FAssetData> AssetIn);
 #pragma endregion
 
 #pragma region Standard Check Tools

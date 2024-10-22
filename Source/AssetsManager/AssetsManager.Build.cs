@@ -42,7 +42,8 @@ public class AssetsManager : ModuleRules
 				"InputCore",
 				"Projects",
                 "SkeletalMeshUtilitiesCommon",
-                "UMGEditor"
+                "UMGEditor",
+				"AssetManagerEditor"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
