@@ -18,7 +18,4 @@ public:
 
 	virtual void SetComponentMinLOD(int32 MinLOD);
 	virtual void SetComponentForcedLOD(int32 MinLOD);
-	
-protected:
-	virtual TArray<TObjectPtr<UActorComponent>>& GetComponents();
 };

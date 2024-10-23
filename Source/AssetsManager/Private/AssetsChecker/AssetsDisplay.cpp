@@ -2,6 +2,7 @@
 
 
 #include "AssetsChecker/AssetsDisplay.h"
+#include "ManagerLogger.h"
 
 
 // Sets default values
@@ -14,35 +15,8 @@ AAssetsDisplay::AAssetsDisplay()
 
 void AAssetsDisplay::SetComponentMinLOD(int32 MinLOD)
 {
-	TArray<TObjectPtr<UActorComponent>> Components = GetComponents();
-	for (TObjectPtr<UActorComponent> ChildCompoent : Components)
-	{
-		ChildCompoent->Rename();
-
-		if(ChildCompoent->IsA<USkeletalMeshComponent>())
-		{
-
-		}
-
-		if (ChildCompoent->IsA<UStaticMeshComponent>())
-		{
-
-		}
-
-		if (ChildCompoent->IsA<UGroomComponent>())
-		{
-
-		}
-	}
 }
 
 void AAssetsDisplay::SetComponentForcedLOD(int32 MinLOD)
 {
 }
-
-TArray<TObjectPtr<UActorComponent>>& AAssetsDisplay::GetComponents()
-{
-	return this->BlueprintCreatedComponents;
-	// return this->OwnedComponents;
-}
-
