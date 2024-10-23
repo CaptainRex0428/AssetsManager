@@ -35,6 +35,7 @@ public class AssetsManager : ModuleRules
 				"EditorScriptingUtilities",
 				"UMG",
 				"Niagara",
+                "NiagaraCore",
                 "UnrealEd",
                 "AssetRegistry",
                 "AssetTools",
@@ -43,7 +44,8 @@ public class AssetsManager : ModuleRules
 				"Projects",
                 "SkeletalMeshUtilitiesCommon",
                 "UMGEditor",
-				"AssetManagerEditor"
+				"AssetManagerEditor",
+                "HairStrandsCore"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
