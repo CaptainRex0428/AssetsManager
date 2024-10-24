@@ -8,12 +8,18 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 	Body = CreateOptionalDefaultSubobject<USkeletalMeshComponent>("Body");
 	Body->SetVisibility(true);
 	Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Body->SetRenderCustomDepth(true);
+	Body->SetCastInsetShadow(true);
+
 
 	Face = CreateOptionalDefaultSubobject<USkeletalMeshComponent>("Face");
 	Face->SetVisibility(true);
 	Face->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Face->SetupAttachment(Body);
 	Face->bUseAttachParentBound = true;
+	Face->SetRenderCustomDepth(true);
+	Face->SetCastInsetShadow(true);
+	Face->SetLeaderPoseComponent(Body);
 
 	ParasiteB = CreateOptionalDefaultSubobject<USkeletalMeshComponent>("ParasiteB");
 	ParasiteB->SetVisibility(true);
@@ -21,6 +27,9 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 	ParasiteB->SetupAttachment(Body);
 	ParasiteB->SetLeaderPoseComponent(Body);
 	ParasiteB->bUseAttachParentBound = true;
+	ParasiteB->SetRenderCustomDepth(true);
+	ParasiteB->SetCastInsetShadow(true);
+	ParasiteB->SetLeaderPoseComponent(Body);
 
 	ParasiteA = CreateOptionalDefaultSubobject<USkeletalMeshComponent>("ParasiteA");
 	ParasiteA->SetVisibility(true);
@@ -28,16 +37,23 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 	ParasiteA->SetupAttachment(Body);
 	ParasiteA->SetLeaderPoseComponent(Body);
 	ParasiteA->bUseAttachParentBound = true;
+	ParasiteA->SetRenderCustomDepth(true);
+	ParasiteA->SetCastInsetShadow(true);
+	ParasiteA->SetLeaderPoseComponent(Body);
 
 	WeaponR = CreateOptionalDefaultSubobject<USkeletalMeshComponent>("WeaponR");
 	WeaponR->SetVisibility(true);
 	WeaponR->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WeaponR->bUseAttachParentBound = true;
+	WeaponR->SetRenderCustomDepth(true);
+	WeaponR->SetCastInsetShadow(true);
 
 	WeaponL = CreateOptionalDefaultSubobject<USkeletalMeshComponent>("WeaponL");
 	WeaponL->SetVisibility(true);
 	WeaponL->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WeaponL->bUseAttachParentBound = true;
+	WeaponL->SetRenderCustomDepth(true);
+	WeaponL->SetCastInsetShadow(true);
 
 	Groom_C = CreateOptionalDefaultSubobject<UGroomComponent>(TEXT("GroomC"));
 	if (Groom_C)
@@ -47,6 +63,8 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 		Groom_C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		Groom_C->SetupAttachment(Face);
 		Groom_C->PostLoad();
+		Groom_C->SetRenderCustomDepth(true);
+		Groom_C->SetCastInsetShadow(true);
 	}
 
 	Groom_B = CreateOptionalDefaultSubobject<UGroomComponent>(TEXT("GroomB"));
@@ -57,6 +75,8 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 		Groom_B->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		Groom_B->SetupAttachment(Face);
 		Groom_B->PostLoad();
+		Groom_B->SetRenderCustomDepth(true);
+		Groom_B->SetCastInsetShadow(true);
 	}
 
 	Groom_A = CreateOptionalDefaultSubobject<UGroomComponent>(TEXT("GroomA"));
@@ -67,6 +87,8 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 		Groom_A->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		Groom_A->SetupAttachment(Face);
 		Groom_A->PostLoad();
+		Groom_A->SetRenderCustomDepth(true);
+		Groom_A->SetCastInsetShadow(true);
 	}
 }
 
