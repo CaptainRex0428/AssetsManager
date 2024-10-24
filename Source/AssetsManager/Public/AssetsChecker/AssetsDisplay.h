@@ -7,6 +7,13 @@
 #include "HairStrandsCore/Public/GroomComponent.h"
 #include "AssetsDisplay.generated.h"
 
+UENUM(BlueprintType)
+enum class LODCheckType : uint8
+{
+	MinLOD = 0 UMETA(DisplayName = "MinLOD"),
+	ForcedLOD = 1 UMETA(DisplayName = "ForcedLOD")
+};
+
 UCLASS(BlueprintType)
 class ASSETSMANAGER_API AAssetsDisplay : public AActor
 {
@@ -16,6 +23,20 @@ public:
 	// Sets default values for this actor's properties
 	AAssetsDisplay();
 
-	virtual void SetComponentMinLOD(int32 MinLOD);
-	virtual void SetComponentForcedLOD(int32 MinLOD);
+	// Check LOD
+
+	UFUNCTION(BlueprintCallable,Category = "AssetsManager|AssetsDisplay")
+	virtual void SetComponentsMinLOD(int32 MinLOD);
+
+	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
+	virtual void SetComponentsForcedLOD(int32 ForcedLOD);
+
+	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
+	virtual void SetComponentsAttachParentLOD(bool bAttach);
+
+	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
+	virtual void CheckComponentsLOD(LODCheckType CheckType,int32 LOD);
+
+	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
+	virtual void ResetComponentsLOD();
 };

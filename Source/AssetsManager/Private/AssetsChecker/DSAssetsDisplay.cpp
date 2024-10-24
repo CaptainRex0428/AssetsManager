@@ -11,7 +11,6 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 	Body->SetRenderCustomDepth(true);
 	Body->SetCastInsetShadow(true);
 
-
 	Face = CreateOptionalDefaultSubobject<USkeletalMeshComponent>("Face");
 	Face->SetVisibility(true);
 	Face->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -46,7 +45,8 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 	WeaponR->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WeaponR->bUseAttachParentBound = true;
 	WeaponR->SetRenderCustomDepth(true);
-	WeaponR->SetCastInsetShadow(true);
+	WeaponR->SetCastInsetShadow(true); 
+	WeaponR->SetupAttachment(Body,"socket_weapon_r");
 
 	WeaponL = CreateOptionalDefaultSubobject<USkeletalMeshComponent>("WeaponL");
 	WeaponL->SetVisibility(true);
@@ -54,6 +54,7 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 	WeaponL->bUseAttachParentBound = true;
 	WeaponL->SetRenderCustomDepth(true);
 	WeaponL->SetCastInsetShadow(true);
+	WeaponL->SetupAttachment(Body, "socket_weapon_l");
 
 	Groom_C = CreateOptionalDefaultSubobject<UGroomComponent>(TEXT("GroomC"));
 	if (Groom_C)
@@ -90,6 +91,8 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 		Groom_A->SetRenderCustomDepth(true);
 		Groom_A->SetCastInsetShadow(true);
 	}
+
+	this->SetComponentsMinLOD(1);
 }
 
 ADSAssetsDisplay::~ADSAssetsDisplay()
