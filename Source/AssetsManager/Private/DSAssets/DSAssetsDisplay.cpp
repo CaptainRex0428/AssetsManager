@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AssetsChecker/DSAssetsDisplay.h"
+#include "DSAssets/DSAssetsDisplay.h"
 
 ADSAssetsDisplay::ADSAssetsDisplay()
 {
