@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "AssetActionUtility.h"
 #include "ConfigManager.h"
-#include "AssetsHandler.h"
+#include "AssetsHandler/AssetsHandler.h"
 
 #include "DSAssetsHandler.generated.h"
 
