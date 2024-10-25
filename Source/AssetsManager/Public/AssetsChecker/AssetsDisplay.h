@@ -23,7 +23,17 @@ public:
 	// Sets default values for this actor's properties
 	AAssetsDisplay();
 
-	// Batching Check LOD
+#pragma region LOD
+
+	// Batching Check
+
+	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
+	virtual void CheckComponentsLOD(LODCheckType CheckType, int32 LOD, int32 GroomGroupIndex = 0);
+
+	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
+	virtual void ResetComponentsLOD(int32 GroomGroupIndex = 0);
+
+	// Batching Set
 
 	UFUNCTION(BlueprintCallable,Category = "AssetsManager|AssetsDisplay")
 	virtual void SetComponentsMinLOD(int32 MinLOD);
@@ -42,22 +52,23 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
 	virtual void SetGroomComponentsLODBias(float LodBias, int32 GroupIndex);
-
-	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
-	virtual void CheckComponentsLOD(LODCheckType CheckType,int32 LOD, int32 GroomGroupIndex = 0);
-
-	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
-	virtual void ResetComponentsLOD(int32 GroomGroupIndex = 0);
-
-	// LOD Operator per component.
 	
-	//Groom
-	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
-	virtual void SetGroomComponentGroupAutoLOD(UGroomComponent* InGroom, int32 GroupIndex, bool bAutoLOD);
+	// Groom Set
+
+	
 
 	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
 	virtual void SetGroomComponentForcedLOD(UGroomComponent* InGroom, int32 LodForcedIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
 	virtual void SetGroomComponentLODBias(UGroomComponent* InGroom, float LodBias, int32 GroupIndex);
+
+#pragma endregion
+
+#pragma region Groom
+
+	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
+	virtual void SetGroomComponentGroupAutoLOD(UGroomComponent* InGroom, int32 GroupIndex, bool bAutoLOD);
+
+#pragma endregion
 };

@@ -144,7 +144,7 @@ void AAssetsDisplay::SetGroomComponentGroupAutoLOD(UGroomComponent* InGroom, int
 	}
 	if (InGroom->GetGroupInstance(GroupIndex) == NULL)
 	{
-		MsgLog(FString::Printf(L"%s try to set groom lod (Group ID: %d) but has no groom assets", *InGroom->GetOwner()->GetName(), GroupIndex));
+		MsgLog(FString::Printf(L"%s try to set groom LOD (Group ID: %d) but has no groom assets", *InGroom->GetOwner()->GetName(), GroupIndex));
 		return;
 	}
 
@@ -171,7 +171,7 @@ void AAssetsDisplay::SetGroomComponentLODBias(UGroomComponent* InGroom, float Lo
 	}
 	if (InGroom->GetGroupInstance(GroupIndex) == NULL)
 	{
-		MsgLog(FString::Printf(L"%s try to set groom lod (Group ID: %d) but has no groom assets", *InGroom->GetOwner()->GetName(), GroupIndex));
+		MsgLog(FString::Printf(L"%s try to set groom LOD (Group ID: %d) but has no groom assets", *InGroom->GetOwner()->GetName(), GroupIndex));
 		return;
 	}
 
