@@ -10,6 +10,7 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 	Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Body->SetRenderCustomDepth(true);
 	Body->SetCastInsetShadow(true);
+	Body->SetCastCapsuleIndirectShadow(true);
 
 	Face = CreateOptionalDefaultSubobject<USkeletalMeshComponent>("Face");
 	Face->SetVisibility(true);
@@ -66,6 +67,7 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 		Groom_C->PostLoad();
 		Groom_C->SetRenderCustomDepth(true);
 		Groom_C->SetCastInsetShadow(true);
+		Groom_C->SimulationSettings.SimulationSetup.LocalBone = "UnrealRoot";
 	}
 
 	Groom_B = CreateOptionalDefaultSubobject<UGroomComponent>(TEXT("GroomB"));
@@ -78,6 +80,7 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 		Groom_B->PostLoad();
 		Groom_B->SetRenderCustomDepth(true);
 		Groom_B->SetCastInsetShadow(true);
+		Groom_B->SimulationSettings.SimulationSetup.LocalBone = "UnrealRoot";
 	}
 
 	Groom_A = CreateOptionalDefaultSubobject<UGroomComponent>(TEXT("GroomA"));
@@ -90,6 +93,7 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 		Groom_A->PostLoad();
 		Groom_A->SetRenderCustomDepth(true);
 		Groom_A->SetCastInsetShadow(true);
+		Groom_A->SimulationSettings.SimulationSetup.LocalBone = "UnrealRoot";
 	}
 
 	this->SetComponentsMinLOD(1);
