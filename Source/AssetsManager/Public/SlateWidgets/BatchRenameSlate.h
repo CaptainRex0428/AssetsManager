@@ -45,7 +45,7 @@ public:
 		this->OnApply = InArgs._OnApply;
 
 		const FSlateBrush* TitleImage = 
-			FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.BatchRenameTile");
+			FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.BatchRenameTitle");
 
 		TSharedPtr<SVerticalBox> MainUI = SNew(SVerticalBox);
 

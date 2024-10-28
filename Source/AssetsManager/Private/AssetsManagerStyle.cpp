@@ -49,7 +49,9 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
 	const FVector2D Icon16x16(16.f, 16.f);
 	const FVector2D Icon32x32(32.f, 32.f);
 	const FVector2D Icon64x64(64.f, 64.f);
+	
 	const FVector2D TitleBar(5400.f, 200.f);
+	const FVector2D ListIcon(22.f, 22.f);
 
 	CustomStyleSet->Set(
 		"ContentBrowser.DeleteUnusedFolders",
@@ -84,12 +86,32 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
 		new FSlateImageBrush(IconDirectory / "MaterialBar.png", TitleBar));
 
 	CustomStyleSet->Set(
-		"ContentBrowser.BatchRenameTile",
+		"ContentBrowser.BatchRenameTitle",
 		new FSlateImageBrush(IconDirectory / "BatchRenameBar.png", TitleBar));
 
 	CustomStyleSet->Set(
 		"ContentBrowser.ManagerLogFolder",
-		new FSlateImageBrush(IconDirectory / "Icon_Log_32.png", Icon32x32));
+		new FSlateImageBrush(IconDirectory / "Icon_Log_32.png", ListIcon));
+
+	CustomStyleSet->Set(
+		"ContentBrowser.ManagerLookDev",
+		new FSlateImageBrush(IconDirectory / "Icon_LOOKDEV_32.png", ListIcon));
+
+	CustomStyleSet->Set(
+		"ContentBrowser.ManagerFix",
+		new FSlateImageBrush(IconDirectory / "Icon_Fix_32.png", ListIcon));
+
+	CustomStyleSet->Set(
+		"ContentBrowser.ManagerEdit",
+		new FSlateImageBrush(IconDirectory / "Icon_Edit_32.png", ListIcon));
+
+	CustomStyleSet->Set(
+		"ContentBrowser.ManagerSizeMap",
+		new FSlateImageBrush(IconDirectory / "Icon_SizeMap_32.png", ListIcon));
+
+	CustomStyleSet->Set(
+		"ContentBrowser.ManagerDelete",
+		new FSlateImageBrush(IconDirectory / "Icon_Delete_32.png", ListIcon));
 
 	return CustomStyleSet;
 }

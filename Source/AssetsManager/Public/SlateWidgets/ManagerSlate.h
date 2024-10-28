@@ -390,6 +390,12 @@ private:
 	FReply OnOpenLocalLogFolderButtonClicked();
 #pragma endregion
 
+#pragma region OpenLocalLogFolder
+	TSharedPtr<SButton> BatchSizeMapButton;
+	TSharedRef<SButton> ConstructBatchSizeMapButtonButton();
+	FReply OnBatchSizeMapButtonClicked();
+#pragma endregion
+
 #pragma region BatchRename
 	TSharedRef<SDockTab> OnSpawnBatchRenameTab(const FSpawnTabArgs& SpawnTabArgs);
 	void OnBatchRenameApply();

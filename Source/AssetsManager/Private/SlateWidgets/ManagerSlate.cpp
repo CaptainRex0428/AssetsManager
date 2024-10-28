@@ -184,6 +184,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	ConstructFixUpRedirectorButton();
 	ConstructOutputViewListInfoButton();
 	ConstructOpenLocalLogFolderButton();
+	ConstructBatchSizeMapButtonButton();
 	ConstructBatchRenameButton();
 
 	ConstructDynamicHandleAllBox();
@@ -472,7 +473,7 @@ TSharedRef<SHeaderRow> SManagerSlateTab::OnTableGenerateHeaderRow(
 			break;
 
 		case Column_PerAssetHandle:
-			ColumnBoxArgs.FillWidth(0.25f);
+			ColumnBoxArgs.FillWidth(DetailMode? .22f : .1f);
 			break;
 
 		case Column_TextureMaxInGameSize:
@@ -1319,20 +1320,29 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshLODAllowCPUAcces
 TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetDeleteButtonBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
-	TSharedRef<SButton> SingleAssetDeleteButtonBox =
+	TSharedPtr<SButton> SingleAssetDeleteButtonBox =
 		SNew(SButton)
+		.OnClicked(this, &SManagerSlateTab::OnSingleAssetDeleteButtonClicked, AssetDataToDisplay)
+		.ContentPadding(FMargin(2.f))
 #ifdef ZH_CN
-		.Text(FText::FromString(TEXT("删除")))
+		.ToolTipText(FText::FromString(L"删除"));
 #else
-		.Text(FText::FromString(TEXT("Delete")))
+		.ToolTipText(FText::FromString(L"Delete"));
 #endif
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
-		.OnClicked(this,
-			&SManagerSlateTab::OnSingleAssetDeleteButtonClicked,
-			AssetDataToDisplay);
 
-	return SingleAssetDeleteButtonBox;
+	const FSlateBrush* ButtonImg = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.ManagerDelete");
+	TSharedRef<SImage> ButtonImgComponent = SNew(SImage).Image(ButtonImg);
+
+	TSharedRef<SScaleBox> ButtonImgScaler =
+		SNew(SScaleBox)
+		.Stretch(EStretch::ScaleToFitY)
+		[
+			ButtonImgComponent
+		];
+
+	SingleAssetDeleteButtonBox->SetContent(ButtonImgScaler);
+
+	return SingleAssetDeleteButtonBox.ToSharedRef();
 }
 
 FReply SManagerSlateTab::OnSingleAssetDeleteButtonClicked(
@@ -1409,20 +1419,29 @@ FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetEditButtonBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
-	TSharedRef<SButton> SingleAssetEditButtonBox =
+	TSharedPtr<SButton> SingleAssetEditButtonBox =
 		SNew(SButton)
+		.OnClicked(this, &SManagerSlateTab::OnSingleAssetEditButtonClicked, AssetDataToDisplay)
+		.ContentPadding(FMargin(2.f))
 #ifdef ZH_CN
-		.Text(FText::FromString(TEXT("编辑")))
+		.ToolTipText(FText::FromString(L"编辑"));
 #else
-		.Text(FText::FromString(TEXT("Edit")))
+		.ToolTipText(FText::FromString(L"Edit Asset"));
 #endif
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
-		.OnClicked(this,
-			&SManagerSlateTab::OnSingleAssetEditButtonClicked,
-			AssetDataToDisplay);
 
-	return SingleAssetEditButtonBox;
+	const FSlateBrush* ButtonImg = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.ManagerEdit");
+	TSharedRef<SImage> ButtonImgComponent = SNew(SImage).Image(ButtonImg);
+
+	TSharedRef<SScaleBox> ButtonImgScaler =
+		SNew(SScaleBox)
+		.Stretch(EStretch::ScaleToFitY)
+		[
+			ButtonImgComponent
+		];
+
+	SingleAssetEditButtonBox->SetContent(ButtonImgScaler);
+
+	return SingleAssetEditButtonBox.ToSharedRef();
 }
 
 FReply SManagerSlateTab::OnSingleAssetEditButtonClicked(
@@ -1435,20 +1454,25 @@ FReply SManagerSlateTab::OnSingleAssetEditButtonClicked(
 TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetSizeMapButtonBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
-	TSharedRef<SButton> SingleAssetSizeMapButtonBox =
+	TSharedPtr<SButton> SingleAssetSizeMapButtonBox =
 		SNew(SButton)
-#ifdef ZH_CN
-		.Text(FText::FromString(TEXT("SizeMap")))
-#else
-		.Text(FText::FromString(TEXT("SizeMap")))
-#endif
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
-		.OnClicked(this,
-			&SManagerSlateTab::OnSingleAssetSizeMapButtonClicked,
-			AssetDataToDisplay);
+		.OnClicked(this, &SManagerSlateTab::OnSingleAssetSizeMapButtonClicked, AssetDataToDisplay)
+		.ContentPadding(FMargin(2.f))
+		.ToolTipText(FText::FromString(L"SizeMap"));
 
-	return SingleAssetSizeMapButtonBox;
+	const FSlateBrush* ButtonImg = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.ManagerSizeMap");
+	TSharedRef<SImage> ButtonImgComponent = SNew(SImage).Image(ButtonImg);
+
+	TSharedRef<SScaleBox> ButtonImgScaler =
+		SNew(SScaleBox)
+		.Stretch(EStretch::ScaleToFitY)
+		[
+			ButtonImgComponent
+		];
+
+	SingleAssetSizeMapButtonBox->SetContent(ButtonImgScaler);
+
+	return SingleAssetSizeMapButtonBox.ToSharedRef();
 }
 
 FReply SManagerSlateTab::OnSingleAssetSizeMapButtonClicked(
@@ -1706,20 +1730,29 @@ FReply SManagerSlateTab::OnSingleTextureAssetResetButtonClicked(
 TSharedRef<SButton> SManagerSlateTab::ConstructSingleTextureAssetSettingsFixButtonBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
-	TSharedRef<SButton> SingleTextureFixButtonBox =
+	TSharedPtr<SButton> SingleTextureAssetSettingsFixButton =
 		SNew(SButton)
+		.OnClicked(this, &SManagerSlateTab::OnSingleTextureAssetSettingsFixButtonClicked, AssetDataToDisplay)
+		.ContentPadding(FMargin(2.f))
 #ifdef ZH_CN
-		.Text(FText::FromString(TEXT("修复")))
+		.ToolTipText(FText::FromString(L"修复"));
 #else
-		.Text(FText::FromString(TEXT("Fix")))
+		.ToolTipText(FText::FromString(L"Fix"));
 #endif
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
-		.OnClicked(this,
-			&SManagerSlateTab::OnSingleTextureAssetSettingsFixButtonClicked,
-			AssetDataToDisplay);
 
-	return SingleTextureFixButtonBox;
+	const FSlateBrush* ButtonImg = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.ManagerFix");
+	TSharedRef<SImage> ButtonImgComponent = SNew(SImage).Image(ButtonImg);
+
+	TSharedRef<SScaleBox> ButtonImgScaler =
+		SNew(SScaleBox)
+		.Stretch(EStretch::ScaleToFitY)
+		[
+			ButtonImgComponent
+		];
+
+	SingleTextureAssetSettingsFixButton->SetContent(ButtonImgScaler);
+
+	return SingleTextureAssetSettingsFixButton.ToSharedRef();
 }
 
 FReply SManagerSlateTab::OnSingleTextureAssetSettingsFixButtonClicked(
@@ -1733,20 +1766,29 @@ FReply SManagerSlateTab::OnSingleTextureAssetSettingsFixButtonClicked(
 TSharedRef<SButton> SManagerSlateTab::ConstructSingleTextureLODGroupStandardFixButtonBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay)
 {
-	TSharedRef<SButton> SingleTextureFixButtonBox =
+	TSharedPtr<SButton> SingleTextureLODGroupStandardFixButton =
 		SNew(SButton)
+		.OnClicked(this, &SManagerSlateTab::OnSingleTextureLODGroupStandardFixButtonClicked, AssetDataToDisplay)
+		.ContentPadding(FMargin(2.f))
 #ifdef ZH_CN
-		.Text(FText::FromString(TEXT("修复")))
+		.ToolTipText(FText::FromString(L"修复"));
 #else
-		.Text(FText::FromString(TEXT("Fix")))
+		.ToolTipText(FText::FromString(L"Fix"));
 #endif
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
-		.OnClicked(this,
-			&SManagerSlateTab::OnSingleTextureLODGroupStandardFixButtonClicked,
-			AssetDataToDisplay);
 
-	return SingleTextureFixButtonBox;
+	const FSlateBrush* ButtonImg = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.ManagerFix");
+	TSharedRef<SImage> ButtonImgComponent = SNew(SImage).Image(ButtonImg);
+
+	TSharedRef<SScaleBox> ButtonImgScaler =
+		SNew(SScaleBox)
+		.Stretch(EStretch::ScaleToFitY)
+		[
+			ButtonImgComponent
+		];
+
+	SingleTextureLODGroupStandardFixButton->SetContent(ButtonImgScaler);
+
+	return SingleTextureLODGroupStandardFixButton.ToSharedRef();
 }
 
 FReply SManagerSlateTab::OnSingleTextureLODGroupStandardFixButtonClicked(
@@ -1846,7 +1888,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllBox()
 				SNew(SHorizontalBox)
 
 					+ SHorizontalBox::Slot()
-					.FillWidth(.95f)
+					.FillWidth(.9f)
 					.Padding(5.f)
 					[
 						this->OutputViewListInfoButton.ToSharedRef()
@@ -1857,6 +1899,13 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructHandleAllBox()
 					.Padding(5.f)
 					[
 						this->OpenLocalLogFolderButton.ToSharedRef()
+					]
+
+					+ SHorizontalBox::Slot()
+					.FillWidth(.05f)
+					.Padding(5.f)
+					[
+						this->BatchSizeMapButton.ToSharedRef()
 					]
 			];
 
@@ -2392,10 +2441,9 @@ TSharedRef<SButton> SManagerSlateTab::ConstructOpenLocalLogFolderButton()
 		SNew(SButton)
 		.OnClicked(this, &SManagerSlateTab::OnOpenLocalLogFolderButtonClicked)
 		.ContentPadding(FMargin(1.f))
-		.ButtonColorAndOpacity(FColor::Transparent)
-		.OnHovered(FSimpleDelegate::CreateLambda([this]() {this->OpenLocalLogFolderButton->SetColorAndOpacity(FColor::Cyan); }))
-		.OnPressed(FSimpleDelegate::CreateLambda([this]() {this->OpenLocalLogFolderButton->SetColorAndOpacity(FColor::Green); }))
-		.OnUnhovered(FSimpleDelegate::CreateLambda([this]() {this->OpenLocalLogFolderButton->SetColorAndOpacity(FColor::White); }))
+		.OnHovered(FSimpleDelegate::CreateLambda([this]() {this->OpenLocalLogFolderButton->SetColorAndOpacity(FColor::White); }))
+		.OnPressed(FSimpleDelegate::CreateLambda([this]() {this->OpenLocalLogFolderButton->SetColorAndOpacity(FColor::Cyan); }))
+		.OnUnhovered(FSimpleDelegate::CreateLambda([this]() {this->OpenLocalLogFolderButton->SetColorAndOpacity(FColor(200,200,200)); }))
 		.ToolTipText(FText::FromString(L"Open Assets Manager log folder."));
 
 	const FSlateBrush* ButtonImg = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.ManagerLogFolder");
@@ -2404,7 +2452,7 @@ TSharedRef<SButton> SManagerSlateTab::ConstructOpenLocalLogFolderButton()
 	TSharedRef<SScaleBox> ButtonImgScaler =
 		SNew(SScaleBox)
 		.Stretch(EStretch::ScaleToFitY)
-		.OverrideScreenSize(FVector2D(8,8))
+		.OverrideScreenSize(FVector2D(4,4))
 		[
 			ButtonImgComponent
 		];
@@ -2419,11 +2467,58 @@ FReply SManagerSlateTab::OnOpenLocalLogFolderButtonClicked()
 	if (!UAssetsChecker::OpenLocalFolder(ASSETSMANAGER_LOGFOLDER))
 	{
 #ifdef ZH_CN
-		NtfyMsgLog(FString::Printf(L"打开日志文件夹失败[%s]",*(ASSETSMANAGER_LOGFOLDER)));
+		NtfyMsgLog(FString::Printf(L"打开日志文件夹失败 %s",*(ASSETSMANAGER_LOGFOLDER)));
 #else
-		NtfyMsgLog(FString::Printf(L"Open log folder failed.[%s]", *(ASSETSMANAGER_LOGFOLDER)));
+		NtfyMsgLog(FString::Printf(L"Open log folder failed. %s", *(ASSETSMANAGER_LOGFOLDER)));
 #endif
 	};
+	return FReply::Handled();
+}
+
+TSharedRef<SButton> SManagerSlateTab::ConstructBatchSizeMapButtonButton()
+{
+	this->BatchSizeMapButton =
+		SNew(SButton)
+		.OnClicked(this, &SManagerSlateTab::OnBatchSizeMapButtonClicked)
+		.ContentPadding(FMargin(1.f))
+		.OnHovered(FSimpleDelegate::CreateLambda([this]() {this->BatchSizeMapButton->SetColorAndOpacity(FColor::White); }))
+		.OnPressed(FSimpleDelegate::CreateLambda([this]() {this->BatchSizeMapButton->SetColorAndOpacity(FColor::Cyan); }))
+		.OnUnhovered(FSimpleDelegate::CreateLambda([this]() {this->BatchSizeMapButton->SetColorAndOpacity(FColor(200, 200, 200)); }))
+		.ToolTipText(FText::FromString(L"Batch SizeMap"));
+
+	const FSlateBrush* ButtonImg = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.ManagerSizeMap");
+	TSharedRef<SImage> ButtonImgComponent = SNew(SImage).Image(ButtonImg);
+
+	TSharedRef<SScaleBox> ButtonImgScaler =
+		SNew(SScaleBox)
+		.Stretch(EStretch::ScaleToFitY)
+		.OverrideScreenSize(FVector2D(4, 4))
+		[
+			ButtonImgComponent
+		];
+
+	this->BatchSizeMapButton->SetContent(ButtonImgScaler);
+
+	return this->BatchSizeMapButton.ToSharedRef();
+}
+
+FReply SManagerSlateTab::OnBatchSizeMapButtonClicked()
+{
+	
+	TArray<TSharedPtr<FAssetData>> SelectedItems = CustomTableList->GetSelectedItems();
+
+	if (SelectedItems.Num() == 0)
+	{
+#ifdef ZH_CN
+		NtfyMsgLog(L"未选择任何资产");
+#else
+		NtfyMsgLog(L"No asset selected.");
+#endif
+		return FReply::Handled();
+	}
+
+	UAssetsChecker::OpenSizeMapUI(SelectedItems);
+
 	return FReply::Handled();
 }
 
