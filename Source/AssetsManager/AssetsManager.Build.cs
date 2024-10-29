@@ -57,7 +57,11 @@ public class AssetsManager : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore"
+				"SlateCore",
+                "Projects",
+                "InputCore",
+                "EditorFramework",
+                "ToolMenus"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

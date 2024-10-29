@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "AssetsManager.h"
+#include "AssetsManagerCommand.h"
 #include "ManagerLogger.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
@@ -20,14 +21,45 @@
 void FAssetsManagerModule::StartupModule()
 {
 	InitCBMenuExtension();
-	FAssetsMangerStyle::InitializeIcons();
+
+	FAssetsMangerStyle::Initialize();
+	FAssetsMangerStyle::ReloadTextures();
+
+	FAssetsManagerCommands::Register();
+
+	PluginCommands_LookDev = MakeShareable(new FUICommandList);
+	PluginCommands_LookDev->MapAction(
+		FAssetsManagerCommands::Get().PluginAction_LookDev,
+		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnLookDevButtonClicked),
+		FCanExecuteAction());
+
+	PluginCommands_AssetsManager = MakeShareable(new FUICommandList);
+	PluginCommands_AssetsManager->MapAction(
+		FAssetsManagerCommands::Get().PluginAction_OpenAssetsManagerWindow,
+		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerButtonClicked),
+		FCanExecuteAction()
+	);
+
+	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FAssetsManagerModule::RegisterMenus));
+
 	RegisterCustomEditorTab();
+
+
 }
 
 void FAssetsManagerModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
+
+	UToolMenus::UnRegisterStartupCallback(this);
+
+	UToolMenus::UnregisterOwner(this);
+
+	FAssetsMangerStyle::ShutDown();
+
+	FAssetsManagerCommands::Unregister();
+
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_MANAGERTAB_NAME));
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_MATERIALCREATORTAB_NAME));
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(TABNAME_BATCHRENAME));
@@ -57,6 +89,44 @@ void FAssetsManagerModule::OnMaterialCreatButtonClicked()
 	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDER_MATERIALCREATORTAB_NAME));
 }
 
+void FAssetsManagerModule::OnLookDevButtonClicked()
+{
+	NtfyMsgLog("LookDev Clicked.");
+}
+
+void FAssetsManagerModule::RegisterMenus()
+{
+	// register LookDev Button
+
+	FToolMenuOwnerScoped OwnerScoped(this);
+
+	{
+		UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
+		{
+			FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
+			Section.AddMenuEntryWithCommandList(
+				FAssetsManagerCommands::Get().PluginAction_LookDev, 
+				PluginCommands_LookDev,
+				TAttribute<FText>(),
+				TAttribute<FText>(),
+				FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "LevelEditor.ManagerLookDev")
+				);
+		}
+	}
+
+	{
+		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
+		{
+			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("PluginTools");
+			{
+				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FAssetsManagerCommands::Get().PluginAction_LookDev));
+				Entry.SetCommandList(PluginCommands_LookDev);
+				Entry.Icon = FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "LevelEditor.ManagerLookDev");
+			}
+		}
+	}
+}
+
 // Second bind. Define the details for the menu entry.
 void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 {
@@ -66,7 +136,7 @@ void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 	(
 		FText::FromString(TEXT("Delete Unused Folders")),
 		FText::FromString(TEXT("Safely delete folders never used or referenced.")),
-		FSlateIcon(FAssetsMangerStyle::GetStyleName(),"ContentBrowser.DeleteUnusedFolders"),
+		FSlateIcon(FAssetsMangerStyle::GetStyleSetName(),"ContentBrowser.DeleteUnusedFolders"),
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnDeleteEmptyFolderButtonClicked)
 	);
 
@@ -74,7 +144,7 @@ void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
 	(
 		FText::FromString(TEXT(CONTENTFOLDER_MANAGERTAB_NAME)),
 		FText::FromString(TEXT("A tab window to check the assets inside the seleted folder.")),
-		FSlateIcon(FAssetsMangerStyle::GetStyleName(),"ContentBrowser.AssetsManager"),
+		FSlateIcon(FAssetsMangerStyle::GetStyleSetName(),"ContentBrowser.AssetsManager"),
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerButtonClicked)
 	);
 }
@@ -128,7 +198,7 @@ void FAssetsManagerModule::RegisterCustomEditorTab()
 		FName(CONTENTFOLDER_MANAGERTAB_NAME),
 		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnManagerSlateTab))
 		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDER_MANAGERTAB_NAME)))
-		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleName(),"ContentBrowser.AssetsManager"));
+		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleSetName(),"ContentBrowser.AssetsManager"));
 }
 
 TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs)

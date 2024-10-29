@@ -7,15 +7,17 @@
 class FAssetsMangerStyle
 {
 public:
-	static void InitializeIcons();
-	static void ShutDown();
+	static void Initialize();
 
-	static const FName & GetStyleName();
+	static void ShutDown();
+	
 	static const TSharedPtr<FSlateStyleSet>& GetStyleSet();
 
-private:
-	static FName StyleSetName;
+	static FName& GetStyleSetName();
 
-	static TSharedRef<FSlateStyleSet> CreateSlateStyleSet();
-	static TSharedPtr<FSlateStyleSet> CreatedSlateStyleSet;
+	static void ReloadTextures();
+
+private:
+	static TSharedRef<FSlateStyleSet> Create();
+	static TSharedPtr<FSlateStyleSet> AssetsManagerSlateStyleSet;
 };

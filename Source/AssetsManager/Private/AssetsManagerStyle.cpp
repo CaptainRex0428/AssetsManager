@@ -6,52 +6,63 @@
 #include "Interfaces/IPluginManager.h"
 #include "Styling/SlateStyleRegistry.h"
 
-FName FAssetsMangerStyle::StyleSetName = FName("AssetsManagerStyle");
-TSharedPtr<FSlateStyleSet> FAssetsMangerStyle::CreatedSlateStyleSet = nullptr;
+TSharedPtr<FSlateStyleSet> FAssetsMangerStyle::AssetsManagerSlateStyleSet = nullptr;
 
-void FAssetsMangerStyle::InitializeIcons()
+void FAssetsMangerStyle::Initialize()
 {
-	if(!CreatedSlateStyleSet.IsValid())
+	if(!AssetsManagerSlateStyleSet.IsValid())
 	{
-		CreatedSlateStyleSet = CreateSlateStyleSet();
-		FSlateStyleRegistry::RegisterSlateStyle(*CreatedSlateStyleSet);
+		AssetsManagerSlateStyleSet = Create();
+		FSlateStyleRegistry::RegisterSlateStyle(*AssetsManagerSlateStyleSet);
 	}
 	
 }
 
 void FAssetsMangerStyle::ShutDown()
 {
-	if (CreatedSlateStyleSet.IsValid())
+	if (AssetsManagerSlateStyleSet.IsValid())
 	{
-		FSlateStyleRegistry::UnRegisterSlateStyle(*CreatedSlateStyleSet);
-		CreatedSlateStyleSet.Reset();
+		FSlateStyleRegistry::UnRegisterSlateStyle(*AssetsManagerSlateStyleSet);
+		ensure(AssetsManagerSlateStyleSet.IsUnique());
+		AssetsManagerSlateStyleSet.Reset();
 	}
 }
 
-const FName & FAssetsMangerStyle::GetStyleName()
+FName & FAssetsMangerStyle::GetStyleSetName()
 {
+	static FName StyleSetName(TEXT("AssetsManagerStyle"));
 	return StyleSetName;
+}
+
+void FAssetsMangerStyle::ReloadTextures()
+{
+	if (FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get().GetRenderer()->ReloadTextureResources();
+	}
 }
 
 const TSharedPtr<FSlateStyleSet>& FAssetsMangerStyle::GetStyleSet()
 {
-	return CreatedSlateStyleSet;
+	return AssetsManagerSlateStyleSet;
 }
 
-TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
+const FVector2D Icon16x16(16.f, 16.f);
+const FVector2D Icon32x32(32.f, 32.f);
+const FVector2D Icon64x64(64.f, 64.f);
+
+const FVector2D TitleBar(5400.f, 200.f);
+const FVector2D ListIcon(22.f, 22.f);
+
+TSharedRef<FSlateStyleSet> FAssetsMangerStyle::Create()
 {
-	TSharedRef<FSlateStyleSet> CustomStyleSet = MakeShareable(new FSlateStyleSet(StyleSetName));
+	TSharedRef<FSlateStyleSet> CustomStyleSet = MakeShareable(new FSlateStyleSet(GetStyleSetName()));
 
 	const FString IconDirectory =  
 		IPluginManager::Get().FindPlugin(TEXT("AssetsManager"))->GetBaseDir() / "Resources";
 
 	CustomStyleSet->SetContentRoot(IconDirectory);
-	const FVector2D Icon16x16(16.f, 16.f);
-	const FVector2D Icon32x32(32.f, 32.f);
-	const FVector2D Icon64x64(64.f, 64.f);
 	
-	const FVector2D TitleBar(5400.f, 200.f);
-	const FVector2D ListIcon(22.f, 22.f);
 
 	CustomStyleSet->Set(
 		"ContentBrowser.DeleteUnusedFolders",
@@ -94,10 +105,6 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
 		new FSlateImageBrush(IconDirectory / "Icon_Log_32.png", ListIcon));
 
 	CustomStyleSet->Set(
-		"ContentBrowser.ManagerLookDev",
-		new FSlateImageBrush(IconDirectory / "Icon_LOOKDEV_32.png", ListIcon));
-
-	CustomStyleSet->Set(
 		"ContentBrowser.ManagerFix",
 		new FSlateImageBrush(IconDirectory / "Icon_Fix_32.png", ListIcon));
 
@@ -112,6 +119,10 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::CreateSlateStyleSet()
 	CustomStyleSet->Set(
 		"ContentBrowser.ManagerDelete",
 		new FSlateImageBrush(IconDirectory / "Icon_Delete_32.png", ListIcon));
+
+	CustomStyleSet->Set(
+		"LevelEditor.ManagerLookDev",
+		new FSlateImageBrush(IconDirectory / "Icon_LOOKDEV_32.png", ListIcon));
 
 	return CustomStyleSet;
 }
