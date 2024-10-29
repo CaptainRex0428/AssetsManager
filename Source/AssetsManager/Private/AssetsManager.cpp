@@ -42,9 +42,12 @@ void FAssetsManagerModule::StartupModule()
 
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FAssetsManagerModule::RegisterMenus));
 
-	RegisterCustomEditorTab();
-
-
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
+		FName(CONTENTFOLDER_MANAGERTAB_NAME),
+		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnManagerSlateTab))
+		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDER_MANAGERTAB_NAME)))
+		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "ContentBrowser.AssetsManager"))
+		.SetMenuType(ETabSpawnerMenuType::Hidden);
 }
 
 void FAssetsManagerModule::ShutdownModule()
@@ -125,6 +128,22 @@ void FAssetsManagerModule::RegisterMenus()
 			}
 		}
 	}
+
+
+	// register AssetsManager Button
+
+	{
+		UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
+		{
+			FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
+			Section.AddMenuEntryWithCommandList(
+				FAssetsManagerCommands::Get().PluginAction_OpenAssetsManagerWindow, 
+				PluginCommands_AssetsManager,
+				TAttribute<FText>(),
+				TAttribute<FText>(),
+				FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "ContentBrowser.AssetsManagerTitle"));
+		}
+	}
 }
 
 // Second bind. Define the details for the menu entry.
@@ -191,15 +210,6 @@ void FAssetsManagerModule::InitCBMenuExtension()
 #pragma endregion
 
 #pragma region CustomEditorTab
-
-void FAssetsManagerModule::RegisterCustomEditorTab()
-{
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
-		FName(CONTENTFOLDER_MANAGERTAB_NAME),
-		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnManagerSlateTab))
-		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDER_MANAGERTAB_NAME)))
-		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleSetName(),"ContentBrowser.AssetsManager"));
-}
 
 TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs)
 {

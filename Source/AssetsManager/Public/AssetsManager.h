@@ -32,8 +32,6 @@ private:
 #pragma endregion 
 
 #pragma region CustomEditorTab
-	void RegisterCustomEditorTab();
-
 	TSharedRef<SDockTab> OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs);
 	TSharedRef<SDockTab> OnSpawnMaterialCreatorSlateTab(const FSpawnTabArgs& SpawnTabArgs);
 	
