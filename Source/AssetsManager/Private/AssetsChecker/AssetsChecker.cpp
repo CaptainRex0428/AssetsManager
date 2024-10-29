@@ -16,6 +16,8 @@
 #include "ObjectTools.h"
 #include "AssetToolsModule.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "ContentBrowserModule.h"
+#include "IContentBrowserSingleton.h"
 
 
 #define PATHLOOPIGNORE(Path) if (##Path.Contains("Developers") || ##Path.Contains("Collections")) continue;
@@ -1704,4 +1706,31 @@ bool UAssetsChecker::OpenEditorUI(TSharedPtr<FAssetData> AssetIn)
 {
 	GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(AssetIn->GetObjectPathString());
 	return true;
+}
+
+TArray<FString> UAssetsChecker::GetCurrentContentBrowserSelectedPaths()
+{
+	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+	IContentBrowserSingleton& ContentBrowser = ContentBrowserModule.Get();
+
+	TArray<FString> SelectedPaths;
+	ContentBrowser.GetSelectedFolders(SelectedPaths);
+
+	for (FString& path : SelectedPaths)
+	{
+		path.RemoveFromStart(L"/All");
+	}
+
+	return SelectedPaths;
+}
+
+FString UAssetsChecker::GetCurrentContentBrowserPath()
+{
+	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+	IContentBrowserSingleton& ContentBrowser = ContentBrowserModule.Get();
+
+	FString Path = ContentBrowser.GetCurrentPath(EContentBrowserPathType::Virtual);
+	Path.RemoveFromStart(L"/All");
+
+	return Path;
 }

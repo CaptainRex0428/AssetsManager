@@ -16,6 +16,11 @@
 #include "Materials/MaterialExpressionScalarParameter.h"
 #include "FileHelpers.h"
 
+#include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/LevelStreaming.h"
+
+
 #include "AssetTools.h"
 
 UMaterialInstanceConstant* UAssetsCreator::CreateMaterialInstanceConstant(
@@ -101,4 +106,13 @@ bool UAssetsCreator::GetMaterialInstanceConstantStaticSwitch(
 
 	return false;
 	
+}
+
+bool UAssetsCreator::CreateLevel()
+{
+
+	UWorld* NewWorld = UWorld::CreateWorld(EWorldType::None, false, L"Untitled");
+	UGameplayStatics::OpenLevel(NewWorld, L"Untitled");
+
+	return false;
 }

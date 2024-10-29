@@ -30,4 +30,6 @@ public:
 		FString ParameterName,
 		EMaterialParameterAssociation Association = EMaterialParameterAssociation::GlobalParameter
 	);
+
+	static bool CreateLevel();
 };

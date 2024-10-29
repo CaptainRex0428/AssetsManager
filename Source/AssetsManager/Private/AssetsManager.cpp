@@ -6,10 +6,13 @@
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetsChecker/AssetsChecker.h"
+#include "AssetsCreator/AssetsCreator.h"
 #include "SlateWidgets/ManagerSlate.h"
 #include "SlateWidgets/BatchRenameSlate.h"
 #include "SlateWidgets/Material/MaterialCreatorSlate.h"
 #include "AssetsManagerStyle.h"
+#include "ContentBrowserModule.h"
+#include "IContentBrowserSingleton.h"
 
 #include "EditorAssetLibrary.h"
 #include "ObjectTools.h"
@@ -92,14 +95,16 @@ void FAssetsManagerModule::OnDeleteEmptyFolderButtonClicked()
 
 void FAssetsManagerModule::OnAssetsManagerWithSelectedPathButtonClicked()
 {
+	SelectedContentFolderPaths.Empty();
+	SelectedContentFolderPaths = UAssetsChecker::GetCurrentContentBrowserSelectedPaths();
+
 	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDER_MANAGERTAB_NAME));
 }
 
 void FAssetsManagerModule::OnAssetsManagerWithCurrentPathButtonClicked()
 {
-	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
-
-
+	SelectedContentFolderPaths.Empty();
+	SelectedContentFolderPaths.Add(UAssetsChecker::GetCurrentContentBrowserPath());
 
 	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDER_MANAGERTAB_NAME));
 }
@@ -112,6 +117,8 @@ void FAssetsManagerModule::OnMaterialCreatButtonClicked()
 void FAssetsManagerModule::OnLookDevButtonClicked()
 {
 	NtfyMsgLog("LookDev Clicked.");
+
+	UAssetsCreator::CreateLevel();
 }
 
 void FAssetsManagerModule::RegisterMenus()

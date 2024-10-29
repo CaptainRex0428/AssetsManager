@@ -75,6 +75,11 @@ public:
 	static bool OpenEditorUI(TSharedPtr<FAssetData> AssetIn);
 #pragma endregion
 
+
+	static TArray<FString> GetCurrentContentBrowserSelectedPaths();
+	static FString GetCurrentContentBrowserPath();
+
+
 #pragma region Standard Check Tools
 	
 	static int DuplicateAssets(
