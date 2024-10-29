@@ -19,35 +19,22 @@ public:
 	virtual void ShutdownModule() override;
 
 private:
+	void RegisterMenus();
 
-#pragma region ContentBrowserMenuExtend
+	void OnDeleteUnusedAssetButtonClicked();
+	void OnDeleteEmptyFolderButtonClicked();
+	void OnAssetsManagerWithSelectedPathButtonClicked();
+	void OnAssetsManagerWithCurrentPathButtonClicked();
+	void OnMaterialCreatButtonClicked();
+	void OnLookDevButtonClicked();
 
-	void AddEntryCBMenuExtension(class FMenuBuilder& MenuBuilder);
-	TSharedRef<FExtender> CoordCBMenuExtension(const TArray<FString>& SelectedPaths);
-
-	void InitCBMenuExtension();
-
-	TArray<FString> SelectedContentFolderPaths;
 	
-#pragma endregion 
+	TArray<FString> SelectedContentFolderPaths;
+
+	TSharedPtr<class FUICommandList> PluginCommands;
 
 #pragma region CustomEditorTab
 	TSharedRef<SDockTab> OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs);
 	TSharedRef<SDockTab> OnSpawnMaterialCreatorSlateTab(const FSpawnTabArgs& SpawnTabArgs);
-	
 #pragma endregion
-
-private:
-
-	void OnDeleteUnusedAssetButtonClicked();
-	void OnDeleteEmptyFolderButtonClicked();
-	void OnAssetsManagerButtonClicked();
-	void OnMaterialCreatButtonClicked();
-	void OnLookDevButtonClicked();
-
-	void RegisterMenus();
-
-	TSharedPtr<class FUICommandList> PluginCommands_DeleteEmptyFolders;
-	TSharedPtr<class FUICommandList> PluginCommands_AssetsManager;
-	TSharedPtr<class FUICommandList> PluginCommands_LookDev;
 };

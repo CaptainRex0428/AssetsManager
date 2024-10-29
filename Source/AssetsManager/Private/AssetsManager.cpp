@@ -20,25 +20,33 @@
 
 void FAssetsManagerModule::StartupModule()
 {
-	InitCBMenuExtension();
 
 	FAssetsMangerStyle::Initialize();
 	FAssetsMangerStyle::ReloadTextures();
 
 	FAssetsManagerCommands::Register();
 
-	PluginCommands_LookDev = MakeShareable(new FUICommandList);
-	PluginCommands_LookDev->MapAction(
+	PluginCommands = MakeShareable(new FUICommandList);
+
+	PluginCommands->MapAction(
 		FAssetsManagerCommands::Get().PluginAction_LookDev,
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnLookDevButtonClicked),
 		FCanExecuteAction());
 
-	PluginCommands_AssetsManager = MakeShareable(new FUICommandList);
-	PluginCommands_AssetsManager->MapAction(
-		FAssetsManagerCommands::Get().PluginAction_OpenAssetsManagerWindow,
-		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerButtonClicked),
-		FCanExecuteAction()
-	);
+	PluginCommands->MapAction(
+		FAssetsManagerCommands::Get().PluginAction_OpenAssetsManagerWindowWithCurrentPath,
+		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerWithCurrentPathButtonClicked),
+		FCanExecuteAction());
+
+	PluginCommands->MapAction(
+		FAssetsManagerCommands::Get().PluginAction_OpenAssetsManagerWindowWithSelectedPath,
+		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerWithSelectedPathButtonClicked),
+		FCanExecuteAction());
+
+	PluginCommands->MapAction(
+		FAssetsManagerCommands::Get().PluginAction_DeleteEmptyFolders,
+		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnDeleteEmptyFolderButtonClicked),
+		FCanExecuteAction());
 
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FAssetsManagerModule::RegisterMenus));
 
@@ -82,8 +90,17 @@ void FAssetsManagerModule::OnDeleteEmptyFolderButtonClicked()
 	UAssetsChecker::RemoveEmptyFolder(SelectedContentFolderPaths);
 }
 
-void FAssetsManagerModule::OnAssetsManagerButtonClicked()
+void FAssetsManagerModule::OnAssetsManagerWithSelectedPathButtonClicked()
 {
+	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDER_MANAGERTAB_NAME));
+}
+
+void FAssetsManagerModule::OnAssetsManagerWithCurrentPathButtonClicked()
+{
+	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+
+
+
 	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDER_MANAGERTAB_NAME));
 }
 
@@ -109,7 +126,7 @@ void FAssetsManagerModule::RegisterMenus()
 			FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
 			Section.AddMenuEntryWithCommandList(
 				FAssetsManagerCommands::Get().PluginAction_LookDev, 
-				PluginCommands_LookDev,
+				PluginCommands,
 				TAttribute<FText>(),
 				TAttribute<FText>(),
 				FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "LevelEditor.ManagerLookDev")
@@ -123,89 +140,74 @@ void FAssetsManagerModule::RegisterMenus()
 			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("PluginTools");
 			{
 				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FAssetsManagerCommands::Get().PluginAction_LookDev));
-				Entry.SetCommandList(PluginCommands_LookDev);
+				Entry.SetCommandList(PluginCommands);
 				Entry.Icon = FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "LevelEditor.ManagerLookDev");
 			}
 		}
 	}
 
 
-	// register AssetsManager Button
-
+	// Content Browser
+	
 	{
-		UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
+		FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+		
+		// register ContentBrowser Paths Selected Menu
 		{
-			FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
-			Section.AddMenuEntryWithCommandList(
-				FAssetsManagerCommands::Get().PluginAction_OpenAssetsManagerWindow, 
-				PluginCommands_AssetsManager,
-				TAttribute<FText>(),
-				TAttribute<FText>(),
-				FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "ContentBrowser.AssetsManagerTitle"));
+			ContentBrowserModule.GetAllPathViewContextMenuExtenders().Add(
+				FContentBrowserMenuExtender_SelectedPaths::CreateLambda([this](const TArray<FString>& SelectedPaths)
+				{
+						TSharedRef<FExtender> MenuExtender(new FExtender());
+
+						SelectedContentFolderPaths = SelectedPaths;
+
+						if (SelectedPaths.Num() > 0)
+						{
+							MenuExtender->AddMenuExtension(
+								FName("PathViewFolderOptions"),
+								EExtensionHook::After,
+								PluginCommands,
+								FMenuExtensionDelegate::CreateLambda([this](FMenuBuilder& MenuBuilder)
+									{
+										MenuBuilder.AddMenuEntry(
+											FAssetsManagerCommands::Get().PluginAction_OpenAssetsManagerWindowWithSelectedPath,
+											NAME_None,
+											LOCTEXT("AssetsManager_Label", "AssetsManager"),
+											TAttribute<FText>(),
+											FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "ContentBrowser.AssetsManager"));
+
+										MenuBuilder.AddMenuEntry(
+											FAssetsManagerCommands::Get().PluginAction_DeleteEmptyFolders,
+											NAME_None,
+											LOCTEXT("DeleteEmptyFolder_Label", "DeleteEmptyFolder"),
+											TAttribute<FText>(),
+											FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "ContentBrowser.DeleteUnusedFolders"));
+									}));
+						}
+
+						return MenuExtender;
+				}));
 		}
+
+		// register ContentBrowser Current Path Menu
+		{
+			UToolMenu* ContentBrowserToolBar = UToolMenus::Get()->ExtendMenu("ContentBrowser.ToolBar");
+			{
+				FToolMenuSection& Section = ContentBrowserToolBar->AddSection(
+					"AssetsManager",
+					LOCTEXT("AssetsManager_Label", "AssetsManager"),
+					FToolMenuInsert(FName("Save"), EToolMenuInsertType::After)
+				);
+
+				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FAssetsManagerCommands::Get().PluginAction_OpenAssetsManagerWindowWithCurrentPath));
+				Entry.SetCommandList(PluginCommands);
+				Entry.Icon = FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "ContentBrowser.AssetsManager");
+			}
+		}
+		
+		
 	}
 }
-
-// Second bind. Define the details for the menu entry.
-void FAssetsManagerModule::AddEntryCBMenuExtension(FMenuBuilder& MenuBuilder)
-{
-	// Third bind. 
-
-	MenuBuilder.AddMenuEntry
-	(
-		FText::FromString(TEXT("Delete Unused Folders")),
-		FText::FromString(TEXT("Safely delete folders never used or referenced.")),
-		FSlateIcon(FAssetsMangerStyle::GetStyleSetName(),"ContentBrowser.DeleteUnusedFolders"),
-		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnDeleteEmptyFolderButtonClicked)
-	);
-
-	MenuBuilder.AddMenuEntry
-	(
-		FText::FromString(TEXT(CONTENTFOLDER_MANAGERTAB_NAME)),
-		FText::FromString(TEXT("A tab window to check the assets inside the seleted folder.")),
-		FSlateIcon(FAssetsMangerStyle::GetStyleSetName(),"ContentBrowser.AssetsManager"),
-		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerButtonClicked)
-	);
-}
-
-// First bind. Define the position for inserting menu entry.
-TSharedRef<FExtender> FAssetsManagerModule::CoordCBMenuExtension(const TArray<FString>& SelectedPaths)
-{
-	TSharedRef<FExtender> MenuExtender(new FExtender());
-
-	if (SelectedPaths.Num() > 0)
-	{
-		// Second bind.
-		MenuExtender->AddMenuExtension(
-			FName("PathViewFolderOptions"),
-			EExtensionHook::After,
-			TSharedPtr<FUICommandList>(),
-			FMenuExtensionDelegate::CreateRaw(this, &FAssetsManagerModule::AddEntryCBMenuExtension)
-		);
-
-		SelectedContentFolderPaths = SelectedPaths;
-	}
-
-	return MenuExtender;
-}
-
-void FAssetsManagerModule::InitCBMenuExtension()
-{
-	// load menu
-	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
-	TArray<FContentBrowserMenuExtender_SelectedPaths>& CBMenuExtenders = ContentBrowserModule.GetAllPathViewContextMenuExtenders();
-
-	// delegate
-	FContentBrowserMenuExtender_SelectedPaths CustomCBMenuDelegate;
-
-	// First bind.
-	CustomCBMenuDelegate.BindRaw(this, &FAssetsManagerModule::CoordCBMenuExtension);
-
-	// registry menu
-	CBMenuExtenders.Add(CustomCBMenuDelegate);
-}
-
-
 
 #pragma endregion
 

@@ -308,7 +308,8 @@ void SManagerSlateTab::RegistryTab()
 		FName(TABNAME_BATCHRENAME),
 		FOnSpawnTab::CreateRaw(this, &SManagerSlateTab::OnSpawnBatchRenameTab))
 		.SetDisplayName(FText::FromString(TEXT(TABNAME_BATCHRENAME)))
-		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "ContentBrowser.AssetsManager"));
+		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "ContentBrowser.AssetsManager"))
+		.SetMenuType(ETabSpawnerMenuType::Hidden);
 }
 
 TSharedRef<SDockTab> SManagerSlateTab::OnSpawnBatchRenameTab(const FSpawnTabArgs& SpawnTabArgs)

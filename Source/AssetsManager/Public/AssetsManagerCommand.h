@@ -18,6 +18,7 @@ public:
 
 public:
 	TSharedPtr< FUICommandInfo > PluginAction_DeleteEmptyFolders;
-	TSharedPtr< FUICommandInfo > PluginAction_OpenAssetsManagerWindow;
+	TSharedPtr< FUICommandInfo > PluginAction_OpenAssetsManagerWindowWithSelectedPath;
+	TSharedPtr< FUICommandInfo > PluginAction_OpenAssetsManagerWindowWithCurrentPath;
 	TSharedPtr< FUICommandInfo > PluginAction_LookDev;
 };
