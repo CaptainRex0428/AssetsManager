@@ -111,8 +111,8 @@ bool UAssetsCreator::GetMaterialInstanceConstantStaticSwitch(
 bool UAssetsCreator::CreateLevel()
 {
 
-	UWorld* NewWorld = UWorld::CreateWorld(EWorldType::None, false, L"Untitled");
-	UGameplayStatics::OpenLevel(NewWorld, L"Untitled");
+	/*UWorld* NewWorld = UWorld::CreateWorld(EWorldType::None, false, L"Untitled");
+	UGameplayStatics::OpenLevel(NewWorld, L"Untitled");*/
 
 	return false;
 }

@@ -1729,8 +1729,9 @@ FString UAssetsChecker::GetCurrentContentBrowserPath()
 	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
 	IContentBrowserSingleton& ContentBrowser = ContentBrowserModule.Get();
 
-	FString Path = ContentBrowser.GetCurrentPath(EContentBrowserPathType::Virtual);
-	Path.RemoveFromStart(L"/All");
+	FContentBrowserItemPath Path = ContentBrowser.GetCurrentPath();
+	FString PathStr = Path.GetVirtualPathString();
+	PathStr.RemoveFromStart(L"/All");
 
-	return Path;
+	return PathStr;
 }

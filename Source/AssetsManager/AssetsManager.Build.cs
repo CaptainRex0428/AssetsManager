@@ -40,6 +40,7 @@ public class AssetsManager : ModuleRules
                 "AssetRegistry",
                 "AssetTools",
                 "ContentBrowser",
+                "ContentBrowserData",
 				"InputCore",
 				"Projects",
                 "SkeletalMeshUtilitiesCommon",
