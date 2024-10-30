@@ -31,5 +31,5 @@ public:
 		EMaterialParameterAssociation Association = EMaterialParameterAssociation::GlobalParameter
 	);
 
-	static bool CreateLevel();
+	static bool CreateLevel(const FString& AssetPath, const FString& TemplateAssetPath = "");
 };

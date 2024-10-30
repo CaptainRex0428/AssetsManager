@@ -95,9 +95,6 @@ void FAssetsManagerModule::OnDeleteEmptyFolderButtonClicked()
 
 void FAssetsManagerModule::OnAssetsManagerWithSelectedPathButtonClicked()
 {
-	SelectedContentFolderPaths.Empty();
-	SelectedContentFolderPaths = UAssetsChecker::GetCurrentContentBrowserSelectedPaths();
-
 	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDER_MANAGERTAB_NAME));
 }
 
@@ -116,9 +113,7 @@ void FAssetsManagerModule::OnMaterialCreatButtonClicked()
 
 void FAssetsManagerModule::OnLookDevButtonClicked()
 {
-	NtfyMsgLog("LookDev Clicked.");
-
-	UAssetsCreator::CreateLevel();
+	UAssetsCreator::CreateLevel(L"/Script/Engine.World'/Game/Level_LookDevTemp.Level_LookDevTemp'", L"/Script/Engine.World'/AssetsManager/LookDev/LookDev.LookDev'");
 }
 
 void FAssetsManagerModule::RegisterMenus()

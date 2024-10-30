@@ -19,7 +19,8 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/LevelStreaming.h"
-
+#include "LevelEditorSubsystem.h"
+#include "LevelEditor.h"
 
 #include "AssetTools.h"
 
@@ -108,11 +109,30 @@ bool UAssetsCreator::GetMaterialInstanceConstantStaticSwitch(
 	
 }
 
-bool UAssetsCreator::CreateLevel()
+bool UAssetsCreator::CreateLevel(const FString& AssetPath, const FString& TemplateAssetPath)
 {
+	ULevelEditorSubsystem* LevelEditorSubsystem = GEditor->GetEditorSubsystem<ULevelEditorSubsystem>();
 
-	/*UWorld* NewWorld = UWorld::CreateWorld(EWorldType::None, false, L"Untitled");
-	UGameplayStatics::OpenLevel(NewWorld, L"Untitled");*/
+	bool Success = false;
 
-	return false;
+	if (!LevelEditorSubsystem)
+	{
+		return false;
+	}
+
+	if (TemplateAssetPath.IsEmpty())
+	{
+		Success = LevelEditorSubsystem->NewLevel(AssetPath);
+	}
+	else
+	{
+		Success = LevelEditorSubsystem->NewLevelFromTemplate(AssetPath, TemplateAssetPath);
+	}
+
+	if (!Success)
+	{
+		Success = LevelEditorSubsystem->LoadLevel(AssetPath);
+	}
+
+	return Success;
 }

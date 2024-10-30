@@ -46,7 +46,8 @@ public class AssetsManager : ModuleRules
                 "SkeletalMeshUtilitiesCommon",
                 "UMGEditor",
 				"AssetManagerEditor",
-                "HairStrandsCore"
+                "HairStrandsCore",
+				"LevelEditor"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
