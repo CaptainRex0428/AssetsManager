@@ -2,16 +2,19 @@
 
 #include "Widgets/Notifications/SNotificationList.h"
 #include "FrameWork/Notifications/NotificationManager.h"
+#include "Logging/LogMacros.h"
+
+DEFINE_LOG_CATEGORY(Logger_AssetsManager);
 
 void MsgLog(const FString& Message, bool isWarning)
 {
 	if (isWarning)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+		UE_LOG(Logger_AssetsManager, Warning, TEXT("%s"), *Message);
 		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("%s"), *Message);
+	UE_LOG(Logger_AssetsManager, Log, TEXT("%s"), *Message);
 }
 
 // Screen Debug

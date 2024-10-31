@@ -14,7 +14,6 @@ class ASSETSMANAGER_API SManagerSlateTab: public SCommonSlate
 {
 	SLATE_BEGIN_ARGS(SManagerSlateTab){}
 	SLATE_ARGUMENT(FString,TitleText)
-	SLATE_ARGUMENT(TArray<TSharedPtr<FAssetData>>*, StoredAssetsData)
 	SLATE_ARGUMENT(TArray<FString>, SelectedFolderPaths)
 	SLATE_END_ARGS()
 
@@ -257,6 +256,16 @@ private:
 	FReply OnSingleAssetDebugButtonClicked(
 		TSharedPtr<FAssetData> ClickedAssetData);
 
+	TSharedRef<SButton> ConstructSingleAssetEditButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleAssetEditButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
+
+	TSharedRef<SButton> ConstructSingleAssetSizeMapButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleAssetSizeMapButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
+
 	/*
 	Construct Delete Button
 	To delete the asset referenced in table row
@@ -380,6 +389,12 @@ private:
 	FReply OnOpenLocalLogFolderButtonClicked();
 #pragma endregion
 
+#pragma region OpenLocalLogFolder
+	TSharedPtr<SButton> BatchSizeMapButton;
+	TSharedRef<SButton> ConstructBatchSizeMapButtonButton();
+	FReply OnBatchSizeMapButtonClicked();
+#pragma endregion
+
 #pragma region BatchRename
 	TSharedRef<SDockTab> OnSpawnBatchRenameTab(const FSpawnTabArgs& SpawnTabArgs);
 	void OnBatchRenameApply();
@@ -402,7 +417,7 @@ private:
 
 	TSharedRef<SHorizontalBox> ConstructDropDownMenuBox();
 
-	void UpdateDisplayListSource();
+	void UpdateDisplayListSource(bool bRefreshTableHeader = false);
 
 #pragma region ClassFilter
 

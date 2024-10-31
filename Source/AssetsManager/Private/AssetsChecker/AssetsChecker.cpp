@@ -16,6 +16,8 @@
 #include "ObjectTools.h"
 #include "AssetToolsModule.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "ContentBrowserModule.h"
+#include "IContentBrowserSingleton.h"
 
 
 #define PATHLOOPIGNORE(Path) if (##Path.Contains("Developers") || ##Path.Contains("Collections")) continue;
@@ -1501,17 +1503,59 @@ bool UAssetsChecker::StringMatchPattern(
 	const FString & Pattern, 
 	FString& StringToMatch)
 {
-	TArray<FString> Subpatterns =  SplitStringRecursive(Pattern,L"&");
+	TArray<FString> Subpatterns =  SplitStringRecursive(Pattern,L"!");
+
+	for (int32 Idx = 0; Idx < Subpatterns.Num(); Idx++)
+	{
+		if(Subpatterns[Idx].TrimStartAndEnd().IsEmpty())
+		{
+			continue;
+		}
+
+		if (!Idx)
+		{
+			if (!StringMatchSubPattern(Subpatterns[Idx].TrimStartAndEnd(), StringToMatch))
+			{
+				return false;
+			};
+
+			continue;
+		}
+
+		if (StringMatchSubPattern(Subpatterns[Idx].TrimStartAndEnd(), StringToMatch))
+		{
+			return false;
+		};
+	}
+
+	return true;
+}
+
+bool UAssetsChecker::StringMatchSubPattern(
+	const FString& Pattern, 
+	FString& StringToMatch)
+{
+	TArray<FString> Subpatterns = SplitStringRecursive(Pattern, L"&");
 
 	for (FString subpattern : Subpatterns)
 	{
+		if (subpattern.TrimStartAndEnd().IsEmpty())
+		{
+			continue;
+		}
+
 		bool matched = false;
 
-		TArray<FString> SubConditions = SplitStringRecursive(subpattern,L" ");
-		
+		TArray<FString> SubConditions = SplitStringRecursive(subpattern, L" ");
+
 		for (FString Condition : SubConditions)
 		{
-			if (StringToMatch.Contains(Condition))
+			if(Condition.TrimStartAndEnd().IsEmpty())
+			{
+				continue;
+			}
+
+			if (StringToMatch.Contains(Condition.TrimStartAndEnd()))
 			{
 				matched = true;
 				break;
@@ -1676,4 +1720,60 @@ bool UAssetsChecker::OpenLocalFolder(const FString& FolderPath)
 	FPlatformProcess::ExploreFolder(*AbsPath);
 
 	return true;
+}
+
+bool UAssetsChecker::OpenSizeMapUI(TArray<TSharedPtr<FAssetData>> AssetsIn)
+{
+	TArray<FAssetIdentifier> list;
+
+	for (TSharedPtr<FAssetData> AssetData : AssetsIn)
+	{
+		list.Add(FAssetIdentifier(AssetData->PackageName));
+	}
+
+	IAssetManagerEditorModule::Get().OpenSizeMapUI(list);
+	
+	return true;
+}
+
+bool UAssetsChecker::OpenSizeMapUI(TSharedPtr<FAssetData> AssetIn)
+{
+	TArray<TSharedPtr<FAssetData>> Assets;
+	Assets.Add(AssetIn);
+
+	return UAssetsChecker::OpenSizeMapUI(Assets);
+}
+
+bool UAssetsChecker::OpenEditorUI(TSharedPtr<FAssetData> AssetIn)
+{
+	GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(AssetIn->GetObjectPathString());
+	return true;
+}
+
+TArray<FString> UAssetsChecker::GetCurrentContentBrowserSelectedPaths()
+{
+	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+	IContentBrowserSingleton& ContentBrowser = ContentBrowserModule.Get();
+
+	TArray<FString> SelectedPaths;
+	ContentBrowser.GetSelectedFolders(SelectedPaths);
+
+	for (FString& path : SelectedPaths)
+	{
+		path.RemoveFromStart(L"/All");
+	}
+
+	return SelectedPaths;
+}
+
+FString UAssetsChecker::GetCurrentContentBrowserPath()
+{
+	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+	IContentBrowserSingleton& ContentBrowser = ContentBrowserModule.Get();
+
+	FContentBrowserItemPath Path = ContentBrowser.GetCurrentPath();
+	FString PathStr = Path.GetVirtualPathString();
+	PathStr.RemoveFromStart(L"/All");
+
+	return PathStr;
 }

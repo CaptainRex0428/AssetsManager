@@ -1,12 +1,14 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
-
+#include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
 #include "ConfigManager.h"
 
 
+class FToolBarBuilder;
+class FMenuBuilder;
 
 class FAssetsManagerModule : public IModuleInterface
 {
@@ -17,28 +19,22 @@ public:
 	virtual void ShutdownModule() override;
 
 private:
-
-#pragma region ContentBrowserMenuExtend
+	void RegisterMenus();
 
 	void OnDeleteUnusedAssetButtonClicked();
 	void OnDeleteEmptyFolderButtonClicked();
-	void OnAssetsManagerButtonClicked();
+	void OnAssetsManagerWithSelectedPathButtonClicked();
+	void OnAssetsManagerWithCurrentPathButtonClicked();
 	void OnMaterialCreatButtonClicked();
+	void OnLookDevButtonClicked();
 
-	void AddEntryCBMenuExtension(class FMenuBuilder& MenuBuilder);
-	TSharedRef<FExtender> CoordCBMenuExtension(const TArray<FString>& SelectedPaths);
-
-	void InitCBMenuExtension();
-
-	TArray<FString> SelectedContentFolderPaths;
 	
-#pragma endregion 
+	TArray<FString> SelectedContentFolderPaths;
+
+	TSharedPtr<class FUICommandList> PluginCommands;
 
 #pragma region CustomEditorTab
-	void RegisterCustomEditorTab();
-
 	TSharedRef<SDockTab> OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs);
 	TSharedRef<SDockTab> OnSpawnMaterialCreatorSlateTab(const FSpawnTabArgs& SpawnTabArgs);
-	
 #pragma endregion
 };

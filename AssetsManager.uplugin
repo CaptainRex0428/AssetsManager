@@ -1,5 +1,5 @@
 {
-	"FileVersion": 1,
+	"FileVersion": 3,
 	"Version": 6,
 	"VersionName": "1.7.8",
 	"FriendlyName": "AssetsManager",
@@ -28,6 +28,14 @@
 		},
 		{
 			"Name": "EditorScriptingUtilities",
+			"Enabled": true
+		},
+		{
+			"Name": "HairStrands",
+			"Enabled": true
+		},
+		{
+			"Name": "AssetManagerEditor",
 			"Enabled": true
 		}
 	]

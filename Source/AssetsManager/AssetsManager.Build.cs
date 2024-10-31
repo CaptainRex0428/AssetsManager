@@ -35,14 +35,19 @@ public class AssetsManager : ModuleRules
 				"EditorScriptingUtilities",
 				"UMG",
 				"Niagara",
+                "NiagaraCore",
                 "UnrealEd",
                 "AssetRegistry",
                 "AssetTools",
                 "ContentBrowser",
+                "ContentBrowserData",
 				"InputCore",
 				"Projects",
                 "SkeletalMeshUtilitiesCommon",
-                "UMGEditor"
+                "UMGEditor",
+				"AssetManagerEditor",
+                "HairStrandsCore",
+				"LevelEditor"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -54,7 +59,11 @@ public class AssetsManager : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore"
+				"SlateCore",
+                "Projects",
+                "InputCore",
+                "EditorFramework",
+                "ToolMenus"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

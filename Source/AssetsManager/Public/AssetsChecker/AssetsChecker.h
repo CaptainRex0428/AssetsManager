@@ -7,6 +7,8 @@
 
 #include "ConfigManager.h"
 
+#include "AssetManagerEditorModule.h"
+
 /*
  * 
  */
@@ -45,6 +47,10 @@ public:
 		const FString& Pattern, 
 		FString& StringToMatch);
 
+	static bool StringMatchSubPattern(
+		const FString& Pattern,
+		FString& StringToMatch);
+
 #pragma endregion
 
 #pragma region FileSize
@@ -66,7 +72,17 @@ public:
 
 #pragma region DesktopOperator
 	static bool OpenLocalFolder(const FString& FolderPath);
+
+	static bool OpenSizeMapUI(TArray<TSharedPtr<FAssetData>> AssetsIn);
+	static bool OpenSizeMapUI(TSharedPtr<FAssetData> AssetIn);
+
+	static bool OpenEditorUI(TSharedPtr<FAssetData> AssetIn);
 #pragma endregion
+
+
+	static TArray<FString> GetCurrentContentBrowserSelectedPaths();
+	static FString GetCurrentContentBrowserPath();
+
 
 #pragma region Standard Check Tools
 	

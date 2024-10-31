@@ -1,5 +1,8 @@
 #pragma once
 
+
+DECLARE_LOG_CATEGORY_EXTERN(Logger_AssetsManager,Verbose, All);
+
 void MsgLog(const FString& Message, bool isWarning = true);
 
 // Screen Debug

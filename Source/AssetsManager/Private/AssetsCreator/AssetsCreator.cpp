@@ -16,6 +16,12 @@
 #include "Materials/MaterialExpressionScalarParameter.h"
 #include "FileHelpers.h"
 
+#include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/LevelStreaming.h"
+#include "LevelEditorSubsystem.h"
+#include "LevelEditor.h"
+
 #include "AssetTools.h"
 
 UMaterialInstanceConstant* UAssetsCreator::CreateMaterialInstanceConstant(
@@ -101,4 +107,32 @@ bool UAssetsCreator::GetMaterialInstanceConstantStaticSwitch(
 
 	return false;
 	
+}
+
+bool UAssetsCreator::CreateLevel(const FString& AssetPath, const FString& TemplateAssetPath)
+{
+	ULevelEditorSubsystem* LevelEditorSubsystem = GEditor->GetEditorSubsystem<ULevelEditorSubsystem>();
+
+	bool Success = false;
+
+	if (!LevelEditorSubsystem)
+	{
+		return false;
+	}
+
+	if (TemplateAssetPath.IsEmpty())
+	{
+		Success = LevelEditorSubsystem->NewLevel(AssetPath);
+	}
+	else
+	{
+		Success = LevelEditorSubsystem->NewLevelFromTemplate(AssetPath, TemplateAssetPath);
+	}
+
+	if (!Success)
+	{
+		Success = LevelEditorSubsystem->LoadLevel(AssetPath);
+	}
+
+	return Success;
 }
