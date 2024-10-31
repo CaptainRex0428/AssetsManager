@@ -2672,7 +2672,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructDropDownMenuBox()
 	return DropDownMenu;
 }
 
-void SManagerSlateTab::UpdateDisplayListSource()
+void SManagerSlateTab::UpdateDisplayListSource(bool bRefreshTableHeader)
 {
 	/*-------------------------- Class filter----------------------------*/
 
@@ -2820,6 +2820,8 @@ void SManagerSlateTab::UpdateDisplayListSource()
 		ReverseConditionCheckBox->SetIsChecked(ECheckBoxState::Unchecked);
 		ReverseCondition = false;
 	}
+
+	RefreshAssetsListView(bRefreshTableHeader);
 }
 
 #pragma endregion

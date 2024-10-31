@@ -417,7 +417,7 @@ private:
 
 	TSharedRef<SHorizontalBox> ConstructDropDownMenuBox();
 
-	void UpdateDisplayListSource();
+	void UpdateDisplayListSource(bool bRefreshTableHeader = false);
 
 #pragma region ClassFilter
 

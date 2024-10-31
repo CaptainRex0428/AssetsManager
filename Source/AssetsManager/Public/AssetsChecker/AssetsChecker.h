@@ -47,6 +47,10 @@ public:
 		const FString& Pattern, 
 		FString& StringToMatch);
 
+	static bool StringMatchSubPattern(
+		const FString& Pattern,
+		FString& StringToMatch);
+
 #pragma endregion
 
 #pragma region FileSize

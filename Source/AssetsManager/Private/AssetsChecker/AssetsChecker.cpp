@@ -1503,17 +1503,59 @@ bool UAssetsChecker::StringMatchPattern(
 	const FString & Pattern, 
 	FString& StringToMatch)
 {
-	TArray<FString> Subpatterns =  SplitStringRecursive(Pattern,L"&");
+	TArray<FString> Subpatterns =  SplitStringRecursive(Pattern,L"!");
+
+	for (int32 Idx = 0; Idx < Subpatterns.Num(); Idx++)
+	{
+		if(Subpatterns[Idx].TrimStartAndEnd().IsEmpty())
+		{
+			continue;
+		}
+
+		if (!Idx)
+		{
+			if (!StringMatchSubPattern(Subpatterns[Idx].TrimStartAndEnd(), StringToMatch))
+			{
+				return false;
+			};
+
+			continue;
+		}
+
+		if (StringMatchSubPattern(Subpatterns[Idx].TrimStartAndEnd(), StringToMatch))
+		{
+			return false;
+		};
+	}
+
+	return true;
+}
+
+bool UAssetsChecker::StringMatchSubPattern(
+	const FString& Pattern, 
+	FString& StringToMatch)
+{
+	TArray<FString> Subpatterns = SplitStringRecursive(Pattern, L"&");
 
 	for (FString subpattern : Subpatterns)
 	{
+		if (subpattern.TrimStartAndEnd().IsEmpty())
+		{
+			continue;
+		}
+
 		bool matched = false;
 
-		TArray<FString> SubConditions = SplitStringRecursive(subpattern,L" ");
-		
+		TArray<FString> SubConditions = SplitStringRecursive(subpattern, L" ");
+
 		for (FString Condition : SubConditions)
 		{
-			if (StringToMatch.Contains(Condition))
+			if(Condition.TrimStartAndEnd().IsEmpty())
+			{
+				continue;
+			}
+
+			if (StringToMatch.Contains(Condition.TrimStartAndEnd()))
 			{
 				matched = true;
 				break;
