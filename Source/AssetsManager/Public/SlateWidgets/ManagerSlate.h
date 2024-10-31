@@ -14,7 +14,6 @@ class ASSETSMANAGER_API SManagerSlateTab: public SCommonSlate
 {
 	SLATE_BEGIN_ARGS(SManagerSlateTab){}
 	SLATE_ARGUMENT(FString,TitleText)
-	SLATE_ARGUMENT(TArray<TSharedPtr<FAssetData>>*, StoredAssetsData)
 	SLATE_ARGUMENT(TArray<FString>, SelectedFolderPaths)
 	SLATE_END_ARGS()
 

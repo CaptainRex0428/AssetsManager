@@ -217,7 +217,6 @@ void FAssetsManagerModule::RegisterMenus()
 
 TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs)
 {
-	TArray<TSharedPtr<FAssetData>> assets = UAssetsChecker::ListAssetsDataPtrUnderSelectedFolder(SelectedContentFolderPaths);
 
 	return
 	SNew(SDockTab).TabRole(ETabRole::NomadTab)
@@ -226,7 +225,6 @@ TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnManagerSlateTab(const FSpawnTa
 				//.TitleText(CONTENTFOLDER_MANAGERTAB_NAME)
 				.TitleText("Assets Manager")
 				.SelectedFolderPaths(SelectedContentFolderPaths)
-				.StoredAssetsData(&assets)
 		];
 }
 

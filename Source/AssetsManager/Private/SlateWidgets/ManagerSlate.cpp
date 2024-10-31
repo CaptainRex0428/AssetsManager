@@ -124,22 +124,23 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	RegistryTab();
 
-	m_ClassCheckState = DefaultClassCheckState;
-	m_CategoryCheckState = FCustomStandardAssetData::LastCatergory;
-	m_UsageCheckState = DefaultUsageCheckState;
+	this->m_ClassCheckState = DefaultClassCheckState;
+	this->m_CategoryCheckState = FCustomStandardAssetData::LastCatergory;
+	this->m_UsageCheckState = DefaultUsageCheckState;
 
 	FSlateFontInfo TitleTextFont = GetFontInfo(25);
 
-	StoredFolderPaths = InArgs._SelectedFolderPaths;
-	StoredAssetsData = *InArgs._StoredAssetsData;
+	this->StoredFolderPaths = InArgs._SelectedFolderPaths;
+
+	this->StoredAssetsData = UAssetsChecker::ListAssetsDataPtrUnderSelectedFolder(StoredFolderPaths);
 	
 	UAssetsChecker::ECopyAssetsPtrList(StoredAssetsData, SListViewUsageFilterAssetData);
 	UAssetsChecker::ECopyAssetsPtrList(SListViewUsageFilterAssetData, SListViewClassFilterAssetData);
 	UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewAssetData);
 
-	ClassFilterDefault = MakeShared<FString>(CLASS_LISTALL);
-	ClassFilterCurrent = ClassFilterDefault;
-	ClassFilterComboSourceItems.Add(ClassFilterDefault);
+	this->ClassFilterDefault = MakeShared<FString>(CLASS_LISTALL);
+	this->ClassFilterCurrent = ClassFilterDefault;
+	this->ClassFilterComboSourceItems.Add(ClassFilterDefault);
 
 	FString AssetGlobalSection = "/AssetsManager/Global";
 	TArray<FString> Keys = 
@@ -2161,6 +2162,10 @@ TSharedRef<SButton> SManagerSlateTab::ConstructFixUpRedirectorButton()
 FReply SManagerSlateTab::OnFixUpRedirectorButtonClicked()
 {
 	UAssetsChecker::FixUpRedirectors(StoredFolderPaths);
+
+	this->StoredAssetsData = UAssetsChecker::ListAssetsDataPtrUnderSelectedFolder(StoredFolderPaths);
+	UpdateDisplayListSource();
+
 	return FReply::Handled();
 }
 #pragma endregion
