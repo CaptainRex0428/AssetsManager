@@ -19,7 +19,8 @@ public:
 	virtual void ShutdownModule() override;
 
 private:
-
+	void OnAssetPostImport(UObject * OBJ);
+	
 	void RegisterMenus();
 
 	void OnDeleteUnusedAssetButtonClicked();

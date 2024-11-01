@@ -48,7 +48,9 @@ public class AssetsManager : ModuleRules
 				"AssetManagerEditor",
                 "HairStrandsCore",
 				"LevelEditor",
-                "TextureEditor"
+                "TextureEditor",
+                "InterchangeCore",
+                "InterchangeEngine"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

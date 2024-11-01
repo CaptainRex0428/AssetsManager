@@ -23,6 +23,16 @@ void UTextureAssetTypeActions::OpenAssetEditor(const TArray<UObject*>& InObjects
 			{
 				// 使用 AssetEditorManager 打开纹理编辑器
 				TextureEditorModule->CreateTextureEditor(EToolkitMode::Standalone, EditWithinLevelEditor, Texture);
+
+				FString OBJName = Object->GetFName().ToString();
+
+				if (Object->IsA<UTexture2D>())
+				{
+					if (!OBJName.StartsWith("T_"))
+					{
+						NtfyMsgLog(FString::Printf(L"Prefix Error:%s", *OBJName));
+					}
+				}
 			}
 			
 		}
