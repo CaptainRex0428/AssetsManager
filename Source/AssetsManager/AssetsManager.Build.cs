@@ -47,7 +47,8 @@ public class AssetsManager : ModuleRules
                 "UMGEditor",
 				"AssetManagerEditor",
                 "HairStrandsCore",
-				"LevelEditor"
+				"LevelEditor",
+                "TextureEditor"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

@@ -6,10 +6,12 @@
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetsChecker/AssetsChecker.h"
+#include "AssetsChecker/AssetsTypeActions.h"
 #include "AssetsCreator/AssetsCreator.h"
 #include "SlateWidgets/ManagerSlate.h"
 #include "SlateWidgets/BatchRenameSlate.h"
 #include "SlateWidgets/Material/MaterialCreatorSlate.h"
+#include "AssetToolsModule.h"
 #include "AssetsManagerStyle.h"
 #include "ContentBrowserModule.h"
 #include "IContentBrowserSingleton.h"
@@ -59,12 +61,22 @@ void FAssetsManagerModule::StartupModule()
 		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDER_MANAGERTAB_NAME)))
 		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "ContentBrowser.AssetsManager"))
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
+
+	FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools");
+	IAssetTools& AssetTools = AssetToolsModule.Get();
+
+	// 创建并注册自定义的 AssetTypeActions
+	TSharedRef<UTextureAssetTypeActions> CustomAssetTypeAction = MakeShareable(new UTextureAssetTypeActions());
+	AssetTools.RegisterAssetTypeActions(CustomAssetTypeAction);
 }
 
 void FAssetsManagerModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
+
+	GEditor->GetEditorSubsystem<UImportSubsystem>()->OnAssetPreImport.RemoveAll(this);
+	//GEditor->GetEditorSubsystem<UImportSubsystem>()->OnAssetPostImport.RemoveAll(this);
 
 	UToolMenus::UnRegisterStartupCallback(this);
 
