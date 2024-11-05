@@ -1026,6 +1026,39 @@ uint32 UAssetsChecker::DeleteAsset(
 	return ObjectTools::DeleteAssets(AssetsData);
 }
 
+uint32 UAssetsChecker::DeleteObject(UObject* OBJ)
+{
+	if(!OBJ)
+	{
+		return -1;
+	}
+
+	// call AssetRegistry to mark the object as deleted
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+	AssetRegistryModule.Get().AssetDeleted(OBJ);
+
+	// Update content browser
+	GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllEditorsForAsset(OBJ);
+
+	UPackage* Package = OBJ->GetOutermost();
+	if (Package)
+	{
+		Package->SetDirtyFlag(false);  // Marked as no need to save
+	}
+
+	// force GC
+	OBJ->MarkAsGarbage();
+	GEngine->ForceGarbageCollection(true);
+
+	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
+	ContentBrowserModule.Get().SyncBrowserToAssets(TArray<FAssetData>());
+
+	OBJ->ConditionalBeginDestroy();
+	OBJ = nullptr;
+
+	return 1;
+}
+
 void UAssetsChecker::RemoveUnusedAssets(
 	const TArray<FAssetData>& AssetsDataSelected)
 {
