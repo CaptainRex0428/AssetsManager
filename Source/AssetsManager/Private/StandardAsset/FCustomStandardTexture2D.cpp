@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "StandardAsset/FCustomStandardTexture2DData.h"
+#include "StandardAsset/FCustomStandardTexture2D.h"
 #include "ConfigManager.h"
 #include "ManagerLogger.h"
 #include "AssetsChecker/AssetsChecker.h"

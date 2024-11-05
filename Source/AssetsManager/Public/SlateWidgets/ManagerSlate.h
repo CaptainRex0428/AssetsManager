@@ -6,7 +6,7 @@
 #include "SlateWidgets/SCustomTable.h"
 #include "SlateWidgets/SCustomEditableText.h"
 
-#include "StandardAsset/FCustomStandardAssetData.h"
+#include "StandardAsset/FCustomStandardAsset.h"
 
 #define CONTENTFOLDER_MANAGERTAB_NAME "AssetsManager"
 

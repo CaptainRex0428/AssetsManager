@@ -5,8 +5,8 @@
 #include "AssetsChecker/AssetsChecker.h"
 
 #include "ManagerLogger.h"
-#include "StandardAsset/FCustomStandardAssetData.h"
-#include "StandardAsset/FCustomStandardTexture2DData.h"
+#include "StandardAsset/FCustomStandardAsset.h"
+#include "StandardAsset/FCustomStandardTexture2D.h"
 
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"

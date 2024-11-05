@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FCustomStandardAssetData.h"
+#include "FCustomStandardAsset.h"
 /**
  * 
  */
