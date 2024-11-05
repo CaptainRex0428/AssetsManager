@@ -86,16 +86,16 @@ FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData, 
 	* Only the first or second part of the name matches any member in an array will be treated as a category tag
 	*/
 
-	m_CommonAssetCategory = Undefined;
-	m_StrictAssetCategory = Undefined;
+	m_CommonAssetCategory = AssetCategory::Undefined;
+	m_StrictAssetCategory = AssetCategory::Undefined;
 
-	Category AssetValidCategory;
+	AssetCategory AssetValidCategory;
 
 	bool ShouldBreak = false;
 
-	for (AssetValidCategory = Undefined; 
-		AssetValidCategory < LastCatergory; 
-		AssetValidCategory = (Category)(AssetValidCategory+1))
+	for (AssetValidCategory = AssetCategory::Undefined;
+		AssetValidCategory < AssetCategory::LastCatergory;
+		AssetValidCategory = (AssetCategory)((uint8)AssetValidCategory+1))
 	{
 		TArray<FString> ValidCategoryTags = GetValidCategoryTag(AssetValidCategory);
 
@@ -111,23 +111,23 @@ FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData, 
 
 					switch (m_CommonAssetCategory)
 					{
-					case FCustomStandardAssetData::Character:
+					case AssetCategory::Character:
 						m_CommonAssetCategoryTag = MakeShared<FString>("Character");
 						break;
-					case FCustomStandardAssetData::Effect:
+					case AssetCategory::Effect:
 						m_CommonAssetCategoryTag = MakeShared<FString>("Effect");
 						break;
-					case FCustomStandardAssetData::Scene:
+					case AssetCategory::Scene:
 						m_CommonAssetCategoryTag = MakeShared<FString>("Scene");
 						break;
-					case FCustomStandardAssetData::UI:
+					case AssetCategory::UI:
 						m_CommonAssetCategoryTag = MakeShared<FString>("UI");
 						break;
-					case FCustomStandardAssetData::Hair:
+					case AssetCategory::Hair:
 						m_CommonAssetCategoryTag = MakeShared<FString>("Hair");
 						break;
-					case FCustomStandardAssetData::Undefined:
-					case FCustomStandardAssetData::LastCatergory:
+					case AssetCategory::Undefined:
+					case AssetCategory::LastCatergory:
 					default:
 						break;
 					}
@@ -138,23 +138,23 @@ FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData, 
 
 						switch (m_StrictAssetCategory)
 						{
-						case FCustomStandardAssetData::Character:
+						case AssetCategory::Character:
 							m_StrictAssetCategoryTag = MakeShared<FString>("Character");
 							break;
-						case FCustomStandardAssetData::Effect:
+						case AssetCategory::Effect:
 							m_StrictAssetCategoryTag = MakeShared<FString>("Effect");
 							break;
-						case FCustomStandardAssetData::Scene:
+						case AssetCategory::Scene:
 							m_StrictAssetCategoryTag = MakeShared<FString>("Scene");
 							break;
-						case FCustomStandardAssetData::UI:
+						case AssetCategory::UI:
 							m_StrictAssetCategoryTag = MakeShared<FString>("UI");
 							break;
-						case FCustomStandardAssetData::Hair:
+						case AssetCategory::Hair:
 							m_StrictAssetCategoryTag = MakeShared<FString>("Hair");
 							break;
-						case FCustomStandardAssetData::Undefined:
-						case FCustomStandardAssetData::LastCatergory:
+						case AssetCategory::Undefined:
+						case AssetCategory::LastCatergory:
 						default:
 							break;
 						}
@@ -279,29 +279,29 @@ const TSharedPtr<FString> FCustomStandardAssetData::GetAssetStandardPrefix()
 	return PrefixFound;
 }
 
-const FCustomStandardAssetData::Category& FCustomStandardAssetData::GetCommonAssetCategory()
+const AssetCategory& FCustomStandardAssetData::GetCommonAssetCategory()
 {
 	return m_CommonAssetCategory;
 }
 
-const FCustomStandardAssetData::Category& FCustomStandardAssetData::GetStrictAssetCategory()
+const AssetCategory& FCustomStandardAssetData::GetStrictAssetCategory()
 {
 	return m_StrictAssetCategory;
 }
 
-const FCustomStandardAssetData::Category FCustomStandardAssetData::GetConfirmAssetCategory()
+const AssetCategory FCustomStandardAssetData::GetConfirmAssetCategory()
 {
 	if (m_CommonAssetCategory == m_StrictAssetCategory)
 	{
 		return m_StrictAssetCategory;
 	}
 
-	return FCustomStandardAssetData::Undefined;
+	return AssetCategory::Undefined;
 }
 
 bool FCustomStandardAssetData::IsCatogryStandarized()
 {
-	return !(m_StrictAssetCategory == FCustomStandardAssetData::Undefined);
+	return !(m_StrictAssetCategory == AssetCategory::Undefined);
 }
 
 int64 FCustomStandardAssetData::GetMemorySize(
@@ -403,7 +403,7 @@ int64 FCustomStandardAssetData::GetDiskSize(
 }
 
 TArray<FString> FCustomStandardAssetData::GetValidCategoryTag(
-	Category Cate)
+	AssetCategory Cate)
 {
 	if (AssetConfigGlobalSection) 
 	{
@@ -413,43 +413,43 @@ TArray<FString> FCustomStandardAssetData::GetValidCategoryTag(
 		switch (Cate)
 		{
 		
-		case FCustomStandardAssetData::Character:
+		case AssetCategory::Character:
 		{
 			TagValue = FConfigManager::Get().GetSectionValuesArray(
 				**AssetConfigGlobalSection,
 				"CharacterCategoryTag");
 			break;
 		}
-		case FCustomStandardAssetData::Effect:
+		case AssetCategory::Effect:
 		{
 			TagValue=FConfigManager::Get().GetSectionValuesArray(
 				**AssetConfigGlobalSection,
 				"EffectCategoryTag");
 			break;
 		}
-		case FCustomStandardAssetData::Scene:
+		case AssetCategory::Scene:
 		{
 			TagValue = FConfigManager::Get().GetSectionValuesArray(
 				**AssetConfigGlobalSection,
 				"SceneCategoryTag");
 			break;
 		}
-		case FCustomStandardAssetData::UI:
+		case AssetCategory::UI:
 		{
 			TagValue = FConfigManager::Get().GetSectionValuesArray(
 				**AssetConfigGlobalSection,
 				"UICategoryTag");
 			break;
 		}
-		case FCustomStandardAssetData::Hair:
+		case AssetCategory::Hair:
 		{
 			TagValue = FConfigManager::Get().GetSectionValuesArray(
 				**AssetConfigGlobalSection,
 				"HairCategoryTag");
 			break;
 		}
-		case FCustomStandardAssetData::Undefined:
-		case FCustomStandardAssetData::LastCatergory:
+		case AssetCategory::Undefined:
+		case AssetCategory::LastCatergory:
 		default:
 		{
 			break;

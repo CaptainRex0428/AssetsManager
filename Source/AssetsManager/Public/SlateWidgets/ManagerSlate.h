@@ -61,7 +61,7 @@ private:
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
 
 	ClassCheckState m_ClassCheckState;
-	FCustomStandardAssetData::Category m_CategoryCheckState;
+	AssetCategory m_CategoryCheckState;
 	UsageCheckState m_UsageCheckState;
 
 	TSharedPtr<SCustomTable<TSharedPtr<FAssetData>>> CustomTableList;

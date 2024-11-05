@@ -125,7 +125,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	RegistryTab();
 
 	this->m_ClassCheckState = DefaultClassCheckState;
-	this->m_CategoryCheckState = FCustomStandardAssetData::LastCatergory;
+	this->m_CategoryCheckState = AssetCategory::LastCatergory;
 	this->m_UsageCheckState = DefaultUsageCheckState;
 
 	FSlateFontInfo TitleTextFont = GetFontInfo(25);
@@ -2935,36 +2935,36 @@ void SManagerSlateTab::OnCategoryFilterButtonChanged(
 
 	// add option
 
-	m_CategoryCheckState = FCustomStandardAssetData::Category::LastCatergory;
+	m_CategoryCheckState = AssetCategory::LastCatergory;
 
 	if(*SelectedOption.Get() == CATEGORY_NOGROUP)
 	{
-		m_CategoryCheckState = FCustomStandardAssetData::Category::Undefined;
+		m_CategoryCheckState = AssetCategory::Undefined;
 	}
 
 	if (*SelectedOption.Get() == CATEGORY_CHARACTER)
 	{
-		m_CategoryCheckState = FCustomStandardAssetData::Category::Character;
+		m_CategoryCheckState = AssetCategory::Character;
 	}
 
 	if (*SelectedOption.Get() == CATEGORY_HAIR)
 	{
-		m_CategoryCheckState = FCustomStandardAssetData::Category::Hair;
+		m_CategoryCheckState = AssetCategory::Hair;
 	}
 
 	if (*SelectedOption.Get() == CATEGORY_UI)
 	{
-		m_CategoryCheckState = FCustomStandardAssetData::Category::UI;
+		m_CategoryCheckState = AssetCategory::UI;
 	}
 
 	if (*SelectedOption.Get() == CATEGORY_SCENE)
 	{
-		m_CategoryCheckState = FCustomStandardAssetData::Category::Scene;
+		m_CategoryCheckState = AssetCategory::Scene;
 	}
 
 	if (*SelectedOption.Get() == CATEGORY_EFFECT)
 	{
-		m_CategoryCheckState = FCustomStandardAssetData::Category::Effect;
+		m_CategoryCheckState = AssetCategory::Effect;
 	}
 
 	UpdateDisplayListSource();
@@ -2973,7 +2973,7 @@ void SManagerSlateTab::OnCategoryFilterButtonChanged(
 
 void SManagerSlateTab::UpdateCategoryFilterList()
 {
-	if (m_CategoryCheckState == FCustomStandardAssetData::Category::LastCatergory)
+	if (m_CategoryCheckState == AssetCategory::LastCatergory)
 	{
 		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewCategoryFilterAssetData);
 	}

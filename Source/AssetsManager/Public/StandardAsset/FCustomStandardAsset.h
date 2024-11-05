@@ -24,18 +24,30 @@
 #define VNAME_STRUCT(value) VNAME(value),value
 #define VCLASSNAME_STRUCT(value) value,value->GetName()
 
+UENUM(BlueprintType)
+enum class AssetCategory : uint8
+{
+	Undefined = 0 UMETA(DisplayName = "Undefined", ToolTip="Tags are defined in AssetsManger.ini"),
+	Character UMETA(DisplayName = "Character", ToolTip = "Tags are defined in AssetsManger.ini"),
+	Effect UMETA(DisplayName = "Effect", ToolTip = "Tags are defined in AssetsManger.ini"),
+	Scene UMETA(DisplayName = "Scene", ToolTip = "Tags are defined in AssetsManger.ini"),
+	UI UMETA(DisplayName = "UI", ToolTip = "Tags are defined in AssetsManger.ini"),
+	Hair UMETA(DisplayName = "Hair", ToolTip = "Tags are defined in AssetsManger.ini"),
+	LastCatergory
+};
+
+class ASSETSMANAGER_API UCustomStandardObject : public UObject
+{
+	
+};
+
 /**
  * 
  */
 class ASSETSMANAGER_API FCustomStandardAssetData : public FAssetData
 {
 public:
-	enum Category
-	{
-		Undefined = 0,
-		Character, Effect, Scene, UI, Hair,
-		LastCatergory
-	};
+	
 
 	FCustomStandardAssetData(const FAssetData & AssetData, bool StricCheckMode = false);
 	virtual ~FCustomStandardAssetData();
@@ -52,9 +64,9 @@ public:
 	bool IsPrefixStandarized() const;
 	const TSharedPtr<FString> GetAssetStandardPrefix();
 
-	const FCustomStandardAssetData::Category& GetCommonAssetCategory();
-	const FCustomStandardAssetData::Category& GetStrictAssetCategory();
-	const FCustomStandardAssetData::Category GetConfirmAssetCategory();
+	const AssetCategory& GetCommonAssetCategory();
+	const AssetCategory& GetStrictAssetCategory();
+	const AssetCategory GetConfirmAssetCategory();
 	bool IsCatogryStandarized();
 
 	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
@@ -65,7 +77,7 @@ public:
 private:
 
 	TArray<FString> GetValidCategoryTag(
-		Category Cate);
+		AssetCategory Cate);
 
 protected:
 	bool bStrictCheckMode;
@@ -74,10 +86,10 @@ protected:
 
 	uint32 m_AssetNameInfoStartIndex;
 
-	FCustomStandardAssetData::Category m_CommonAssetCategory;
+	AssetCategory m_CommonAssetCategory;
 	TSharedPtr<FString> m_CommonAssetCategoryTag;
 
-	FCustomStandardAssetData::Category m_StrictAssetCategory;
+	AssetCategory m_StrictAssetCategory;
 	TSharedPtr<FString> m_StrictAssetCategoryTag;
 
 	TSharedPtr<FString> AssetConfigGlobalSection;
