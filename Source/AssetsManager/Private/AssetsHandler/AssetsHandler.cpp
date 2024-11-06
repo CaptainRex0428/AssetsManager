@@ -37,7 +37,7 @@ void UAssetsHandler::CreateIDCheckerMaterial(
 			if (TextureAsset.IsTexture2D())
 			{
 				FString PKGPath = FPaths::GetPath(TextureAsset.GetObjectPathString());
-				FString AssetName = "MI_IDChecker_" + TextureAsset.GetAssetNameWithoutPrefix();
+				FString AssetName = "MI_IDChecker_" + TextureAsset.Get().GetAssetNameWithoutPrefix();
 
 				UMaterialInstanceConstant* Instance;
 
@@ -190,6 +190,8 @@ void UAssetsHandler::Check()
 
 	for (FAssetData AssetData : SelectedAssetsData)
 	{		
-		
+		UCustomStandardObject s(AssetData.GetAsset());
+
+		NtfyMsgLog(s.Get()->GetFName().ToString());
 	}
 }

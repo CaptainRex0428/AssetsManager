@@ -6,8 +6,10 @@
 #include "AssetActionUtility.h"
 
 #include "ConfigManager.h"
+#include "StandardAsset/FCustomStandardAsset.h"
 
 #include "AssetManagerEditorModule.h"
+
 
 /*
  * 
@@ -94,6 +96,12 @@ public:
 		const TArray<FAssetData>& AssetsDataSelected, 
 		int NumOfDupicates, 
 		bool forced);
+
+	static TArray<FString> GetValidCategoryTag(
+		AssetCategory Category,
+		FString ConfigSection);
+
+	static FString GetCategoryTag(AssetCategory Category);
 	
 #pragma region FixPrefix
 

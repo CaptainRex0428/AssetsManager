@@ -1170,7 +1170,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetMemorySizeRowBox(
 	else
 	{
 		FCustomStandardAssetData StandardAsset(*AssetDataToDisplay);
-		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetMemorySize(DisplayLevel), AssetSizeDisplayUnit::MB);
+		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.Get().GetMemorySize(DisplayLevel), AssetSizeDisplayUnit::MB);
 	}
 
 	FString AssetSizeStr = FString::Printf(L"%.4f%s", AssetSize, L"MB");
@@ -2306,7 +2306,7 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 			FCustomStandardTexture2DData StandardTexture(*asset);
 
 			FString ResourceSize;
-			UAssetsChecker::ByteConversion(StandardTexture.GetMemorySize(), ResourceSize, false);
+			UAssetsChecker::ByteConversion(StandardTexture.Get().GetMemorySize(), ResourceSize, false);
 
 			FVector2D MaxInGameTextureSize = StandardTexture.GetMaxInGameSize();
 			FVector2D SourceTextureSize = StandardTexture.GetSourceSize();
@@ -2986,7 +2986,7 @@ void SManagerSlateTab::UpdateCategoryFilterList()
 		{
 			FCustomStandardAssetData StandardAsset(*AssetData);
 
-			if (StandardAsset.GetCommonAssetCategory() == m_CategoryCheckState)
+			if (StandardAsset.Get().GetCommonAssetCategory() == m_CategoryCheckState)
 			{
 				NewAssetsList.AddUnique(AssetData);
 			};

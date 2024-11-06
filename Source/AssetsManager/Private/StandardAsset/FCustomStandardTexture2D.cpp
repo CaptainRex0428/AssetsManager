@@ -32,21 +32,12 @@ FCustomStandardTexture2DData::FCustomStandardTexture2DData(
 		this->TextureGlobalConfigSection = MakeShareable(new FString(TGlobalSection));
 	}
 
-	if(m_StrictAssetCategoryTag.IsValid())
-	{
-		this->TextureCategoryStrictConfigSection
-			= MakeShareable(new FString(FPaths::Combine(ModuleConfigMaster, *m_StrictAssetCategoryTag, TEXT("Texture"))));
-	}
-
-	if (m_CommonAssetCategoryTag.IsValid())
-	{
-		this->TextureCategoryCommonConfigSection
-			= MakeShareable(new FString(FPaths::Combine(ModuleConfigMaster, *m_CommonAssetCategoryTag, TEXT("Texture"))));
-	}
-
-	/*NtfyMsg(*this->TextureGlobalConfigSection);
-	NtfyMsg(*this->TextureCategoryStrictConfigSection);
-	NtfyMsg(*this->TextureCategoryCommonConfigSection);*/
+	
+	this->TextureCategoryStrictConfigSection
+		= MakeShareable(new FString(FPaths::Combine(ModuleConfigMaster, *UAssetsChecker::GetCategoryTag(this->Get().GetStrictAssetCategory()), TEXT("Texture"))));
+	
+	this->TextureCategoryCommonConfigSection
+		= MakeShareable(new FString(FPaths::Combine(ModuleConfigMaster, *UAssetsChecker::GetCategoryTag(this->Get().GetCommonAssetCategory()), TEXT("Texture"))));
 	
 
 	/*
@@ -55,9 +46,6 @@ FCustomStandardTexture2DData::FCustomStandardTexture2DData(
 
 	this->GlobalMaxSize = GetStandardMaxSize();
 	this->MaxSize = GetStandardMaxSizeStrict();
-
-	//NtfyMsg(FString::Printf(TEXT("%d"),this->GlobalMaxSize));
-	//NtfyMsg(FString::Printf(TEXT("%d"),this->MaxSize));
 
 	/*
 	* Judge texture validity
@@ -189,7 +177,7 @@ int64 FCustomStandardTexture2DData::GetMemorySize(bool bEstimatedTotal)
 {
 	if (!bTexture2D)
 	{
-		return FCustomStandardAssetData::GetMemorySize(bEstimatedTotal);
+		return FCustomStandardAssetData::Get().GetMemorySize(bEstimatedTotal);
 	}
 
 	UTexture2D* AssetT = Cast<UTexture2D>(this->GetAsset());
@@ -205,7 +193,7 @@ int64 FCustomStandardTexture2DData::GetMemorySize(bool bEstimatedTotal)
 
 int64 FCustomStandardTexture2DData::GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel, bool bEstimatedTotal)
 {
-	int64 MemorySize = GetMemorySize(bEstimatedTotal);
+	int64 MemorySize = FCustomStandardAssetData::Get().GetMemorySize(bEstimatedTotal);
 
 	FString AssetGlobalSection = "/AssetsManager/Global";
 
@@ -283,7 +271,7 @@ TSharedPtr<TextureCompressionSettings> FCustomStandardTexture2DData::GetStandard
 		return nullptr;
 	}
 
-	TSharedPtr<FString> suffix = GetAssetSuffix();
+	TSharedPtr<FString> suffix = this->Get().GetAssetSuffix();
 
 	if (suffix.IsValid())
 	{
@@ -362,7 +350,7 @@ TSharedPtr<bool> FCustomStandardTexture2DData::GetStandardsRGBSettings(
 		return nullptr;
 	}
 
-	TSharedPtr<FString> suffix = GetAssetSuffix();
+	TSharedPtr<FString> suffix = this->Get().GetAssetSuffix();
 
 	if (suffix.IsValid())
 	{
@@ -434,7 +422,7 @@ TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetStandardLODGroup(
 		return nullptr;
 	}
 
-	TSharedPtr<FString> suffix = GetAssetSuffix();
+	TSharedPtr<FString> suffix = this->Get().GetAssetSuffix();
 
 	if (suffix.IsValid())
 	{
@@ -529,7 +517,7 @@ double FCustomStandardTexture2DData::GetStandardMaxSize()
 
 double FCustomStandardTexture2DData::GetStandardMaxSizeStrict()
 {
-	TSharedPtr<FString> suffixCurrent = this->GetAssetSuffix();
+	TSharedPtr<FString> suffixCurrent = this->Get().GetAssetSuffix();
 	
 	if(!suffixCurrent.IsValid() || suffixCurrent->IsEmpty())
 	{
@@ -572,7 +560,7 @@ FCustomStandardTexture2DData::ConstructCompressionConfigPairs(
 bool FCustomStandardTexture2DData::IsSuffixStandarized()
 {
 
-	TSharedPtr<FString> suffix = GetAssetSuffix();
+	TSharedPtr<FString> suffix = this->Get().GetAssetSuffix();
 
 	if (!suffix.IsValid())
 	{

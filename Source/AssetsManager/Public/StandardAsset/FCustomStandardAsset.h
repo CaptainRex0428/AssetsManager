@@ -21,6 +21,7 @@
 
 #include "ConfigManager.h"
 
+
 #define VNAME_STRUCT(value) VNAME(value),value
 #define VCLASSNAME_STRUCT(value) value,value->GetName()
 
@@ -36,9 +37,50 @@ enum class AssetCategory : uint8
 	LastCatergory
 };
 
-class ASSETSMANAGER_API UCustomStandardObject : public UObject
+class ASSETSMANAGER_API UCustomStandardObject
 {
+
+public:
+	UCustomStandardObject(UObject* InObj, bool StricCheckMode = false);
+	virtual ~UCustomStandardObject();
+
+	virtual TWeakObjectPtr<UObject> Get();
+
+	FString GetClassValidObjectName();
+
+	TSharedPtr<FString> GetAssetNameInfoByIndex(const int32& index);
+
+	const TSharedPtr<FString> GetAssetPrefix();
+
+	const TSharedPtr<FString> GetAssetSuffix();
+
+	const uint32 GetAssetNameInfoCount() const;
+
+	FString GetAssetNameWithoutPrefix();
+
+	bool IsPrefixUnstandarized();
+
+	const TSharedPtr<FString> GetAssetStandardPrefix();
+
+	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
+
+	virtual int64 GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel, bool bEstimatedTotal = true);
+
+	AssetCategory GetCommonAssetCategory();
+
+	AssetCategory GetStrictAssetCategory();
+
+	bool IsCatogryStandarized();
+
+protected:
+	bool bStrictCheckMode;
+
+	TArray<FString> AssetNameInfoList;
 	
+	TSharedPtr<FString> AssetConfigGlobalSection;
+
+private:
+	TWeakObjectPtr<UObject> Object;
 };
 
 /**
@@ -47,54 +89,20 @@ class ASSETSMANAGER_API UCustomStandardObject : public UObject
 class ASSETSMANAGER_API FCustomStandardAssetData : public FAssetData
 {
 public:
-	
-
 	FCustomStandardAssetData(const FAssetData & AssetData, bool StricCheckMode = false);
 	virtual ~FCustomStandardAssetData();
 
-	TSharedPtr<FString> GetAssetNameInfoByIndex(
-		const int32 & index,
-		bool bContainsInfoStartIndex = false);
+	UCustomStandardObject& Get();
 
-	const TSharedPtr<FString> GetAssetPrefix() const;
-	const TSharedPtr<FString> GetAssetSuffix();
-	const uint32 GetAssetNameInfoCount() const;
-	FString GetAssetNameWithoutPrefix() const;
-	
-	bool IsPrefixStandarized() const;
-	const TSharedPtr<FString> GetAssetStandardPrefix();
-
-	const AssetCategory& GetCommonAssetCategory();
-	const AssetCategory& GetStrictAssetCategory();
-	const AssetCategory GetConfirmAssetCategory();
-	bool IsCatogryStandarized();
-
-	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
-	virtual int64 GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel,bool bEstimatedTotal = true);
 	virtual int64 GetDiskSize();
 	virtual int64 GetDiskSize(AssetsInfoDisplayLevel& DisplayLevel);
 
-private:
-
-	TArray<FString> GetValidCategoryTag(
-		AssetCategory Cate);
-
 protected:
+
 	bool bStrictCheckMode;
-	
-	TArray<FString> m_AssetNameInfoList;
 
-	uint32 m_AssetNameInfoStartIndex;
-
-	AssetCategory m_CommonAssetCategory;
-	TSharedPtr<FString> m_CommonAssetCategoryTag;
-
-	AssetCategory m_StrictAssetCategory;
-	TSharedPtr<FString> m_StrictAssetCategoryTag;
-
-	TSharedPtr<FString> AssetConfigGlobalSection;
-
-	bool bHasStandardPrefix;
+private:
+	UCustomStandardObject Object;
 };
 
 static const TMap<UClass*, FString> UClassNameMap =

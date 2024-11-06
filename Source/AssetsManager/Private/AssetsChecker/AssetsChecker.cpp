@@ -93,6 +93,96 @@ int UAssetsChecker::DuplicateAssets(
 	return Counter;
 }
 
+TArray<FString> UAssetsChecker::GetValidCategoryTag(
+	AssetCategory Category,
+	FString ConfigSection)
+{
+	if (FConfigManager::Get().GetSection(*ConfigSection))
+	{
+		TArray<FConfigValue> TagValue;
+		TagValue.Empty();
+
+		switch (Category)
+		{
+
+		case AssetCategory::Character:
+		{
+			TagValue = FConfigManager::Get().GetSectionValuesArray(
+				*ConfigSection,
+				"CharacterCategoryTag");
+			break;
+		}
+		case AssetCategory::Effect:
+		{
+			TagValue = FConfigManager::Get().GetSectionValuesArray(
+				*ConfigSection,
+				"EffectCategoryTag");
+			break;
+		}
+		case AssetCategory::Scene:
+		{
+			TagValue = FConfigManager::Get().GetSectionValuesArray(
+				*ConfigSection,
+				"SceneCategoryTag");
+			break;
+		}
+		case AssetCategory::UI:
+		{
+			TagValue = FConfigManager::Get().GetSectionValuesArray(
+				*ConfigSection,
+				"UICategoryTag");
+			break;
+		}
+		case AssetCategory::Hair:
+		{
+			TagValue = FConfigManager::Get().GetSectionValuesArray(
+				*ConfigSection,
+				"HairCategoryTag");
+			break;
+		}
+		case AssetCategory::Undefined:
+		case AssetCategory::LastCatergory:
+		default:
+		{
+			break;
+		}
+		}
+
+		TArray<FString> Tags;
+		Tags.Empty();
+
+		for (FConfigValue& value : TagValue)
+		{
+			Tags.Add(value.GetValue());
+		}
+
+		return Tags;
+	}
+
+	return TArray<FString>();
+}
+
+FString UAssetsChecker::GetCategoryTag(AssetCategory Category)
+{
+	switch (Category)
+	{
+	case AssetCategory::Character:
+		return L"Character";
+	case AssetCategory::Effect:
+		return L"Effect";
+	case AssetCategory::Scene:
+		return L"Scene";
+	case AssetCategory::UI:
+		return L"UI";
+	case AssetCategory::Hair:
+		return L"Hair";
+	case AssetCategory::Undefined:
+	case AssetCategory::LastCatergory:
+	default:
+		return L"Global";
+	}
+}
+
 bool UAssetsChecker::ConfirmPrefixes(
 	TArray< TSharedPtr<FAssetData>>& AssetsSelected,
 	TArray< TSharedPtr<FAssetData>>& ReadyToFixAssets)
@@ -107,7 +197,7 @@ bool UAssetsChecker::ConfirmPrefixes(
 
 		FCustomStandardAssetData StandardAsset(*selectedObj);
 
-		if (StandardAsset.IsPrefixStandarized() || !StandardAsset.GetAssetStandardPrefix())
+		if (!StandardAsset.Get().IsPrefixUnstandarized() || !StandardAsset.Get().GetAssetStandardPrefix())
 		{
 			continue;
 		};
@@ -123,7 +213,7 @@ bool UAssetsChecker::ConfirmPrefixes(
 			OldName.RemoveFromEnd("_Inst");
 		}
 
-		const FString NewName = *StandardAsset.GetAssetStandardPrefix() + "_" + OldName;
+		const FString NewName = *StandardAsset.Get().GetAssetStandardPrefix() + "_" + OldName;
 
 		NewAssetsName.Append(NewName + "\n");
 
@@ -162,13 +252,13 @@ void UAssetsChecker::AddPrefixes(
 
 		FCustomStandardAssetData StandardAsset(selectedAsset);
 
-		if (StandardAsset.IsPrefixStandarized())
+		if (!StandardAsset.Get().IsPrefixUnstandarized())
 		{
 			continue;
 		};
 
 
-		if (!StandardAsset.GetAssetStandardPrefix())
+		if (!StandardAsset.Get().GetAssetStandardPrefix())
 		{
 #ifdef ZH_CN
 			NtfyMsgLog(TEXT("找不到资产[") + StandardAsset.GetClass()->GetName()+ TEXT("]对应的前缀"));
@@ -180,7 +270,7 @@ void UAssetsChecker::AddPrefixes(
 
 		FString OldName = StandardAsset.AssetName.ToString();
 
-		if (StandardAsset.IsPrefixStandarized())
+		if (!StandardAsset.Get().IsPrefixUnstandarized())
 		{
 #ifdef ZH_CN
 			NtfyMsgLog(OldName + TEXT("已有正确的命名前缀"));
@@ -198,7 +288,7 @@ void UAssetsChecker::AddPrefixes(
 			OldName.RemoveFromEnd("_Inst");
 		}
 
-		const FString NewName = *StandardAsset.GetAssetStandardPrefix() + "_" + OldName;
+		const FString NewName = *StandardAsset.Get().GetAssetStandardPrefix() + "_" + OldName;
 
 		UEditorUtilityLibrary::RenameAsset(StandardAsset.GetAsset(), NewName);
 
@@ -228,13 +318,13 @@ void UAssetsChecker::AddPrefixes(
 
 		FCustomStandardAssetData StandardAsset(AssetDataIn);
 
-		if (StandardAsset.IsPrefixStandarized())
+		if (!StandardAsset.Get().IsPrefixUnstandarized())
 		{
 			continue;
 		};
 
 
-		if (!StandardAsset.GetAssetStandardPrefix())
+		if (!StandardAsset.Get().GetAssetStandardPrefix())
 		{
 #ifdef ZH_CN
 			NtfyMsgLog(TEXT("找不到资产[") + StandardAsset.GetClass()->GetName() + TEXT("]对应的前缀"));
@@ -246,7 +336,7 @@ void UAssetsChecker::AddPrefixes(
 
 		FString OldName = StandardAsset.AssetName.ToString();
 
-		if (StandardAsset.IsPrefixStandarized())
+		if (!StandardAsset.Get().IsPrefixUnstandarized())
 		{
 #ifdef ZH_CN
 			NtfyMsgLog(OldName + TEXT("已有正确的命名前缀"));
@@ -264,7 +354,7 @@ void UAssetsChecker::AddPrefixes(
 			OldName.RemoveFromEnd("_Inst");
 		}
 
-		const FString NewName = *StandardAsset.GetAssetStandardPrefix() + "_" + OldName;
+		const FString NewName = *StandardAsset.Get().GetAssetStandardPrefix() + "_" + OldName;
 
 		UEditorUtilityLibrary::RenameAsset(StandardAsset.GetAsset(), NewName);
 
@@ -333,9 +423,9 @@ bool UAssetsChecker::SetTextureStandardSettings(FAssetData& ClickedAssetData)
 {
 	FCustomStandardTexture2DData SAsset(ClickedAssetData);
 
-	TSharedPtr<FString> subfix = SAsset.GetAssetSuffix();
+	TSharedPtr<FString> subfix = SAsset.Get().GetAssetSuffix();
 
-	if (!SAsset.GetAssetSuffix().IsValid())
+	if (!SAsset.Get().GetAssetSuffix().IsValid())
 	{
 #ifdef ZH_CN
 		NtfyMsgLog(TEXT("资产后缀错误\n") + ClickedAssetData.AssetName.ToString());
@@ -754,7 +844,7 @@ void UAssetsChecker::FilterPrefixErrorAssetsForAssetList(
 	{
 		FCustomStandardAssetData StandardAsset(*AssetDPtr);
 
-		if (!StandardAsset.IsPrefixStandarized())
+		if (StandardAsset.Get().IsPrefixUnstandarized())
 		{
 			if (isAdditiveMode)
 			{
@@ -1413,7 +1503,7 @@ TSharedPtr<FString> UAssetsChecker::GetAssetNameSubfix(const FAssetData& AssetSe
 {
 	FCustomStandardAssetData AssetS(AssetSelected);
 
-	return AssetS.GetAssetSuffix();
+	return AssetS.Get().GetAssetSuffix();
 }
 
 void UAssetsChecker::FixUpRedirectors(
