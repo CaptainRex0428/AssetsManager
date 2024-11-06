@@ -11,6 +11,8 @@
 #include "AssetToolsModule.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 
+
+
 FCustomStandardAssetData::FCustomStandardAssetData(const FAssetData& AssetData, bool StrictCheckMode)
 	:FAssetData(AssetData), 
 	bStrictCheckMode(StrictCheckMode),
@@ -122,6 +124,11 @@ FString UCustomStandardObject::GetClassValidObjectName()
 		return L"";
 	}
 
+	if (this->Get()->IsA<UPackage>())
+	{
+		return FPaths::GetBaseFilename(this->Get()->GetFName().ToString());
+	}
+
 	return this->Get()->GetFName().ToString();
 }
 
@@ -150,7 +157,7 @@ TSharedPtr<FString> UCustomStandardObject::GetAssetNameInfoByIndex(
 
 const TSharedPtr<FString> UCustomStandardObject::GetAssetPrefix()
 {
-	if (!this->IsPrefixUnstandarized())
+	if (!this->IsPrefixNonstandarized())
 	{
 		return MakeShared<FString>(this->AssetNameInfoList[0]);
 	}
@@ -178,7 +185,7 @@ FString UCustomStandardObject::GetAssetNameWithoutPrefix()
 	TArray<FString> SubNameInfoList;
 	SubNameInfoList.Empty();
 
-	for (int32 idx = this->IsPrefixUnstandarized() ? 0 : 1; idx < this->AssetNameInfoList.Num(); ++idx)
+	for (int32 idx = this->IsPrefixNonstandarized() ? 0 : 1; idx < this->AssetNameInfoList.Num(); ++idx)
 	{
 		SubNameInfoList.Add(this->AssetNameInfoList[idx]);
 	}
@@ -186,7 +193,7 @@ FString UCustomStandardObject::GetAssetNameWithoutPrefix()
 	return FString::Join(SubNameInfoList, TEXT("_"));
 }
 
-bool UCustomStandardObject::IsPrefixUnstandarized()
+bool UCustomStandardObject::IsPrefixNonstandarized()
 {
 	/*
 	* Judge if the asset has standard prefix
@@ -239,7 +246,7 @@ bool UCustomStandardObject::IsPrefixUnstandarized()
 
 const TSharedPtr<FString> UCustomStandardObject::GetAssetStandardPrefix()
 {
-	if (!this->IsPrefixUnstandarized())
+	if (!this->IsPrefixNonstandarized())
 	{
 		return this->GetAssetPrefix();
 	}
@@ -318,7 +325,7 @@ AssetCategory UCustomStandardObject::GetStrictAssetCategory()
 
 		for (int InfoIndex = 0; InfoIndex < (this->AssetNameInfoList.Num() < 2 ? 1 : 2); ++InfoIndex)
 		{
-			if(!this->IsPrefixUnstandarized() && InfoIndex == 0)
+			if(!this->IsPrefixNonstandarized() && InfoIndex == 0)
 			{
 				continue;
 			}

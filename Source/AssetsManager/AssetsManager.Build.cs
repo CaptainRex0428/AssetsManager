@@ -50,7 +50,8 @@ public class AssetsManager : ModuleRules
 				"LevelEditor",
                 "TextureEditor",
                 "InterchangeCore",
-                "InterchangeEngine"
+                "InterchangeEngine",
+				"PhysicsCore"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

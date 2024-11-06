@@ -197,7 +197,7 @@ bool UAssetsChecker::ConfirmPrefixes(
 
 		FCustomStandardAssetData StandardAsset(*selectedObj);
 
-		if (!StandardAsset.Get().IsPrefixUnstandarized() || !StandardAsset.Get().GetAssetStandardPrefix())
+		if (!StandardAsset.Get().IsPrefixNonstandarized() || !StandardAsset.Get().GetAssetStandardPrefix())
 		{
 			continue;
 		};
@@ -252,7 +252,7 @@ void UAssetsChecker::AddPrefixes(
 
 		FCustomStandardAssetData StandardAsset(selectedAsset);
 
-		if (!StandardAsset.Get().IsPrefixUnstandarized())
+		if (!StandardAsset.Get().IsPrefixNonstandarized())
 		{
 			continue;
 		};
@@ -270,7 +270,7 @@ void UAssetsChecker::AddPrefixes(
 
 		FString OldName = StandardAsset.AssetName.ToString();
 
-		if (!StandardAsset.Get().IsPrefixUnstandarized())
+		if (!StandardAsset.Get().IsPrefixNonstandarized())
 		{
 #ifdef ZH_CN
 			NtfyMsgLog(OldName + TEXT("已有正确的命名前缀"));
@@ -318,7 +318,7 @@ void UAssetsChecker::AddPrefixes(
 
 		FCustomStandardAssetData StandardAsset(AssetDataIn);
 
-		if (!StandardAsset.Get().IsPrefixUnstandarized())
+		if (!StandardAsset.Get().IsPrefixNonstandarized())
 		{
 			continue;
 		};
@@ -336,7 +336,7 @@ void UAssetsChecker::AddPrefixes(
 
 		FString OldName = StandardAsset.AssetName.ToString();
 
-		if (!StandardAsset.Get().IsPrefixUnstandarized())
+		if (!StandardAsset.Get().IsPrefixNonstandarized())
 		{
 #ifdef ZH_CN
 			NtfyMsgLog(OldName + TEXT("已有正确的命名前缀"));
@@ -844,7 +844,7 @@ void UAssetsChecker::FilterPrefixErrorAssetsForAssetList(
 	{
 		FCustomStandardAssetData StandardAsset(*AssetDPtr);
 
-		if (StandardAsset.Get().IsPrefixUnstandarized())
+		if (StandardAsset.Get().IsPrefixNonstandarized())
 		{
 			if (isAdditiveMode)
 			{

@@ -58,7 +58,7 @@ public:
 
 	FString GetAssetNameWithoutPrefix();
 
-	bool IsPrefixUnstandarized();
+	bool IsPrefixNonstandarized();
 
 	const TSharedPtr<FString> GetAssetStandardPrefix();
 

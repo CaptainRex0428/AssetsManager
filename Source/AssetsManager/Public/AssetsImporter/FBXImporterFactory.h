@@ -1,9 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Factories/FbxFactory.h"
+
 #include "FBXImporterFactory.generated.h"
 
 /**
@@ -15,21 +16,22 @@ class ASSETSMANAGER_API UFBXImporterFactory : public UFbxFactory
 	GENERATED_BODY()
 	
 public:
-	virtual UObject* FactoryCreateFile(UClass* InClass, UObject* InParent, FName InName, EObjectFlags Flags,
-		const FString& Filename, const TCHAR* Parms, FFeedbackContext* Warn,
-		bool& bOutOperationCanceled) override
-	{
-		UE_LOG(LogTemp, Log, TEXT("Starting custom FBX import: %s"), *Filename);
+		
+	UFBXImporterFactory();
 
-		// ×Ô¶¨ÒåÂß¼­£¬ÀıÈçÑéÖ¤ÎÄ¼şÂ·¾¶£¬ĞŞ¸Äµ¼ÈëÑ¡Ïî£¬¼ÇÂ¼µ¼ÈëµÄ¿ªÊ¼Ê±¼äµÈ
-
-		UObject* ImportedAsset = Super::FactoryCreateFile(InClass, InParent, InName, Flags, Filename, Parms, Warn, bOutOperationCanceled);
-
-		// µ¼Èë½áÊøºó£¬¿ÉÒÔÔÚÕâÀïÖ´ĞĞÆäËûÂß¼­£¬ÀıÈç¼ÇÂ¼µ¼Èë½á¹û£¬´¦ÀíÒÀÀµ×Ê²ú£¬»òÕß´¥·¢ºóĞø²Ù×÷
-
-		UE_LOG(LogTemp, Log, TEXT("Completed custom FBX import: %s"), *Filename);
-		return ImportedAsset;
-	}
+	virtual UObject* FactoryCreateFile(
+		UClass* InClass, 
+		UObject* InParent, 
+		FName InName, 
+		EObjectFlags Flags,
+		const FString& Filename, 
+		const TCHAR* Parms, 
+		FFeedbackContext* Warn,
+		bool& bOutOperationCanceled) override;
 	
-	
+private:
+	bool ShouldCancelImport(
+		const FString& Filename, 
+		UObject* InParent, 
+		FName InName);
 };
