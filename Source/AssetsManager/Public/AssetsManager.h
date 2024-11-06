@@ -19,8 +19,12 @@ public:
 	virtual void ShutdownModule() override;
 
 private:
-	void OnAssetPostImport(UObject * OBJ);
+	void OnInterchangeAssetPostImport(UObject * OBJ);
 	
+	void OnEditorDelegatePreImport(UFactory* Factory, UClass* InClass, UObject* Outer, const FName& Name, const TCHAR* Type);
+
+	void OnEditorDelegatePostImport(UFactory* Factory, UObject* CreatedObject);
+
 	void RegisterMenus();
 
 	void OnDeleteUnusedAssetButtonClicked();
