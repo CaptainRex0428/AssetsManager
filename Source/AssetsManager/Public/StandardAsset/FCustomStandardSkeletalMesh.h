@@ -13,11 +13,26 @@
 #include "Rendering/SkeletalMeshModel.h"
 #include "Rendering/SkeletalMeshRenderData.h"
 
-
 #include "Factories/FbxSkeletalMeshImportData.h"
 
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
+
+class ASSETSMANAGER_API UCustomStandardSkeletalMeshObject : public UCustomStandardObject
+{
+public:
+	UCustomStandardSkeletalMeshObject(UObject* InObj, bool StricCheckMode = false);
+	UCustomStandardSkeletalMeshObject(USkeletalMesh* InSkeletalMesh, bool StricCheckMode = false);
+	virtual ~UCustomStandardSkeletalMeshObject();
+	
+	TWeakObjectPtr<USkeletalMesh> Get();
+
+	bool IsSkeletalMesh();
+
+private:
+	TWeakObjectPtr<USkeletalMesh> SkeletalMeshObject;
+
+};
 
 /**
  * 
@@ -28,7 +43,7 @@ public:
 	FCustomStandardSkeletalMeshData(FAssetData & AssetData);
 	~FCustomStandardSkeletalMeshData();
 
-	bool IsSkeletalMesh() const;
+	UCustomStandardSkeletalMeshObject& Get();
 
 	USkeletalMesh* GetSkeletalMesh();
 
@@ -59,5 +74,6 @@ public:
 	void ResetLODSectionsMaterial();
 
 private:
-	bool bSkeletalMesh;
+
+	UCustomStandardSkeletalMeshObject StandardSkeletalMeshObject;
 };

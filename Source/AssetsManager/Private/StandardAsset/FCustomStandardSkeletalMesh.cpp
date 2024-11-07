@@ -8,23 +8,18 @@
 
 
 FCustomStandardSkeletalMeshData::FCustomStandardSkeletalMeshData(FAssetData& AssetData)
-	:FCustomStandardAssetData(AssetData)
+	:FCustomStandardAssetData(AssetData),
+	StandardSkeletalMeshObject(AssetData.GetAsset())
 {
-	this-> bSkeletalMesh = this->GetAsset()->IsA<USkeletalMesh>();
-
-	if (this->bSkeletalMesh)
-	{
-
-	}
 }
 
 FCustomStandardSkeletalMeshData::~FCustomStandardSkeletalMeshData()
 {
 }
 
-bool FCustomStandardSkeletalMeshData::IsSkeletalMesh() const
+UCustomStandardSkeletalMeshObject& FCustomStandardSkeletalMeshData::Get()
 {
-	return bSkeletalMesh;
+	return StandardSkeletalMeshObject;
 }
 
 USkeletalMesh* FCustomStandardSkeletalMeshData::GetSkeletalMesh()
@@ -500,4 +495,44 @@ bool FCustomStandardSkeletalMeshData::SetAllowCPUAccess(
 	}
 
 	return UEditorAssetLibrary::SaveAsset(this->GetObjectPathString());
+}
+
+UCustomStandardSkeletalMeshObject::UCustomStandardSkeletalMeshObject(
+	UObject* InObj, 
+	bool StricCheckMode)
+	:UCustomStandardObject(InObj,StricCheckMode),
+	SkeletalMeshObject(nullptr)
+{
+	USkeletalMesh * InSkeletal = Cast<USkeletalMesh>(InObj);
+	
+	if(InSkeletal)
+	{
+		SkeletalMeshObject = InSkeletal;
+	}
+}
+
+UCustomStandardSkeletalMeshObject::UCustomStandardSkeletalMeshObject(
+	USkeletalMesh* InSkeletalMesh, 
+	bool StricCheckMode)
+	:UCustomStandardObject(InSkeletalMesh, StricCheckMode),
+	SkeletalMeshObject(nullptr)
+{
+	if(InSkeletalMesh)
+	{
+		SkeletalMeshObject = InSkeletalMesh;
+	}
+}
+
+UCustomStandardSkeletalMeshObject::~UCustomStandardSkeletalMeshObject()
+{
+}
+
+TWeakObjectPtr<USkeletalMesh> UCustomStandardSkeletalMeshObject::Get()
+{
+	return this->SkeletalMeshObject;
+}
+
+bool UCustomStandardSkeletalMeshObject::IsSkeletalMesh()
+{
+	return this->Get().IsValid();
 }

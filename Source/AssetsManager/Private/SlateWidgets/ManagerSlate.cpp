@@ -1191,7 +1191,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSkeletalMeshLODNumRowBox(
 {
 	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
 
-	if(!StandardSkeletal.IsSkeletalMesh())
+	if(!StandardSkeletal.Get().IsSkeletalMesh())
 	{
 		return SNew(SHorizontalBox) + SHorizontalBox::Slot().VAlign(VAlign_Center)[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
@@ -1213,7 +1213,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshVerticesNumRowBo
 {
 	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
 
-	if (!StandardSkeletal.IsSkeletalMesh())
+	if (!StandardSkeletal.Get().IsSkeletalMesh())
 	{
 		return SNew(SVerticalBox) +SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
@@ -1251,7 +1251,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshTrianglesNumRowB
 {
 	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
 
-	if (!StandardSkeletal.IsSkeletalMesh())
+	if (!StandardSkeletal.Get().IsSkeletalMesh())
 	{
 		return SNew(SVerticalBox) +SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
@@ -1288,7 +1288,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshLODAllowCPUAcces
 {
 	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
 
-	if (!StandardSkeletal.IsSkeletalMesh())
+	if (!StandardSkeletal.Get().IsSkeletalMesh())
 	{
 		return SNew(SVerticalBox)+SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
@@ -1409,7 +1409,7 @@ FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 {
 	FCustomStandardSkeletalMeshData SKAsset(*ClickedAssetData);
 	
-	if (SKAsset.IsSkeletalMesh())
+	if (SKAsset.Get().IsSkeletalMesh())
 	{
 		SKAsset.SetLODsAllowCPUAccess(0);
 		//NtfyMsg(SKAsset.IsLODModifiable(1)?"Yes":"No");

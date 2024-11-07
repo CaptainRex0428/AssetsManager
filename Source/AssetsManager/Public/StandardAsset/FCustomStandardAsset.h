@@ -44,7 +44,7 @@ public:
 	UCustomStandardObject(UObject* InObj, bool StricCheckMode = false);
 	virtual ~UCustomStandardObject();
 
-	virtual TWeakObjectPtr<UObject> Get();
+	TWeakObjectPtr<UObject> Get();
 
 	FString GetClassValidObjectName();
 
