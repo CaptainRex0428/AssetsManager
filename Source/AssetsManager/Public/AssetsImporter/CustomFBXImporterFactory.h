@@ -11,13 +11,13 @@
  * 
  */
 UCLASS()
-class ASSETSMANAGER_API UFBXImporterFactory : public UFbxFactory
+class ASSETSMANAGER_API UCustomFBXImporterFactory : public UFbxFactory
 {
 	GENERATED_BODY()
 	
 public:
 		
-	UFBXImporterFactory();
+	UCustomFBXImporterFactory();
 
 	virtual UObject* FactoryCreateFile(
 		UClass* InClass, 

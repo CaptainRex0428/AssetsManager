@@ -1,5 +1,5 @@
 ﻿
-#include "AssetsImporter/FBXImporterFactory.h"
+#include "AssetsImporter/CustomFBXImporterFactory.h"
 
 #include "StandardAsset/FCustomStandardAsset.h"
 #include "ManagerLogger.h"
@@ -10,7 +10,7 @@
 #include "Engine/Engine.h"
 
 
-UFBXImporterFactory::UFBXImporterFactory()
+UCustomFBXImporterFactory::UCustomFBXImporterFactory()
 {
 	SupportedClass = USkeletalMesh::StaticClass();
 	bCreateNew = false;
@@ -19,7 +19,7 @@ UFBXImporterFactory::UFBXImporterFactory()
 	ImportPriority = DefaultImportPriority + 10;
 }
 
-UObject* UFBXImporterFactory::FactoryCreateFile(
+UObject* UCustomFBXImporterFactory::FactoryCreateFile(
 	UClass* InClass, 
 	UObject* InParent, 
 	FName InName, 
@@ -46,7 +46,7 @@ UObject* UFBXImporterFactory::FactoryCreateFile(
 	return ImportedAsset;
 }
 
-bool UFBXImporterFactory::ShouldCancelImport(
+bool UCustomFBXImporterFactory::ShouldCancelImport(
 	UClass* InClass,
 	UObject* InParent,
 	FName InName,
