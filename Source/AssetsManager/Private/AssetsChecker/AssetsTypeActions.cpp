@@ -2,18 +2,26 @@
 
 
 #include "AssetsChecker/AssetsTypeActions.h"
+#include "StandardAsset/FCustomStandardAsset.h"
 #include "TextureEditor.h"
 #include "Interfaces/ITextureEditorModule.h"
 #include "Engine/Texture2D.h"
 #include "Modules/ModuleManager.h"
 #include "ManagerLogger.h"
 
-void UTextureAssetTypeActions::OpenAssetEditor(const TArray<UObject*>& InObjects, TSharedPtr<class IToolkitHost> EditWithinLevelEditor)
+void UCustomTexture2DAssetTypeActions::OpenAssetEditor(const TArray<UObject*>& InObjects, TSharedPtr<class IToolkitHost> EditWithinLevelEditor)
 {
-	NtfyMsgLog(L"Opening Assets.");
+	// NtfyMsgLog(L"Opening Assets.");
 
 	for (UObject* Object : InObjects)
 	{
+		UCustomStandardObject standardObj(Object);
+
+		if (standardObj.IsPrefixNonstandarized())
+		{
+			MsgLog(FString::Printf(L"[Prefix Error]%s",*standardObj.GetClassValidObjectName()));
+		}
+
 		UTexture2D* Texture = Cast<UTexture2D>(Object);
 		if (Texture)
 		{
@@ -23,16 +31,6 @@ void UTextureAssetTypeActions::OpenAssetEditor(const TArray<UObject*>& InObjects
 			{
 				// 使用 AssetEditorManager 打开纹理编辑器
 				TextureEditorModule->CreateTextureEditor(EToolkitMode::Standalone, EditWithinLevelEditor, Texture);
-
-				FString OBJName = Object->GetFName().ToString();
-
-				if (Object->IsA<UTexture2D>())
-				{
-					if (!OBJName.StartsWith("T_"))
-					{
-						NtfyMsgLog(FString::Printf(L"Prefix Error:%s", *OBJName));
-					}
-				}
 			}
 			
 		}

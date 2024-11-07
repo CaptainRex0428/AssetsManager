@@ -37,6 +37,14 @@
 		{
 			"Name": "AssetManagerEditor",
 			"Enabled": true
+		},
+		{
+			"Name": "Interchange",
+			"Enabled": true
+		},
+		{
+			"Name": "InterchangeEditor",
+			"Enabled": true
 		}
 	]
 }

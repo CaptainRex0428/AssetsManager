@@ -1,11 +1,8 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
+﻿
+#include "AssetsImporter/FBXImporterFactory.h"
 
 #include "StandardAsset/FCustomStandardAsset.h"
 #include "ManagerLogger.h"
-#include "AssetsImporter/FBXImporterFactory.h"
-
-// #include "FbxImporter.h"
 #include "InterchangeManager.h"
 #include "InterchangeSourceData.h"
 #include "InterchangeTranslatorBase.h"
@@ -36,7 +33,7 @@ UObject* UFBXImporterFactory::FactoryCreateFile(
 	MsgLog(FString::Printf(TEXT("Starting custom FBX import: %s"), *Filename));
 
 
-	if (ShouldCancelImport(Filename, InParent, InName))
+	if (ShouldCancelImport(InClass,InParent,InName,Flags,Filename,Parms,Warn,bOutOperationCanceled))
 	{
 		NtfyMsgLog(FString::Printf(TEXT("Import canceled for file: %s"), *Filename));
 		bOutOperationCanceled = true;
@@ -49,7 +46,15 @@ UObject* UFBXImporterFactory::FactoryCreateFile(
 	return ImportedAsset;
 }
 
-bool UFBXImporterFactory::ShouldCancelImport(const FString& Filename, UObject* InParent, FName InName)
+bool UFBXImporterFactory::ShouldCancelImport(
+	UClass* InClass,
+	UObject* InParent,
+	FName InName,
+	EObjectFlags Flags,
+	const FString& Filename,
+	const TCHAR* Parms,
+	FFeedbackContext* Warn,
+	bool& bOutOperationCanceled)
 {
 	return false;
 }

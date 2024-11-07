@@ -13,7 +13,7 @@
 #include "Factories/TextureFactory.h"
 
 
-class ASSETSMANAGER_API UTextureAssetTypeActions: public FAssetTypeActions_Base
+class ASSETSMANAGER_API UCustomTexture2DAssetTypeActions: public FAssetTypeActions_Base
 {
 public:
 	virtual FText GetName() const override { return NSLOCTEXT("ManagerTexture2D", "Texture2D", "Texture 2D"); }

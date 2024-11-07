@@ -31,7 +31,12 @@ public:
 	
 private:
 	bool ShouldCancelImport(
-		const FString& Filename, 
-		UObject* InParent, 
-		FName InName);
+		UClass* InClass,
+		UObject* InParent,
+		FName InName,
+		EObjectFlags Flags,
+		const FString& Filename,
+		const TCHAR* Parms,
+		FFeedbackContext* Warn,
+		bool& bOutOperationCanceled);
 };
