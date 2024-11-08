@@ -1900,3 +1900,28 @@ FString UAssetsChecker::GetCurrentContentBrowserPath()
 
 	return PathStr;
 }
+
+bool UAssetsChecker::SaveAsset(const FString& AssetToSave, bool bOnlyIfIsDirty)
+{
+	return UEditorAssetLibrary::SaveAsset(AssetToSave, bOnlyIfIsDirty);
+}
+
+bool UAssetsChecker::SaveAsset(UObject* ObjectToSave)
+{
+	if (ObjectToSave && ObjectToSave->MarkPackageDirty())
+	{
+
+		UPackage* AssetPackage = ObjectToSave->GetOutermost();
+
+		if (AssetPackage)
+		{
+			FString PackageFilePath = FPackageName::LongPackageNameToFilename(AssetPackage->GetName(), FPackageName::GetAssetPackageExtension());
+
+			return UPackage::SavePackage(AssetPackage, ObjectToSave, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFilePath, GError, nullptr, true, true, SAVE_None);
+		}
+
+		return false;
+	}
+
+	return false;
+}

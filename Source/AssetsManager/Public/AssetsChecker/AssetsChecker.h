@@ -88,6 +88,9 @@ public:
 	static TArray<FString> GetCurrentContentBrowserSelectedPaths();
 	static FString GetCurrentContentBrowserPath();
 
+	static bool SaveAsset(const FString & AssetToSave, bool bOnlyIfIsDirty = true);
+	static bool SaveAsset(UObject * ObjectToSave);
+
 #pragma endregion
 
 #pragma region Standard Check Tools

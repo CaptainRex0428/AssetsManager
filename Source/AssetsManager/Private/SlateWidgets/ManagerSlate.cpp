@@ -1197,7 +1197,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSkeletalMeshLODNumRowBox(
 	}
 
 	TSharedRef<STextBlock> LODNumBox = 
-		ConstructNormalTextBlock(FString::FromInt(StandardSkeletal.GetLODNum()), FontInfo);
+		ConstructNormalTextBlock(FString::FromInt(StandardSkeletal.Get().GetLODNum()), FontInfo);
 
 	LODNumBox->SetAutoWrapText(true);
 	LODNumBox->SetJustification(ETextJustify::Center);
@@ -1218,7 +1218,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshVerticesNumRowBo
 		return SNew(SVerticalBox) +SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
-	int32 LODNum = StandardSkeletal.GetLODNum();
+	int32 LODNum = StandardSkeletal.Get().GetLODNum();
 	FString DisplayContent;
 
 	TSharedPtr<SVerticalBox> InfoList = SNew(SVerticalBox);
@@ -1226,7 +1226,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshVerticesNumRowBo
 	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
 	{
 		AssetsInfoDisplayLevel DisplayLevel;
-		int32 VerticesCount = StandardSkeletal.GetLODVerticesNum(LODIdx, DisplayLevel,bStricWithCategory);
+		int32 VerticesCount = StandardSkeletal.Get().GetLODVerticesNum(LODIdx, DisplayLevel, bStricWithCategory);
 
 		DisplayContent =
 			FString::Printf(L"LOD%d:%8.2fw",
@@ -1256,7 +1256,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshTrianglesNumRowB
 		return SNew(SVerticalBox) +SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
-	int32 LODNum = StandardSkeletal.GetLODNum();
+	int32 LODNum = StandardSkeletal.Get().GetLODNum();
 	FString DisplayContent;
 
 	TSharedPtr<SVerticalBox> InfoList = SNew(SVerticalBox);
@@ -1264,7 +1264,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshTrianglesNumRowB
 	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
 	{
 		AssetsInfoDisplayLevel DisplayLevel;
-		int32 VerticesCount = StandardSkeletal.GetLODTrianglesNum(LODIdx, DisplayLevel, bStricWithCategory);
+		int32 VerticesCount = StandardSkeletal.Get().GetLODTrianglesNum(LODIdx, DisplayLevel, bStricWithCategory);
 
 		DisplayContent =
 			FString::Printf(L"LOD%d:%8.2fw",
@@ -1293,7 +1293,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshLODAllowCPUAcces
 		return SNew(SVerticalBox)+SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
-	int32 LODNum = StandardSkeletal.GetLODNum();
+	int32 LODNum = StandardSkeletal.Get().GetLODNum();
 	FString DisplayContent;
 
 	TSharedPtr<SVerticalBox> InfoList = SNew(SVerticalBox);
@@ -1302,7 +1302,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshLODAllowCPUAcces
 	{
 		DisplayContent =
 			FString::Printf(L"LOD%d: %s",
-				LODIdx, StandardSkeletal.GetAllowCPUAccess(LODIdx) ? L"[ √ ]" : L"[    ]");
+				LODIdx, StandardSkeletal.Get().GetAllowCPUAccess(LODIdx) ? L"[ √ ]" : L"[    ]");
 
 		TSharedPtr<STextBlock> DisplayBox = ConstructNormalTextBlock(DisplayContent, FontInfo);
 		DisplayBox->SetAutoWrapText(true);
@@ -1411,7 +1411,7 @@ FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 	
 	if (SKAsset.Get().IsSkeletalMesh())
 	{
-		SKAsset.SetLODsAllowCPUAccess(0);
+		SKAsset.Get().SetLODsAllowCPUAccess(0);
 		//NtfyMsg(SKAsset.IsLODModifiable(1)?"Yes":"No");
 	}
 
@@ -2324,15 +2324,15 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 		{
 			FCustomStandardSkeletalMeshData StandardSkeletal(*asset);
 
-			int32 LODNum = StandardSkeletal.GetLODNum();
+			int32 LODNum = StandardSkeletal.Get().GetLODNum();
 			
 			FString LODVer;
 			FString LODTri;
 
 			for (int32 Idx = 0; Idx < LODNum; ++Idx)
 			{
-				int32 VerN = StandardSkeletal.GetLODVerticesNum(Idx);
-				int32 TriN = StandardSkeletal.GetLODTrianglesNum(Idx);
+				int32 VerN = StandardSkeletal.Get().GetLODVerticesNum(Idx);
+				int32 TriN = StandardSkeletal.Get().GetLODTrianglesNum(Idx);
 
 				if (LODVerticesAudit.Num()-1 < Idx)
 				{

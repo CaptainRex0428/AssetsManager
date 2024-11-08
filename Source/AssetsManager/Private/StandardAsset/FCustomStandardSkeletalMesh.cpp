@@ -24,7 +24,7 @@ UCustomStandardSkeletalMeshObject& FCustomStandardSkeletalMeshData::Get()
 
 USkeletalMesh* FCustomStandardSkeletalMeshData::GetSkeletalMesh()
 {
-	if (!bSkeletalMesh) 
+	if (!this->Get().IsSkeletalMesh()) 
 	{
 		return nullptr;
 	}
@@ -34,51 +34,80 @@ USkeletalMesh* FCustomStandardSkeletalMeshData::GetSkeletalMesh()
 	return SKAsset;
 }
 
-bool FCustomStandardSkeletalMeshData::HasLODMeshDescription(int32 LODIdx)
+UCustomStandardSkeletalMeshObject::UCustomStandardSkeletalMeshObject(
+	UObject* InObj, 
+	bool StricCheckMode)
+	:UCustomStandardObject(InObj,StricCheckMode),
+	SkeletalMeshObject(nullptr)
 {
-	if (!this->bSkeletalMesh || !GetSkeletalMesh()->IsValidLODIndex(LODIdx))
+	USkeletalMesh * InSkeletal = Cast<USkeletalMesh>(InObj);
+	
+	if(InSkeletal)
+	{
+		SkeletalMeshObject = InSkeletal;
+	}
+}
+
+UCustomStandardSkeletalMeshObject::UCustomStandardSkeletalMeshObject(
+	USkeletalMesh* InSkeletalMesh, 
+	bool StricCheckMode)
+	:UCustomStandardObject(InSkeletalMesh, StricCheckMode),
+	SkeletalMeshObject(nullptr)
+{
+	if(InSkeletalMesh)
+	{
+		SkeletalMeshObject = InSkeletalMesh;
+	}
+}
+
+UCustomStandardSkeletalMeshObject::~UCustomStandardSkeletalMeshObject()
+{
+}
+
+TWeakObjectPtr<USkeletalMesh> UCustomStandardSkeletalMeshObject::Get()
+{
+	return this->SkeletalMeshObject;
+}
+
+bool UCustomStandardSkeletalMeshObject::IsSkeletalMesh()
+{
+	return this->Get().IsValid();
+}
+
+bool UCustomStandardSkeletalMeshObject::HasLODMeshDescription(int32 LODIdx)
+{
+	if (!this->IsSkeletalMesh() || !this->Get()->IsValidLODIndex(LODIdx))
 	{
 		return false;
 	}
 
-	USkeletalMesh* SKAsset = Cast<USkeletalMesh>(this->GetAsset());
-
-	return SKAsset->HasMeshDescription(LODIdx);
+	return this->Get()->HasMeshDescription(LODIdx);
 }
 
-int32 FCustomStandardSkeletalMeshData::GetLODNum()
+int32 UCustomStandardSkeletalMeshObject::GetLODNum()
 {
-	if (!this->bSkeletalMesh)
+	if (!this->IsSkeletalMesh())
+	{
+		return 0;
+	}
+	
+	return this->Get()->GetLODNum();
+}
+
+int32 UCustomStandardSkeletalMeshObject::GetLODTrianglesNum(int32 LODIndex)
+{
+	if (!this->IsSkeletalMesh() || !this->Get()->IsValidLODIndex(LODIndex))
 	{
 		return 0;
 	}
 
-	USkeletalMesh* SKAsset = Cast<USkeletalMesh>(this->GetAsset());
 
-	if (SKAsset) 
-	{
-		return SKAsset->GetLODNum();
-	};
-
-	return 0;
-}
-
-int32 FCustomStandardSkeletalMeshData::GetLODTrianglesNum(
-	int32 LODIndex)
-{
-	if (!this->bSkeletalMesh || !GetSkeletalMesh()->IsValidLODIndex(LODIndex))
-	{
-		return 0;
-	}
-
-	USkeletalMesh* SKAsset = Cast<USkeletalMesh>(this->GetAsset());
-
-	const FSkeletalMeshLODModel & SKMesh 
-		= SKAsset->GetImportedModel()->LODModels[LODIndex];
+	const FSkeletalMeshLODModel& SKMesh
+		= this->Get()->GetImportedModel()->LODModels[LODIndex];
 
 	int LODTriNum = 0;
 
-	for (int32 SectionIndex = 0; SectionIndex < SKMesh.Sections.Num(); ++SectionIndex)
+	for (int32 SectionIndex = 0; SectionIndex < SKMesh.Sections.Num() ; ++SectionIndex)
 	{
 		const FSkelMeshSection& Section = SKMesh.Sections[SectionIndex];
 
@@ -88,12 +117,9 @@ int32 FCustomStandardSkeletalMeshData::GetLODTrianglesNum(
 	return LODTriNum;
 }
 
-int32 FCustomStandardSkeletalMeshData::GetLODTrianglesNum(
-	int32 LODIndex, 
-	AssetsInfoDisplayLevel& DisplayLevel,
-	bool bStrictWithCategory)
+int32 UCustomStandardSkeletalMeshObject::GetLODTrianglesNum(int32 LODIndex, AssetsInfoDisplayLevel& DisplayLevel, bool bStrictWithCategory)
 {
-	int32 TNum = GetLODTrianglesNum(LODIndex);
+	int32 TNum = this->GetLODTrianglesNum(LODIndex);
 
 	if (!bStrictWithCategory)
 	{
@@ -134,7 +160,7 @@ int32 FCustomStandardSkeletalMeshData::GetLODTrianglesNum(
 
 		return TNum;
 	}
-	
+
 	FString SKAssetGlobalSection = "/AssetsManager/Global/Mesh";
 
 	TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
@@ -171,20 +197,17 @@ int32 FCustomStandardSkeletalMeshData::GetLODTrianglesNum(
 	DisplayLevel = UAssetsChecker::IntToDisplayLevel(LevelOut);
 
 	return TNum;
-
 }
 
-int32 FCustomStandardSkeletalMeshData::GetLODVerticesNum(int32 LODIndex)
+int32 UCustomStandardSkeletalMeshObject::GetLODVerticesNum(int32 LODIndex)
 {
-	if (!this->bSkeletalMesh || !GetSkeletalMesh()->IsValidLODIndex(LODIndex))
+	if (!this->IsSkeletalMesh() || !this->Get()->IsValidLODIndex(LODIndex))
 	{
 		return 0;
 	}
 
-	USkeletalMesh* SKAsset = Cast<USkeletalMesh>(this->GetAsset());
-
 	const FSkeletalMeshLODModel& SKMesh
-		= SKAsset->GetImportedModel()->LODModels[LODIndex];
+		= this->Get()->GetImportedModel()->LODModels[LODIndex];
 
 	int LODVertexNum = 0;
 
@@ -192,18 +215,15 @@ int32 FCustomStandardSkeletalMeshData::GetLODVerticesNum(int32 LODIndex)
 	{
 		const FSkelMeshSection& Section = SKMesh.Sections[SectionIndex];
 
-		LODVertexNum += Section.NumVertices < 0? 0 : Section.NumVertices;
+		LODVertexNum += Section.NumVertices < 0 ? 0 : Section.NumVertices;
 	}
 
 	return LODVertexNum;
 }
 
-int32 FCustomStandardSkeletalMeshData::GetLODVerticesNum(
-	int32 LODIndex, 
-	AssetsInfoDisplayLevel& DisplayLevel,
-	bool bStrictWithCategory)
+int32 UCustomStandardSkeletalMeshObject::GetLODVerticesNum(int32 LODIndex, AssetsInfoDisplayLevel& DisplayLevel, bool bStrictWithCategory)
 {
-	int32 VNum = GetLODVerticesNum(LODIndex);
+	int32 VNum = this->GetLODVerticesNum(LODIndex);
 
 	if (!bStrictWithCategory)
 	{
@@ -281,83 +301,102 @@ int32 FCustomStandardSkeletalMeshData::GetLODVerticesNum(
 	DisplayLevel = UAssetsChecker::IntToDisplayLevel(LevelOut);
 
 	return VNum;
-
-	
 }
 
-bool FCustomStandardSkeletalMeshData::GetAllowCPUAccess(int32 LODIndex)
+bool UCustomStandardSkeletalMeshObject::GetAllowCPUAccess(int32 LODIndex)
 {
-	if (!this->bSkeletalMesh || !GetSkeletalMesh()->IsValidLODIndex(LODIndex))
+	if (!this->IsSkeletalMesh() || !this->Get()->IsValidLODIndex(LODIndex))
 	{
 		return false;
 	}
 
-	USkeletalMesh* SKAsset = Cast<USkeletalMesh>(this->GetAsset());
-
-	return SKAsset->GetLODInfo(LODIndex)->bAllowCPUAccess;
+	return this->Get()->GetLODInfo(LODIndex)->bAllowCPUAccess;
 }
 
-void FCustomStandardSkeletalMeshData::SetLODsAllowCPUAccess(bool CPUAccess)
+bool UCustomStandardSkeletalMeshObject::SetAllowCPUAccess(int32 LODIndex, bool CPUAccessState)
 {
-	if (!this->bSkeletalMesh)
+	if (!this->IsSkeletalMesh() || !this->Get()->IsValidLODIndex(LODIndex))
+	{
+		return false;
+	}
+
+	if (this->Get()->IsValidLODIndex(LODIndex))
+	{
+		this->Get()->MarkPackageDirty();
+
+		if (GetAllowCPUAccess(LODIndex) != CPUAccessState)
+		{
+			this->Get()->Modify();
+
+			this->Get()->GetLODInfo(LODIndex)->bAllowCPUAccess = CPUAccessState;
+
+			FLODUtilities::RegenerateLOD(
+				this->Get().Get(),
+				GetTargetPlatformManagerRef().GetRunningTargetPlatform(),
+				this->Get()->GetLODNum()
+			);
+		};
+	}
+
+	return UAssetsChecker::SaveAsset(this->Get().Get());
+}
+
+void UCustomStandardSkeletalMeshObject::SetLODsAllowCPUAccess(bool CPUAccess)
+{
+	if (!this->IsSkeletalMesh())
 	{
 		return;
 	}
 
-	USkeletalMesh* SkelMesh = Cast<USkeletalMesh>(this->GetAsset());
-
-	for (int idx =0; idx < SkelMesh->GetLODNum(); ++idx)
+	for (int idx = 0; idx < this->Get()->GetLODNum(); ++idx)
 	{
 		if (GetAllowCPUAccess(idx) != CPUAccess)
 		{
-			SkelMesh->Modify();
+			this->Get()->Modify();
 
-			SkelMesh->GetLODInfo(idx)->bAllowCPUAccess = CPUAccess;
+			this->Get()->GetLODInfo(idx)->bAllowCPUAccess = CPUAccess;
 		}
 	}
 
 	FLODUtilities::RegenerateLOD(
-		SkelMesh,
+		this->Get().Get(),
 		GetTargetPlatformManagerRef().GetRunningTargetPlatform(),
-		SkelMesh->GetLODNum()
+		this->Get()->GetLODNum()
 	);
 
-	UEditorAssetLibrary::SaveAsset(this->GetObjectPathString());
+	UAssetsChecker::SaveAsset(this->Get().Get());
 
 	return;
 }
 
-TArray<FSkeletalMaterial> FCustomStandardSkeletalMeshData::GetMaterialSlots()
+TArray<FSkeletalMaterial> UCustomStandardSkeletalMeshObject::GetMaterialSlots()
 {
-	if (!this->bSkeletalMesh)
+	if (!this->IsSkeletalMesh())
 	{
 		return TArray<FSkeletalMaterial>();
 	}
 
-	USkeletalMesh* SkelMesh = Cast<USkeletalMesh>(this->GetAsset());
-
-	return SkelMesh->GetMaterials();
+	return this->Get()->GetMaterials();
 }
 
-UMaterialInterface* FCustomStandardSkeletalMeshData::GetSlotMaterialInterface(int32 SlotIndex)
+UMaterialInterface* UCustomStandardSkeletalMeshObject::GetSlotMaterialInterface(int32 SlotIndex)
 {
-	if (!bSkeletalMesh || SlotIndex >= GetMaterialSlots().Num())
+	if (!this->IsSkeletalMesh() || SlotIndex >= this->GetMaterialSlots().Num())
 	{
 		return nullptr;
 	}
 
-	return GetMaterialSlots()[SlotIndex].MaterialInterface;
-	
+	return this->GetMaterialSlots()[SlotIndex].MaterialInterface;
 }
 
-UMaterialInterface* FCustomStandardSkeletalMeshData::GetSlotMaterialInterface(FName SlotName)
+UMaterialInterface* UCustomStandardSkeletalMeshObject::GetSlotMaterialInterface(FName SlotName)
 {
-	if (!bSkeletalMesh)
+	if (!this->IsSkeletalMesh())
 	{
 		return nullptr;
 	}
 
-	for (FSkeletalMaterial mat : GetMaterialSlots())
+	for (FSkeletalMaterial mat : this->GetMaterialSlots())
 	{
 		if (mat.MaterialSlotName == SlotName)
 		{
@@ -368,19 +407,20 @@ UMaterialInterface* FCustomStandardSkeletalMeshData::GetSlotMaterialInterface(FN
 	return nullptr;
 }
 
-FName FCustomStandardSkeletalMeshData::GetSlotName(int32 SlotIndex)
+FName UCustomStandardSkeletalMeshObject::GetSlotName(int32 SlotIndex)
 {
-	if (!bSkeletalMesh || SlotIndex >= GetMaterialSlots().Num())
+	if (!this->IsSkeletalMesh() || SlotIndex >= this->GetMaterialSlots().Num())
 	{
 		return FName("");
 	}
 
-	return GetMaterialSlots()[SlotIndex].MaterialSlotName;
+	return this->GetMaterialSlots()[SlotIndex].MaterialSlotName;
+
 }
 
-int32 FCustomStandardSkeletalMeshData::GetSlotIndex(FName SlotName)
+int32 UCustomStandardSkeletalMeshObject::GetSlotIndex(FName SlotName)
 {
-	if (!bSkeletalMesh)
+	if (!this->IsSkeletalMesh())
 	{
 		return -1;
 	}
@@ -398,33 +438,9 @@ int32 FCustomStandardSkeletalMeshData::GetSlotIndex(FName SlotName)
 	return -1;
 }
 
-void FCustomStandardSkeletalMeshData::GetEditorOnlyLODSections(
-	int32 LODIndex,
-	TArray<FSkelMeshSection>& SectionsEx)
+TArray<int32> UCustomStandardSkeletalMeshObject::GetLODMaterialMap(int32 LODIndex)
 {
-	SectionsEx.Empty();
-
-	if(!bSkeletalMesh || !GetSkeletalMesh()->IsValidLODIndex(LODIndex))
-	{
-		return;
-	}
-	
-#if WITH_EDITOR
-	SectionsEx = GetSkeletalMesh()->GetImportedModel()->LODModels[LODIndex].Sections;
-#endif
-}
-
-void FCustomStandardSkeletalMeshData::ResetLODSectionsMaterial()
-{
-	for (int32 idx = 0; idx < GetLODNum(); ++idx)
-	{
-		SetLODMaterialMap(idx, TArray<int32>());
-	};
-}
-
-TArray<int32> FCustomStandardSkeletalMeshData::GetLODMaterialMap(int32 LODIndex)
-{
-	if (!bSkeletalMesh || !GetSkeletalMesh()->IsValidLODIndex(LODIndex))
+	if (!this->IsSkeletalMesh() || !this->Get()->IsValidLODIndex(LODIndex))
 	{
 		return TArray<int32>();
 	}
@@ -432,27 +448,47 @@ TArray<int32> FCustomStandardSkeletalMeshData::GetLODMaterialMap(int32 LODIndex)
 	return TArray<int32>();
 }
 
-bool FCustomStandardSkeletalMeshData::SetLODMaterialMap(
-	int32 LODIndex, 
-	TArray<int32> LODMaterialMap)
+void UCustomStandardSkeletalMeshObject::GetEditorOnlyLODSections(int32 LODIndex, TArray<FSkelMeshSection>& SectionsEx)
 {
-	if (!bSkeletalMesh || !GetSkeletalMesh()->IsValidLODIndex(LODIndex))
+#if WITH_EDITOR
+	SectionsEx.Empty();
+
+	if (!this->IsSkeletalMesh() || !this->Get()->IsValidLODIndex(LODIndex))
+	{
+		return;
+	}
+
+	SectionsEx = this->Get()->GetImportedModel()->LODModels[LODIndex].Sections;
+#endif
+}
+
+void UCustomStandardSkeletalMeshObject::ResetLODSectionsMaterial()
+{
+	for (int32 idx = 0; idx < this->GetLODNum(); ++idx)
+	{
+		this->SetLODMaterialMap(idx, TArray<int32>());
+	};
+}
+
+bool UCustomStandardSkeletalMeshObject::SetLODMaterialMap(int32 LODIndex, TArray<int32> LODMaterialMap)
+{
+	if (!this->IsSkeletalMesh() || !this->Get()->IsValidLODIndex(LODIndex))
 	{
 		return false;
 	}
 
 #if WITH_EDITOR
 	TArray<FSkelMeshSection> SectionEx;
-	GetEditorOnlyLODSections(LODIndex, SectionEx);
-	if (LODMaterialMap.Num()<SectionEx.Num())
+	this->GetEditorOnlyLODSections(LODIndex, SectionEx);
+	if (LODMaterialMap.Num() < SectionEx.Num())
 	{
-		for (int32 idx = 0; idx < SectionEx.Num()-LODMaterialMap.Num();++idx)
+		for (int32 idx = 0; idx < SectionEx.Num() - LODMaterialMap.Num(); ++idx)
 		{
 			LODMaterialMap.Add(-1);
 		}
 	}
 #else
-	if (LODMaterialMap.Num()<GetMaterialSlots().Num())
+	if (LODMaterialMap.Num() < GetMaterialSlots().Num())
 	{
 		for (int32 idx = 0; idx < GetMaterialSlots().Num() - LODMaterialMap.Num(); ++idx)
 		{
@@ -461,78 +497,7 @@ bool FCustomStandardSkeletalMeshData::SetLODMaterialMap(
 	}
 #endif
 
-	GetSkeletalMesh()->GetLODInfo(LODIndex)->LODMaterialMap = LODMaterialMap;
+	this->Get()->GetLODInfo(LODIndex)->LODMaterialMap = LODMaterialMap;
 
-	return UEditorAssetLibrary::SaveAsset(this->GetObjectPathString());
-}
-
-bool FCustomStandardSkeletalMeshData::SetAllowCPUAccess(
-	int32 SourceLODIndex, 
-	bool CPUAccessState)
-{
-	if (!this->bSkeletalMesh || !GetSkeletalMesh()->IsValidLODIndex(SourceLODIndex))
-	{
-		return false;
-	}
-
-	USkeletalMesh* SkelMesh = Cast<USkeletalMesh>(this->GetAsset());
-
-	if (SkelMesh->IsValidLODIndex(SourceLODIndex))
-	{
-		
-		if (GetAllowCPUAccess(SourceLODIndex) != CPUAccessState)
-		{
-			SkelMesh->Modify();
-
-			SkelMesh->GetLODInfo(SourceLODIndex)->bAllowCPUAccess = CPUAccessState;
-
-			FLODUtilities::RegenerateLOD(
-				SkelMesh,
-				GetTargetPlatformManagerRef().GetRunningTargetPlatform(),
-				SkelMesh->GetLODNum()
-				);
-		};
-	}
-
-	return UEditorAssetLibrary::SaveAsset(this->GetObjectPathString());
-}
-
-UCustomStandardSkeletalMeshObject::UCustomStandardSkeletalMeshObject(
-	UObject* InObj, 
-	bool StricCheckMode)
-	:UCustomStandardObject(InObj,StricCheckMode),
-	SkeletalMeshObject(nullptr)
-{
-	USkeletalMesh * InSkeletal = Cast<USkeletalMesh>(InObj);
-	
-	if(InSkeletal)
-	{
-		SkeletalMeshObject = InSkeletal;
-	}
-}
-
-UCustomStandardSkeletalMeshObject::UCustomStandardSkeletalMeshObject(
-	USkeletalMesh* InSkeletalMesh, 
-	bool StricCheckMode)
-	:UCustomStandardObject(InSkeletalMesh, StricCheckMode),
-	SkeletalMeshObject(nullptr)
-{
-	if(InSkeletalMesh)
-	{
-		SkeletalMeshObject = InSkeletalMesh;
-	}
-}
-
-UCustomStandardSkeletalMeshObject::~UCustomStandardSkeletalMeshObject()
-{
-}
-
-TWeakObjectPtr<USkeletalMesh> UCustomStandardSkeletalMeshObject::Get()
-{
-	return this->SkeletalMeshObject;
-}
-
-bool UCustomStandardSkeletalMeshObject::IsSkeletalMesh()
-{
-	return this->Get().IsValid();
+	return UAssetsChecker::SaveAsset(this->Get().Get());
 }

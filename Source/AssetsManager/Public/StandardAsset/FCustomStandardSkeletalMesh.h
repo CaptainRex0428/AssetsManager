@@ -29,6 +29,34 @@ public:
 
 	bool IsSkeletalMesh();
 
+	bool HasLODMeshDescription(int32 LODIdx);
+
+	int32 GetLODNum();
+	int32 GetLODTrianglesNum(int32 LODIndex);
+	int32 GetLODTrianglesNum(int32 LODIndex, AssetsInfoDisplayLevel& DisplayLevel, bool bStrictWithCategory = false);
+	int32 GetLODVerticesNum(int32 LODIndex);
+	int32 GetLODVerticesNum(int32 LODIndex, AssetsInfoDisplayLevel& DisplayLevel, bool bStrictWithCategory = false);
+
+	bool GetAllowCPUAccess(int32 LODIndex = 0);
+	bool SetAllowCPUAccess(int32 LODIndex = 0, bool CPUAccessState = true);
+	void SetLODsAllowCPUAccess(bool CPUAccess = true);
+
+	TArray<FSkeletalMaterial> GetMaterialSlots();
+	UMaterialInterface* GetSlotMaterialInterface(int32 SlotIndex);
+	UMaterialInterface* GetSlotMaterialInterface(FName SlotName);
+
+	FName GetSlotName(int32 SlotIndex);
+	int32 GetSlotIndex(FName SlotName);
+
+	// Incomplete !!!
+	TArray<int32> GetLODMaterialMap(int32 LODIndex);
+
+	void GetEditorOnlyLODSections(int32 LODIndex, TArray<FSkelMeshSection>& SectionsEx);
+
+	void ResetLODSectionsMaterial();
+
+	bool SetLODMaterialMap(int32 LODIndex, TArray<int32> LODMaterialMap);
+
 private:
 	TWeakObjectPtr<USkeletalMesh> SkeletalMeshObject;
 
@@ -44,34 +72,7 @@ public:
 	~FCustomStandardSkeletalMeshData();
 
 	UCustomStandardSkeletalMeshObject& Get();
-
 	USkeletalMesh* GetSkeletalMesh();
-
-	bool HasLODMeshDescription(int32 LODIdx);
-
-	int32 GetLODNum();
-	int32 GetLODTrianglesNum(int32 LODIndex);
-	int32 GetLODTrianglesNum(int32 LODIndex,AssetsInfoDisplayLevel & DisplayLevel, bool bStrictWithCategory = false);
-	int32 GetLODVerticesNum(int32 LODIndex);
-	int32 GetLODVerticesNum(int32 LODIndex, AssetsInfoDisplayLevel& DisplayLevel, bool bStrictWithCategory = false);
-
-	bool GetAllowCPUAccess(int32 LODIndex = 0);
-	bool SetAllowCPUAccess(int32 LODIndex = 0,bool CPUAccessState=true);
-	void SetLODsAllowCPUAccess(bool CPUAccess = true);
-
-	TArray<FSkeletalMaterial> GetMaterialSlots();
-	UMaterialInterface* GetSlotMaterialInterface(int32 SlotIndex);
-	UMaterialInterface* GetSlotMaterialInterface(FName SlotName);
-
-	FName GetSlotName(int32 SlotIndex);
-	int32 GetSlotIndex(FName SlotName);
-
-	TArray<int32> GetLODMaterialMap(int32 LODIndex);
-	bool SetLODMaterialMap(int32 LODIndex, TArray<int32> LODMaterialMap);
-
-	void GetEditorOnlyLODSections(int32 LODIndex, TArray<FSkelMeshSection>& SectionsEx);
-
-	void ResetLODSectionsMaterial();
 
 private:
 

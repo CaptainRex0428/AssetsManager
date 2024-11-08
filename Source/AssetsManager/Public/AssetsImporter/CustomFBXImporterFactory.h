@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Factories/FbxFactory.h"
 
-#include "FBXImporterFactory.generated.h"
+#include "CustomFBXImporterFactory.generated.h"
 
 /**
  * 
