@@ -65,7 +65,7 @@ void AAssetsDisplay::CheckComponentsLOD(LODCheckType CheckType, int32 LOD, int32
 		SetComponentsMinLOD(LOD);
 
 		// SetGroomComponentsForcedLOD(0);
-		SetGroomComponentsLODBias(LOD, GroomGroupIndex);
+		SetGroomComponentsLODBias(((LOD + GroomRelative > 0) ? LOD + GroomRelative : 0), GroomGroupIndex);
 	}
 
 	if (CheckType == LODCheckType::ForcedLOD)
