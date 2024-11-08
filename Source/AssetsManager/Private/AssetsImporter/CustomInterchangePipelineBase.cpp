@@ -3,6 +3,8 @@
 
 #include "AssetsImporter/CustomInterchangePipelineBase.h"
 #include "AssetsChecker/AssetsChecker.h"
+#include "StandardAsset/FCustomStandardAsset.h"
+#include "StandardAsset/FCustomStandardSkeletalMesh.h"
 #include "ManagerLogger.h"
 
 void UCustomInterchangePipeline_Base::ExecutePostImportPipeline(
@@ -49,13 +51,31 @@ void UCustomAssetsGenericInterchangePipeline::ExecutePostFactoryPipeline(
 {
 	MsgLog(FString::Printf(L"ExePostFactoryPipeline:%s", *CreatedAsset->GetFName().ToString()));
 
-	USkeletalMesh* SkeletalMeshImported = Cast<USkeletalMesh>(CreatedAsset);
-	
-	if (SkeletalMeshImported)
-	{
-		this->bShouldDeleteImportedAssets = true;
+	// Judge SkeletalMesh 
 
-		return;
+	UCustomStandardSkeletalMeshObject StandardSK(CreatedAsset);
+	
+	if (StandardSK.IsSkeletalMesh())
+	{
+		FString ErrorInfo = "";
+
+		if(StandardSK.IsPrefixNonstandarized())
+		{
+			this->bShouldDeleteImportedAssets = true;
+			ErrorInfo += "- Prefix Error\n";
+		}
+		
+		if(StandardSK.GetCommonAssetCategory() == AssetCategory::Character && StandardSK.GetLODTrianglesNum(0) > 500000)
+		{
+			this->bShouldDeleteImportedAssets = true;
+			ErrorInfo += "- Triangle count exceeds the standard limit.\n";
+		}
+
+		if (this->bShouldDeleteImportedAssets)
+		{
+			DlgMsgLog(EAppMsgType::Ok,FString::Printf(L"%s:\n%s",*StandardSK.GetClassValidObjectName(),*ErrorInfo));
+			return;
+		}
 	}
 
 	Super::ExecutePostFactoryPipeline(BaseNodeContainer, NodeKey, CreatedAsset, bIsAReimport);
