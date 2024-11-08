@@ -28,7 +28,7 @@ public:
 	// Batching Check
 
 	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
-	virtual void CheckComponentsLOD(LODCheckType CheckType, int32 LOD, int32 GroomGroupIndex = 0);
+	virtual void CheckComponentsLOD(LODCheckType CheckType, int32 LOD, int32 GroomGroupIndex = 0,int32 GroomRelative = 0);
 
 	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
 	virtual void ResetComponentsLOD(int32 GroomGroupIndex = 0);

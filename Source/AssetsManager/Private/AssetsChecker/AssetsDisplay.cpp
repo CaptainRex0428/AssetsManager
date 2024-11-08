@@ -57,7 +57,7 @@ void AAssetsDisplay::SetComponentsForcedLOD(int32 ForcedLOD)
 	}
 }
 
-void AAssetsDisplay::CheckComponentsLOD(LODCheckType CheckType, int32 LOD, int32 GroomGroupIndex)
+void AAssetsDisplay::CheckComponentsLOD(LODCheckType CheckType, int32 LOD, int32 GroomGroupIndex, int32 GroomRelative)
 {
 	if(CheckType == LODCheckType::MinLOD)
 	{
@@ -73,8 +73,7 @@ void AAssetsDisplay::CheckComponentsLOD(LODCheckType CheckType, int32 LOD, int32
 		SetComponentsMinLOD(0);
 		SetComponentsForcedLOD(LOD);
 
-		SetGroomComponentsLODBias(LOD, GroomGroupIndex);
-		// SetGroomComponentsForcedLOD(LOD);
+		SetGroomComponentsLODBias(((LOD+GroomRelative > 0) ? LOD + GroomRelative : 0), GroomGroupIndex);
 	}
 }
 
@@ -82,7 +81,7 @@ void AAssetsDisplay::ResetComponentsLOD(int32 GroomGroupIndex)
 {
 	SetComponentsMinLOD(0);
 	SetComponentsForcedLOD(0);
-	// SetGroomComponentsForcedLOD(0);
+
 	SetGroomComponentsLODBias(0, GroomGroupIndex);
 
 }
