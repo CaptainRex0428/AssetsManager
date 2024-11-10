@@ -125,7 +125,7 @@ int32 UCustomStandardSkeletalMeshObject::GetLODTrianglesNum(int32 LODIndex, Asse
 	{
 		FString SKAssetGlobalSection = "/AssetsManager/Global/Mesh";
 
-		TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
+		TArray<FString> ValidLevels = UManagerConfig::Get().GenerateStructKeyValueArray(
 			*SKAssetGlobalSection,
 			L"AssetTrianglesNumLevelDivide",
 			L"Level");
@@ -134,7 +134,7 @@ int32 UCustomStandardSkeletalMeshObject::GetLODTrianglesNum(int32 LODIndex, Asse
 
 		for (int32 levelIdx = 0; levelIdx < ValidLevels.Num(); ++levelIdx)
 		{
-			TSharedPtr<FString> LevelValue = FConfigManager::Get().FindInSectionStructArray(
+			TSharedPtr<FString> LevelValue = UManagerConfig::Get().FindInSectionStructArray(
 				*SKAssetGlobalSection,
 				L"AssetTrianglesNumLevelDivide",
 				L"Level",
@@ -146,7 +146,7 @@ int32 UCustomStandardSkeletalMeshObject::GetLODTrianglesNum(int32 LODIndex, Asse
 				continue;
 			}
 
-			int BorderSize = FConfigManager::Get().SToI(*LevelValue);
+			int BorderSize = UManagerConfig::Get().SToI(*LevelValue);
 
 			LevelOut = levelIdx;
 
@@ -163,7 +163,7 @@ int32 UCustomStandardSkeletalMeshObject::GetLODTrianglesNum(int32 LODIndex, Asse
 
 	FString SKAssetGlobalSection = "/AssetsManager/Global/Mesh";
 
-	TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
+	TArray<FString> ValidLevels = UManagerConfig::Get().GenerateStructKeyValueArray(
 		*SKAssetGlobalSection,
 		L"AssetTrianglesNumLevelDivide",
 		L"Level");
@@ -172,7 +172,7 @@ int32 UCustomStandardSkeletalMeshObject::GetLODTrianglesNum(int32 LODIndex, Asse
 
 	for (int32 levelIdx = 0; levelIdx < ValidLevels.Num(); ++levelIdx)
 	{
-		TSharedPtr<FString> LevelValue = FConfigManager::Get().FindInSectionStructArray(
+		TSharedPtr<FString> LevelValue = UManagerConfig::Get().FindInSectionStructArray(
 			*SKAssetGlobalSection,
 			L"AssetTrianglesNumLevelDivide",
 			L"Level",
@@ -184,7 +184,7 @@ int32 UCustomStandardSkeletalMeshObject::GetLODTrianglesNum(int32 LODIndex, Asse
 			continue;
 		}
 
-		int BorderSize = FConfigManager::Get().SToI(*LevelValue);
+		int BorderSize = UManagerConfig::Get().SToI(*LevelValue);
 
 		LevelOut = levelIdx;
 
@@ -229,7 +229,7 @@ int32 UCustomStandardSkeletalMeshObject::GetLODVerticesNum(int32 LODIndex, Asset
 	{
 		FString SKAssetGlobalSection = "/AssetsManager/Global/Mesh";
 
-		TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
+		TArray<FString> ValidLevels = UManagerConfig::Get().GenerateStructKeyValueArray(
 			*SKAssetGlobalSection,
 			L"AssetVerticesNumLevelDivide",
 			L"Level");
@@ -238,7 +238,7 @@ int32 UCustomStandardSkeletalMeshObject::GetLODVerticesNum(int32 LODIndex, Asset
 
 		for (int32 levelIdx = 0; levelIdx < ValidLevels.Num(); ++levelIdx)
 		{
-			TSharedPtr<FString> LevelValue = FConfigManager::Get().FindInSectionStructArray(
+			TSharedPtr<FString> LevelValue = UManagerConfig::Get().FindInSectionStructArray(
 				*SKAssetGlobalSection,
 				L"AssetVerticesNumLevelDivide",
 				L"Level",
@@ -250,7 +250,7 @@ int32 UCustomStandardSkeletalMeshObject::GetLODVerticesNum(int32 LODIndex, Asset
 				continue;
 			}
 
-			int BorderSize = FConfigManager::Get().SToI(*LevelValue);
+			int BorderSize = UManagerConfig::Get().SToI(*LevelValue);
 
 			LevelOut = levelIdx;
 
@@ -267,7 +267,7 @@ int32 UCustomStandardSkeletalMeshObject::GetLODVerticesNum(int32 LODIndex, Asset
 
 	FString SKAssetGlobalSection = "/AssetsManager/Global/Mesh";
 
-	TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
+	TArray<FString> ValidLevels = UManagerConfig::Get().GenerateStructKeyValueArray(
 		*SKAssetGlobalSection,
 		L"AssetVerticesNumLevelDivide",
 		L"Level");
@@ -276,7 +276,7 @@ int32 UCustomStandardSkeletalMeshObject::GetLODVerticesNum(int32 LODIndex, Asset
 
 	for (int32 levelIdx = 0; levelIdx < ValidLevels.Num(); ++levelIdx)
 	{
-		TSharedPtr<FString> LevelValue = FConfigManager::Get().FindInSectionStructArray(
+		TSharedPtr<FString> LevelValue = UManagerConfig::Get().FindInSectionStructArray(
 			*SKAssetGlobalSection,
 			L"AssetVerticesNumLevelDivide",
 			L"Level",
@@ -288,7 +288,7 @@ int32 UCustomStandardSkeletalMeshObject::GetLODVerticesNum(int32 LODIndex, Asset
 			continue;
 		}
 
-		int BorderSize = FConfigManager::Get().SToI(*LevelValue);
+		int BorderSize = UManagerConfig::Get().SToI(*LevelValue);
 
 		LevelOut = levelIdx;
 

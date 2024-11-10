@@ -33,6 +33,7 @@ private:
 	void OnAssetsManagerWithCurrentPathButtonClicked();
 	void OnMaterialCreatButtonClicked();
 	void OnLookDevButtonClicked();
+	void OnCharacterLookDevButtonClicked();
 
 	
 	TArray<FString> SelectedContentFolderPaths;

@@ -42,7 +42,7 @@ int64 FCustomStandardAssetData::GetDiskSize(
 
 	FString AssetGlobalSection = "/AssetsManager/Global";
 
-	TArray<FString> ValidLevels = FConfigManager::Get().GenerateStructKeyValueArray(
+	TArray<FString> ValidLevels = UManagerConfig::Get().GenerateStructKeyValueArray(
 		*AssetGlobalSection,
 		L"AssetDiskSizeLevelDivide",
 		L"Level");
@@ -51,7 +51,7 @@ int64 FCustomStandardAssetData::GetDiskSize(
 
 	for (int32 levelIdx = 0; levelIdx < ValidLevels.Num(); ++levelIdx)
 	{
-		TSharedPtr<FString> LevelValue = FConfigManager::Get().FindInSectionStructArray(
+		TSharedPtr<FString> LevelValue = UManagerConfig::Get().FindInSectionStructArray(
 			*AssetGlobalSection,
 			L"AssetDiskSizeLevelDivide",
 			L"Level",
@@ -63,7 +63,7 @@ int64 FCustomStandardAssetData::GetDiskSize(
 			continue;
 		}
 
-		int BorderSize = FConfigManager::Get().SToI(*LevelValue);
+		int BorderSize = UManagerConfig::Get().SToI(*LevelValue);
 
 		LevelOut = levelIdx;
 
@@ -93,7 +93,7 @@ UCustomStandardObject::UCustomStandardObject(UObject* InObj, bool StricCheckMode
 
 	FString GlobalSection = FPaths::Combine(ModuleConfigMaster, TEXT("Global"));
 
-	if (FConfigManager::Get().GetSection(*GlobalSection))
+	if (UManagerConfig::Get().GetSection(*GlobalSection))
 	{
 		this -> AssetConfigGlobalSection = MakeShareable(new FString(GlobalSection));
 	}
@@ -206,7 +206,7 @@ bool UCustomStandardObject::IsPrefixNonstandarized()
 		if (StandardClassName)
 		{
 			TSharedPtr<FString> StandardPrefixPtr =
-				FConfigManager::Get().FindInSectionStructArray(
+				UManagerConfig::Get().FindInSectionStructArray(
 					**AssetConfigGlobalSection,
 					"UClassPrefix",
 					"UClassName",
@@ -259,7 +259,7 @@ const TSharedPtr<FString> UCustomStandardObject::GetAssetStandardPrefix()
 	}
 
 	TSharedPtr<FString> PrefixFound =
-		FConfigManager::Get().FindInSectionStructArray(
+		UManagerConfig::Get().FindInSectionStructArray(
 			**AssetConfigGlobalSection,
 			"UClassPrefix",
 			"UClassName",

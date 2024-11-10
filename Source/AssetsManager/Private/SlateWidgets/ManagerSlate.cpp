@@ -144,7 +144,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	FString AssetGlobalSection = "/AssetsManager/Global";
 	TArray<FString> Keys = 
-	FConfigManager::Get().GenerateStructKeyValueArray(
+	UManagerConfig::Get().GenerateStructKeyValueArray(
 		*AssetGlobalSection,
 		"UClassPrefix",
 		"UClassName");

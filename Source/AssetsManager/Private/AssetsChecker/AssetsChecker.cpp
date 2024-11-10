@@ -11,6 +11,8 @@
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
 
+#include "UObject/SavePackage.h"
+
 #include "ConfigManager.h"
 
 #include "ObjectTools.h"
@@ -18,6 +20,8 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "ContentBrowserModule.h"
 #include "IContentBrowserSingleton.h"
+
+
 
 
 #define PATHLOOPIGNORE(Path) if (##Path.Contains("Developers") || ##Path.Contains("Collections")) continue;
@@ -97,7 +101,7 @@ TArray<FString> UAssetsChecker::GetValidCategoryTag(
 	AssetCategory Category,
 	FString ConfigSection)
 {
-	if (FConfigManager::Get().GetSection(*ConfigSection))
+	if (UManagerConfig::Get().GetSection(*ConfigSection))
 	{
 		TArray<FConfigValue> TagValue;
 		TagValue.Empty();
@@ -107,35 +111,35 @@ TArray<FString> UAssetsChecker::GetValidCategoryTag(
 
 		case AssetCategory::Character:
 		{
-			TagValue = FConfigManager::Get().GetSectionValuesArray(
+			TagValue = UManagerConfig::Get().GetSectionValuesArray(
 				*ConfigSection,
 				"CharacterCategoryTag");
 			break;
 		}
 		case AssetCategory::Effect:
 		{
-			TagValue = FConfigManager::Get().GetSectionValuesArray(
+			TagValue = UManagerConfig::Get().GetSectionValuesArray(
 				*ConfigSection,
 				"EffectCategoryTag");
 			break;
 		}
 		case AssetCategory::Scene:
 		{
-			TagValue = FConfigManager::Get().GetSectionValuesArray(
+			TagValue = UManagerConfig::Get().GetSectionValuesArray(
 				*ConfigSection,
 				"SceneCategoryTag");
 			break;
 		}
 		case AssetCategory::UI:
 		{
-			TagValue = FConfigManager::Get().GetSectionValuesArray(
+			TagValue = UManagerConfig::Get().GetSectionValuesArray(
 				*ConfigSection,
 				"UICategoryTag");
 			break;
 		}
 		case AssetCategory::Hair:
 		{
-			TagValue = FConfigManager::Get().GetSectionValuesArray(
+			TagValue = UManagerConfig::Get().GetSectionValuesArray(
 				*ConfigSection,
 				"HairCategoryTag");
 			break;
@@ -1909,19 +1913,24 @@ bool UAssetsChecker::SaveAsset(const FString& AssetToSave, bool bOnlyIfIsDirty)
 bool UAssetsChecker::SaveAsset(UObject* ObjectToSave)
 {
 	if (ObjectToSave && ObjectToSave->MarkPackageDirty())
-	{
+    {
+        UPackage* AssetPackage = ObjectToSave->GetOutermost();
 
-		UPackage* AssetPackage = ObjectToSave->GetOutermost();
+        if (AssetPackage)
+        {
+            FString PackageFilePath = FPackageName::LongPackageNameToFilename(AssetPackage->GetName(), FPackageName::GetAssetPackageExtension());
 
-		if (AssetPackage)
-		{
-			FString PackageFilePath = FPackageName::LongPackageNameToFilename(AssetPackage->GetName(), FPackageName::GetAssetPackageExtension());
+            FSavePackageArgs SaveArgs;
+            SaveArgs.TopLevelFlags = EObjectFlags::RF_Public | EObjectFlags::RF_Standalone;
+            SaveArgs.Error = GError;
+            SaveArgs.bForceByteSwapping = true;
+            SaveArgs.SaveFlags = SAVE_None;
 
-			return UPackage::SavePackage(AssetPackage, ObjectToSave, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFilePath, GError, nullptr, true, true, SAVE_None);
-		}
+            return UPackage::SavePackage(AssetPackage, ObjectToSave, *PackageFilePath, SaveArgs);
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	return false;
+    return false;
 }

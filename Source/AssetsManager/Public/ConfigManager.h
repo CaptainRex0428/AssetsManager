@@ -7,6 +7,11 @@
 #include "ObjectTools.h"
 #include "AssetToolsModule.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetsChecker/AssetsDisplay.h"
+
+#include "UObject/NoExportTypes.h"
+
+#include "ConfigManager.generated.h"
 
 #define ModuleLanguage_ZH 1
 
@@ -51,14 +56,14 @@ enum class AssetsInfoDisplayLevel : uint8
 /**
  * 
  */
-class ASSETSMANAGER_API FConfigManager
+class ASSETSMANAGER_API UManagerConfig
 {
-
+	 
 public:
 
-	FConfigManager(FConfigManager&) = delete;
+	UManagerConfig(UManagerConfig&) = delete;
 	
-	static FConfigManager& Get();
+	static UManagerConfig& Get();
 
 	double SToD(const FString& string);
 	float SToF(const FString& string);
@@ -98,11 +103,27 @@ public:
 		const FString& ToFindKey);
 
 private:
-	FConfigManager();
-	virtual ~FConfigManager() = default;
+	UManagerConfig();
+	virtual ~UManagerConfig() = default;
 
 private:
 
 	FString ConfigPath;
 	FString DefaultConfigPath;
+};
+
+
+
+UCLASS(config = Editor, defaultconfig)
+class ASSETSMANAGER_API UManagerSettings : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	//  æ¿˝≈‰÷√—°œÓ
+	UPROPERTY(EditAnywhere, config, Category = "Global")
+	bool bEnableFeatureX;
+
+	UPROPERTY(EditAnywhere, config, Category = "CharacterLookDev")
+	TSoftObjectPtr<UBlueprint> StandardCharacterDisplay;
 };
