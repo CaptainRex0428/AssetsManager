@@ -122,6 +122,10 @@ class ASSETSMANAGER_API UManagerSettings : public UObject
 public:
 	// ≈‰÷√—°œÓ
 
-	UPROPERTY(EditAnywhere, config, Category = "CharacterLookDev")
+	UPROPERTY(EditAnywhere, config, Category = "LookDev")
 	TSubclassOf<AAssetsDisplay> StandardCharacterDisplay;
+
+	UPROPERTY(EditAnywhere, config, Category = "LookDev")
+	TSoftObjectPtr<UWorld> LevelAsset;
+
 };

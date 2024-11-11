@@ -29,6 +29,19 @@
 
 #include "AssetsImporter/CustomFBXImporterFactory.h"
 
+#include "EditorLevelUtils.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/LevelStreamingDynamic.h"
+#include "LevelEditorSubsystem.h"
+#include "Engine/LevelStreaming.h"
+#include "Engine/LevelStreamingAlwaysLoaded.h"
+#include "Engine/World.h"
+#include "EditorLevelUtils.h"
+
+#include "FileHelpers.h"
+#include "Interfaces/IMainFrameModule.h"
+#include "Modules/ModuleManager.h"
+
 #include "EditorAssetLibrary.h"
 #include "ObjectTools.h"
 
@@ -206,7 +219,49 @@ void FAssetsManagerModule::OnMaterialCreatButtonClicked()
 
 void FAssetsManagerModule::OnLookDevButtonClicked()
 {
-	UAssetsCreator::CreateLevel(L"/Script/Engine.World'/Game/Level_LookDevTemp.Level_LookDevTemp'", L"/Script/Engine.World'/AssetsManager/LookDev/LookDev.LookDev'");
+	const UManagerSettings* Settings = GetDefault<UManagerSettings>();
+	if (!Settings)
+	{
+		MsgLog("Get Settings Error");
+		return;
+	}
+
+	UWorld* TemplateLevel = Settings->LevelAsset.LoadSynchronous();
+	if (!TemplateLevel)
+	{
+		MsgLog("Level asset not found or failed to load.");
+		return;
+	}
+	
+	if(!FEditorFileUtils::SaveDirtyPackages(true, true, false))
+	{
+		return;
+	}
+
+	UWorld* NewLevel = GEditor->NewMap(false);
+	// FEditorFileUtils::ResetLevelFilenames();
+
+	if (!NewLevel)
+	{
+		MsgLog("Creating new level failed.");
+		return;
+	}
+
+	NewLevel->Rename(TEXT("LookDev"), nullptr);
+	
+	FString LevelPackageName = Settings->LevelAsset.GetLongPackageName();
+	TSubclassOf<ULevelStreaming> LevelStreamingClass = ULevelStreamingAlwaysLoaded::StaticClass();
+	FTransform LevelTransform = FTransform::Identity;
+	ULevelStreaming* LevelStreaming = UEditorLevelUtils::AddLevelToWorld(NewLevel, *LevelPackageName, LevelStreamingClass, LevelTransform);
+	
+	if (LevelStreaming)
+	{
+		LevelStreaming->SetShouldBeVisible(true);
+		LevelStreaming->SetShouldBeLoaded(true);
+	}
+
+	IMainFrameModule& MainFrameModule = FModuleManager::Get().LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
+	MainFrameModule.SetLevelNameForWindowTitle(TEXT("LookDev *"));
 }
 
 void FAssetsManagerModule::OnCharacterLookDevButtonClicked()

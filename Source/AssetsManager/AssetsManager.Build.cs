@@ -57,8 +57,7 @@ public class AssetsManager : ModuleRules
 				"InterchangeEngine",
 				"InterchangePipelines",
 				"InterchangeNodes",
-                "CoreUObject"
-
+                "EditorSubsystem"
                 
 				// ... add other public dependencies that you statically link with here ...
 			}
