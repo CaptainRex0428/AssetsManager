@@ -120,10 +120,8 @@ class ASSETSMANAGER_API UManagerSettings : public UObject
 	GENERATED_BODY()
 
 public:
-	// 示例配置选项
-	UPROPERTY(EditAnywhere, config, Category = "Global")
-	bool bEnableFeatureX;
+	// 配置选项
 
 	UPROPERTY(EditAnywhere, config, Category = "CharacterLookDev")
-	TSoftObjectPtr<UBlueprint> StandardCharacterDisplay;
+	TSubclassOf<AAssetsDisplay> StandardCharacterDisplay;
 };

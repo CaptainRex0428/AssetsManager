@@ -7,6 +7,7 @@ ADSAssetsDisplay::ADSAssetsDisplay()
 {
 	Body = CreateOptionalDefaultSubobject<USkeletalMeshComponent>("Body");
 	Body->SetVisibility(true);
+	Body->SetupAttachment(DisplayRoot);
 	Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Body->SetRenderCustomDepth(true);
 	Body->SetCastInsetShadow(true);
