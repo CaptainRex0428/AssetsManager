@@ -211,7 +211,6 @@ void FAssetsManagerModule::OnLookDevButtonClicked()
 
 void FAssetsManagerModule::OnCharacterLookDevButtonClicked()
 {
-	NtfyMsgLog(L"Character LookDev");
 
 	UWorld* World = GEditor->GetEditorWorldContext().World();
 	
