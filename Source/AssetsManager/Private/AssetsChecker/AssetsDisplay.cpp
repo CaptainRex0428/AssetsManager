@@ -12,6 +12,8 @@ AAssetsDisplay::AAssetsDisplay()
 	PrimaryActorTick.bCanEverTick = true;
 
 	DisplayRoot = CreateOptionalDefaultSubobject<UBillboardComponent>("DisplayRoot");
+
+	RootComponent = DisplayRoot;
 }
 
 void AAssetsDisplay::SetComponentsMinLOD(int32 MinLOD)

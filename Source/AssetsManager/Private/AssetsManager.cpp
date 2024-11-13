@@ -283,15 +283,16 @@ void FAssetsManagerModule::OnCharacterLookDevButtonClicked()
 		return;
 	}
 
-	if(!Settings->StandardCharacterDisplay)
+	UBlueprint* Blueprint = Settings->StandardCharacterDisplay.LoadSynchronous();
+
+	if (!Blueprint)
 	{
-		MsgLog(L"Manager settings not set.");
+		MsgLog(L"Blueprint asset not found or failed to load.");
+		return;
 	}
 
-	// viewport
-
+	// Viewport
 	FEditorViewportClient* ViewportClient = (FEditorViewportClient*)GEditor->GetActiveViewport()->GetClient();
-
 	if (!ViewportClient)
 	{
 		MsgLog("Lost viewport.");
@@ -304,19 +305,9 @@ void FAssetsManagerModule::OnCharacterLookDevButtonClicked()
 	FVector ForwardVector = SpawnRotation.Vector();
 	SpawnLocation += ForwardVector * 500.0f;
 
-	// spawn
-
-	UBlueprint* Blueprint = Settings->StandardCharacterDisplay.Get();
-
-	if (!Blueprint)
-	{
-		MsgLog(L"Blueprint error.");
-		return;
-	}
-
+	// Spawn the actor
 	UClass* ActorClass = Blueprint->GeneratedClass;
-
-	if (!ActorClass) 
+	if (!ActorClass)
 	{
 		MsgLog(L"Blueprint class initialize error.");
 		return;
@@ -328,8 +319,7 @@ void FAssetsManagerModule::OnCharacterLookDevButtonClicked()
 		return;
 	}
 	
-	AActor* SpawnedActor = World->SpawnActor<AActor>(ActorClass, SpawnLocation, FRotator(0,0,0));
-	
+	AActor* SpawnedActor = World->SpawnActor<AActor>(ActorClass, SpawnLocation, FRotator(0, 0, 0));
 	if (SpawnedActor)
 	{
 		MsgLog("Actor spawned.");

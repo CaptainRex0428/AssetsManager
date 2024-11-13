@@ -3,7 +3,8 @@
 
 #include "DSAssets/DSAssetsDisplay.h"
 
-ADSAssetsDisplay::ADSAssetsDisplay()
+ADSAssetsDisplay::ADSAssetsDisplay():
+	AAssetsDisplay()
 {
 	Body = CreateOptionalDefaultSubobject<USkeletalMeshComponent>("Body");
 	Body->SetVisibility(true);
