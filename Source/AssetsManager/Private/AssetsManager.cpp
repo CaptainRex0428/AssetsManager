@@ -305,7 +305,30 @@ void FAssetsManagerModule::OnCharacterLookDevButtonClicked()
 	SpawnLocation += ForwardVector * 500.0f;
 
 	// spawn
-	AActor* SpawnedActor = World->SpawnActor<AActor>(Settings->StandardCharacterDisplay, SpawnLocation, FRotator(0,0,0));
+
+	UBlueprint* Blueprint = Settings->StandardCharacterDisplay.Get();
+
+	if (!Blueprint)
+	{
+		MsgLog(L"Blueprint error.");
+		return;
+	}
+
+	UClass* ActorClass = Blueprint->GeneratedClass;
+
+	if (!ActorClass) 
+	{
+		MsgLog(L"Blueprint class initialize error.");
+		return;
+	}
+
+	if (!ActorClass->IsChildOf<AAssetsDisplay>())
+	{
+		MsgLog(L"LookDev blueprint type is not allowed.");
+		return;
+	}
+	
+	AActor* SpawnedActor = World->SpawnActor<AActor>(ActorClass, SpawnLocation, FRotator(0,0,0));
 	
 	if (SpawnedActor)
 	{

@@ -123,7 +123,7 @@ public:
 	// ≈‰÷√—°œÓ
 
 	UPROPERTY(EditAnywhere, config, Category = "LookDev")
-	TSubclassOf<AAssetsDisplay> StandardCharacterDisplay;
+	TSoftObjectPtr<UBlueprint> StandardCharacterDisplay;
 
 	UPROPERTY(EditAnywhere, config, Category = "LookDev")
 	TSoftObjectPtr<UWorld> LevelAsset;
