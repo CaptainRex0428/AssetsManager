@@ -142,7 +142,7 @@ TSharedPtr<FString> UCustomStandardObject::GetAssetNameInfoByIndex(
 
 	int32 SearchIndex = index;
 
-	if (SearchIndex >= this->AssetNameInfoList.Num() || SearchIndex < 0)
+	if (SearchIndex >= this->AssetNameInfoList.Num() || SearchIndex < -1 * this->AssetNameInfoList.Num())
 	{
 		return nullptr;
 	}
