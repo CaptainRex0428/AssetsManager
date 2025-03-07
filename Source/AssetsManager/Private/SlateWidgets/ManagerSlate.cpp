@@ -11,9 +11,9 @@
 
 #include "AssetsChecker/AssetsChecker.h"
 
-#include "StandardAsset/FCustomStandardSkeletalMeshData.h"
-#include "StandardAsset/FCustomStandardTexture2DData.h"
-#include "StandardAsset/FCustomStandardAssetData.h"
+#include "StandardAsset/FCustomStandardSkeletalMesh.h"
+#include "StandardAsset/FCustomStandardTexture2D.h"
+#include "StandardAsset/FCustomStandardAsset.h"
 
 
 #include "ConfigManager.h"
@@ -125,7 +125,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 	RegistryTab();
 
 	this->m_ClassCheckState = DefaultClassCheckState;
-	this->m_CategoryCheckState = FCustomStandardAssetData::LastCatergory;
+	this->m_CategoryCheckState = AssetCategory::LastCatergory;
 	this->m_UsageCheckState = DefaultUsageCheckState;
 
 	FSlateFontInfo TitleTextFont = GetFontInfo(25);
@@ -144,7 +144,7 @@ void SManagerSlateTab::Construct(const FArguments& InArgs)
 
 	FString AssetGlobalSection = "/AssetsManager/Global";
 	TArray<FString> Keys = 
-	FConfigManager::Get().GenerateStructKeyValueArray(
+	UManagerConfig::Get().GenerateStructKeyValueArray(
 		*AssetGlobalSection,
 		"UClassPrefix",
 		"UClassName");
@@ -1170,7 +1170,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetMemorySizeRowBox(
 	else
 	{
 		FCustomStandardAssetData StandardAsset(*AssetDataToDisplay);
-		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetMemorySize(DisplayLevel), AssetSizeDisplayUnit::MB);
+		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.Get().GetMemorySize(DisplayLevel), AssetSizeDisplayUnit::MB);
 	}
 
 	FString AssetSizeStr = FString::Printf(L"%.4f%s", AssetSize, L"MB");
@@ -1191,13 +1191,13 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSkeletalMeshLODNumRowBox(
 {
 	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
 
-	if(!StandardSkeletal.IsSkeletalMesh())
+	if(!StandardSkeletal.Get().IsSkeletalMesh())
 	{
 		return SNew(SHorizontalBox) + SHorizontalBox::Slot().VAlign(VAlign_Center)[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
 	TSharedRef<STextBlock> LODNumBox = 
-		ConstructNormalTextBlock(FString::FromInt(StandardSkeletal.GetLODNum()), FontInfo);
+		ConstructNormalTextBlock(FString::FromInt(StandardSkeletal.Get().GetLODNum()), FontInfo);
 
 	LODNumBox->SetAutoWrapText(true);
 	LODNumBox->SetJustification(ETextJustify::Center);
@@ -1213,12 +1213,12 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshVerticesNumRowBo
 {
 	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
 
-	if (!StandardSkeletal.IsSkeletalMesh())
+	if (!StandardSkeletal.Get().IsSkeletalMesh())
 	{
 		return SNew(SVerticalBox) +SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
-	int32 LODNum = StandardSkeletal.GetLODNum();
+	int32 LODNum = StandardSkeletal.Get().GetLODNum();
 	FString DisplayContent;
 
 	TSharedPtr<SVerticalBox> InfoList = SNew(SVerticalBox);
@@ -1226,7 +1226,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshVerticesNumRowBo
 	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
 	{
 		AssetsInfoDisplayLevel DisplayLevel;
-		int32 VerticesCount = StandardSkeletal.GetLODVerticesNum(LODIdx, DisplayLevel,bStricWithCategory);
+		int32 VerticesCount = StandardSkeletal.Get().GetLODVerticesNum(LODIdx, DisplayLevel, bStricWithCategory);
 
 		DisplayContent =
 			FString::Printf(L"LOD%d:%8.2fw",
@@ -1251,12 +1251,12 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshTrianglesNumRowB
 {
 	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
 
-	if (!StandardSkeletal.IsSkeletalMesh())
+	if (!StandardSkeletal.Get().IsSkeletalMesh())
 	{
 		return SNew(SVerticalBox) +SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
-	int32 LODNum = StandardSkeletal.GetLODNum();
+	int32 LODNum = StandardSkeletal.Get().GetLODNum();
 	FString DisplayContent;
 
 	TSharedPtr<SVerticalBox> InfoList = SNew(SVerticalBox);
@@ -1264,7 +1264,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshTrianglesNumRowB
 	for (int LODIdx = 0; LODIdx < LODNum; ++LODIdx)
 	{
 		AssetsInfoDisplayLevel DisplayLevel;
-		int32 VerticesCount = StandardSkeletal.GetLODTrianglesNum(LODIdx, DisplayLevel, bStricWithCategory);
+		int32 VerticesCount = StandardSkeletal.Get().GetLODTrianglesNum(LODIdx, DisplayLevel, bStricWithCategory);
 
 		DisplayContent =
 			FString::Printf(L"LOD%d:%8.2fw",
@@ -1288,12 +1288,12 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshLODAllowCPUAcces
 {
 	FCustomStandardSkeletalMeshData StandardSkeletal(*AssetDataToDisplay);
 
-	if (!StandardSkeletal.IsSkeletalMesh())
+	if (!StandardSkeletal.Get().IsSkeletalMesh())
 	{
 		return SNew(SVerticalBox)+SVerticalBox::Slot()[ConstructNormalTextBlock(L"[-]", FontInfo)];
 	}
 
-	int32 LODNum = StandardSkeletal.GetLODNum();
+	int32 LODNum = StandardSkeletal.Get().GetLODNum();
 	FString DisplayContent;
 
 	TSharedPtr<SVerticalBox> InfoList = SNew(SVerticalBox);
@@ -1302,7 +1302,7 @@ TSharedRef<SVerticalBox> SManagerSlateTab::ConstructSkeletalMeshLODAllowCPUAcces
 	{
 		DisplayContent =
 			FString::Printf(L"LOD%d: %s",
-				LODIdx, StandardSkeletal.GetAllowCPUAccess(LODIdx) ? L"[ √ ]" : L"[    ]");
+				LODIdx, StandardSkeletal.Get().GetAllowCPUAccess(LODIdx) ? L"[ √ ]" : L"[    ]");
 
 		TSharedPtr<STextBlock> DisplayBox = ConstructNormalTextBlock(DisplayContent, FontInfo);
 		DisplayBox->SetAutoWrapText(true);
@@ -1409,9 +1409,9 @@ FReply SManagerSlateTab::OnSingleAssetDebugButtonClicked(
 {
 	FCustomStandardSkeletalMeshData SKAsset(*ClickedAssetData);
 	
-	if (SKAsset.IsSkeletalMesh())
+	if (SKAsset.Get().IsSkeletalMesh())
 	{
-		SKAsset.SetLODsAllowCPUAccess(0);
+		SKAsset.Get().SetLODsAllowCPUAccess(0);
 		//NtfyMsg(SKAsset.IsLODModifiable(1)?"Yes":"No");
 	}
 
@@ -2306,7 +2306,7 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 			FCustomStandardTexture2DData StandardTexture(*asset);
 
 			FString ResourceSize;
-			UAssetsChecker::ByteConversion(StandardTexture.GetMemorySize(), ResourceSize, false);
+			UAssetsChecker::ByteConversion(StandardTexture.Get().GetMemorySize(), ResourceSize, false);
 
 			FVector2D MaxInGameTextureSize = StandardTexture.GetMaxInGameSize();
 			FVector2D SourceTextureSize = StandardTexture.GetSourceSize();
@@ -2324,15 +2324,15 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 		{
 			FCustomStandardSkeletalMeshData StandardSkeletal(*asset);
 
-			int32 LODNum = StandardSkeletal.GetLODNum();
+			int32 LODNum = StandardSkeletal.Get().GetLODNum();
 			
 			FString LODVer;
 			FString LODTri;
 
 			for (int32 Idx = 0; Idx < LODNum; ++Idx)
 			{
-				int32 VerN = StandardSkeletal.GetLODVerticesNum(Idx);
-				int32 TriN = StandardSkeletal.GetLODTrianglesNum(Idx);
+				int32 VerN = StandardSkeletal.Get().GetLODVerticesNum(Idx);
+				int32 TriN = StandardSkeletal.Get().GetLODTrianglesNum(Idx);
 
 				if (LODVerticesAudit.Num()-1 < Idx)
 				{
@@ -2935,36 +2935,36 @@ void SManagerSlateTab::OnCategoryFilterButtonChanged(
 
 	// add option
 
-	m_CategoryCheckState = FCustomStandardAssetData::Category::LastCatergory;
+	m_CategoryCheckState = AssetCategory::LastCatergory;
 
 	if(*SelectedOption.Get() == CATEGORY_NOGROUP)
 	{
-		m_CategoryCheckState = FCustomStandardAssetData::Category::Undefined;
+		m_CategoryCheckState = AssetCategory::Undefined;
 	}
 
 	if (*SelectedOption.Get() == CATEGORY_CHARACTER)
 	{
-		m_CategoryCheckState = FCustomStandardAssetData::Category::Character;
+		m_CategoryCheckState = AssetCategory::Character;
 	}
 
 	if (*SelectedOption.Get() == CATEGORY_HAIR)
 	{
-		m_CategoryCheckState = FCustomStandardAssetData::Category::Hair;
+		m_CategoryCheckState = AssetCategory::Hair;
 	}
 
 	if (*SelectedOption.Get() == CATEGORY_UI)
 	{
-		m_CategoryCheckState = FCustomStandardAssetData::Category::UI;
+		m_CategoryCheckState = AssetCategory::UI;
 	}
 
 	if (*SelectedOption.Get() == CATEGORY_SCENE)
 	{
-		m_CategoryCheckState = FCustomStandardAssetData::Category::Scene;
+		m_CategoryCheckState = AssetCategory::Scene;
 	}
 
 	if (*SelectedOption.Get() == CATEGORY_EFFECT)
 	{
-		m_CategoryCheckState = FCustomStandardAssetData::Category::Effect;
+		m_CategoryCheckState = AssetCategory::Effect;
 	}
 
 	UpdateDisplayListSource();
@@ -2973,7 +2973,7 @@ void SManagerSlateTab::OnCategoryFilterButtonChanged(
 
 void SManagerSlateTab::UpdateCategoryFilterList()
 {
-	if (m_CategoryCheckState == FCustomStandardAssetData::Category::LastCatergory)
+	if (m_CategoryCheckState == AssetCategory::LastCatergory)
 	{
 		UAssetsChecker::ECopyAssetsPtrList(SListViewClassFilterAssetData, SListViewCategoryFilterAssetData);
 	}
@@ -2986,7 +2986,7 @@ void SManagerSlateTab::UpdateCategoryFilterList()
 		{
 			FCustomStandardAssetData StandardAsset(*AssetData);
 
-			if (StandardAsset.GetCommonAssetCategory() == m_CategoryCheckState)
+			if (StandardAsset.Get().GetCommonAssetCategory() == m_CategoryCheckState)
 			{
 				NewAssetsList.AddUnique(AssetData);
 			};

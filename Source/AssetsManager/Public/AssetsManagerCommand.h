@@ -16,9 +16,10 @@ public:
 	// TCommands<> interface
 	virtual void RegisterCommands() override;
 
-public:
+public:    
 	TSharedPtr< FUICommandInfo > PluginAction_DeleteEmptyFolders;
 	TSharedPtr< FUICommandInfo > PluginAction_OpenAssetsManagerWindowWithSelectedPath;
 	TSharedPtr< FUICommandInfo > PluginAction_OpenAssetsManagerWindowWithCurrentPath;
 	TSharedPtr< FUICommandInfo > PluginAction_LookDev;
+	TSharedPtr< FUICommandInfo > PluginAction_CharacterLookDev;
 };

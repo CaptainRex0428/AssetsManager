@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "AssetsManager.h"
 #include "AssetsManagerCommand.h"
@@ -6,13 +6,42 @@
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetsChecker/AssetsChecker.h"
+#include "AssetsChecker/AssetsTypeActions.h"
 #include "AssetsCreator/AssetsCreator.h"
 #include "SlateWidgets/ManagerSlate.h"
 #include "SlateWidgets/BatchRenameSlate.h"
 #include "SlateWidgets/Material/MaterialCreatorSlate.h"
+#include "SlateWidgets/SCharacterLookDev.h"
+#include "AssetToolsModule.h"
 #include "AssetsManagerStyle.h"
 #include "ContentBrowserModule.h"
 #include "IContentBrowserSingleton.h"
+
+#include "InterchangeManager.h"
+#include "InterchangeSourceData.h"
+#include "InterchangeFactoryBase.h"
+#include "InterchangePipelineBase.h"
+#include "InterchangeAssetImportData.h"
+
+#include "ConfigManager.h"
+#include "ISettingsModule.h"
+#include "ISettingsSection.h"
+#include "ISettingsContainer.h"
+
+#include "AssetsImporter/CustomFBXImporterFactory.h"
+
+#include "EditorLevelUtils.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/LevelStreamingDynamic.h"
+#include "LevelEditorSubsystem.h"
+#include "Engine/LevelStreaming.h"
+#include "Engine/LevelStreamingAlwaysLoaded.h"
+#include "Engine/World.h"
+#include "EditorLevelUtils.h"
+
+#include "FileHelpers.h"
+#include "Interfaces/IMainFrameModule.h"
+#include "Modules/ModuleManager.h"
 
 #include "EditorAssetLibrary.h"
 #include "ObjectTools.h"
@@ -37,6 +66,11 @@ void FAssetsManagerModule::StartupModule()
 		FCanExecuteAction());
 
 	PluginCommands->MapAction(
+		FAssetsManagerCommands::Get().PluginAction_CharacterLookDev,
+		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnCharacterLookDevButtonClicked),
+		FCanExecuteAction());
+
+	PluginCommands->MapAction(
 		FAssetsManagerCommands::Get().PluginAction_OpenAssetsManagerWindowWithCurrentPath,
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerWithCurrentPathButtonClicked),
 		FCanExecuteAction());
@@ -52,6 +86,8 @@ void FAssetsManagerModule::StartupModule()
 		FCanExecuteAction());
 
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FAssetsManagerModule::RegisterMenus));
+	
+	// Registry Code
 
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
 		FName(CONTENTFOLDER_MANAGERTAB_NAME),
@@ -59,6 +95,79 @@ void FAssetsManagerModule::StartupModule()
 		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDER_MANAGERTAB_NAME)))
 		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "ContentBrowser.AssetsManager"))
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
+
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
+		FName(CONTENTFOLDER_CHARACTERLOOKDEVTAB_NAME),
+		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnCharacterLookDevSlateTab))
+		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDER_CHARACTERLOOKDEVTAB_NAME)))
+		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "LevelEditor.CharacterLookDev"))
+		.SetMenuType(ETabSpawnerMenuType::Hidden);
+
+
+	
+	// OnAssetPre/PostImport
+	FCoreDelegates::OnPostEngineInit.AddLambda([this]()
+	{
+		if (GEditor)
+		{
+			UImportSubsystem* ImportSubsystem = GEditor->GetEditorSubsystem<UImportSubsystem>();
+			if (ImportSubsystem)
+			{
+				ImportSubsystem->OnAssetPreImport.AddRaw(this, &FAssetsManagerModule::OnEditorDelegatePreImport);
+				ImportSubsystem->OnAssetPostImport.AddRaw(this, &FAssetsManagerModule::OnEditorDelegatePostImport);
+			}
+
+			// GEngine->Exec(nullptr, TEXT("Interchange.FeatureFlags.Import.FBX true"));
+		}
+	});
+
+	FCoreDelegates::OnEnginePreExit.AddLambda([this]()
+	{
+		if (GEditor)
+		{
+			if (UImportSubsystem* ImportSubsystem = GEditor->GetEditorSubsystem<UImportSubsystem>())
+			{
+					ImportSubsystem->OnAssetPreImport.RemoveAll(this);
+					ImportSubsystem->OnAssetPostImport.RemoveAll(this);
+			}
+		}
+	});
+	
+	// 获取 IAssetTools 模块
+	FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools");
+	IAssetTools& AssetTools = AssetToolsModule.Get();
+	
+	// AssetTypeActions
+	TSharedRef<UCustomTexture2DAssetTypeActions> CustomAssetTypeAction = MakeShareable(new UCustomTexture2DAssetTypeActions());
+	// AssetTools.RegisterAssetTypeActions(CustomAssetTypeAction);
+
+	// 创建自定义 UFBXImporterFactory 的实例并注册
+	UCustomFBXImporterFactory* CustomFactory = NewObject<UCustomFBXImporterFactory>(UCustomFBXImporterFactory::StaticClass());
+
+	if (CustomFactory)
+	{
+		CustomFactory->AddToRoot(); // 确保 Factory 不被 GC 回收
+		MsgLog(TEXT("FBX Importer Factory registered."));
+	}
+	else
+	{
+		MsgLog(TEXT("Failed to create FBX Importer Factory instance."));
+	}
+
+
+	UInterchangeManager& InterchangeManager = UInterchangeManager::GetInterchangeManager();
+
+	// OnAssetPostImport -- Texture
+	// InterchangeManager.OnAssetPostImport.AddRaw(this,&FAssetsManagerModule::OnInterchangeAssetPostImport);
+
+	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
+	{
+		SettingsModule->RegisterSettings("Project", "Plugins", "AssetsManager",
+			NSLOCTEXT("AssetsManager", "AssetsManager", "Assets Manager"),
+			NSLOCTEXT("AssetsManager", "AssetsManager", "Configure settings for AssetsManager"),
+			GetMutableDefault<UManagerSettings>()
+		);
+	}
 }
 
 void FAssetsManagerModule::ShutdownModule()
@@ -77,7 +186,13 @@ void FAssetsManagerModule::ShutdownModule()
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_MANAGERTAB_NAME));
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_MATERIALCREATORTAB_NAME));
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(TABNAME_BATCHRENAME));
+	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_CHARACTERLOOKDEVTAB_NAME));
 	FAssetsMangerStyle::ShutDown();
+
+	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
+	{
+		SettingsModule->UnregisterSettings("Project", "Plugins", "AssetsManager");
+	}
 }
 
 #pragma region ContentBrowserMenuExtend
@@ -113,7 +228,109 @@ void FAssetsManagerModule::OnMaterialCreatButtonClicked()
 
 void FAssetsManagerModule::OnLookDevButtonClicked()
 {
-	UAssetsCreator::CreateLevel(L"/Script/Engine.World'/Game/Level_LookDevTemp.Level_LookDevTemp'", L"/Script/Engine.World'/AssetsManager/LookDev/LookDev.LookDev'");
+	const UManagerSettings* Settings = GetDefault<UManagerSettings>();
+	if (!Settings)
+	{
+		MsgLog("Get Settings Error");
+		return;
+	}
+
+	UWorld* TemplateLevel = Settings->LevelAsset.LoadSynchronous();
+	if (!TemplateLevel)
+	{
+		MsgLog("Level asset not found or failed to load.");
+		return;
+	}
+	
+	if(!FEditorFileUtils::SaveDirtyPackages(true, true, false))
+	{
+		return;
+	}
+
+	UWorld* NewLevel = GEditor->NewMap(false);
+	// FEditorFileUtils::ResetLevelFilenames();
+
+	if (!NewLevel)
+	{
+		MsgLog("Creating new level failed.");
+		return;
+	}
+
+	NewLevel->Rename(TEXT("LookDev"), nullptr);
+	
+	FString LevelPackageName = Settings->LevelAsset.GetLongPackageName();
+	TSubclassOf<ULevelStreaming> LevelStreamingClass = ULevelStreamingAlwaysLoaded::StaticClass();
+	FTransform LevelTransform = FTransform::Identity;
+	ULevelStreaming* LevelStreaming = UEditorLevelUtils::AddLevelToWorld(NewLevel, *LevelPackageName, LevelStreamingClass, LevelTransform);
+	
+	if (LevelStreaming)
+	{
+		LevelStreaming->SetShouldBeVisible(true);
+		LevelStreaming->SetShouldBeLoaded(true);
+	}
+
+	IMainFrameModule& MainFrameModule = FModuleManager::Get().LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
+	MainFrameModule.SetLevelNameForWindowTitle(TEXT("LookDev *"));
+}
+
+void FAssetsManagerModule::OnCharacterLookDevButtonClicked()
+{
+	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDER_CHARACTERLOOKDEVTAB_NAME));
+}
+
+void FAssetsManagerModule::OnInterchangeAssetPostImport(UObject* OBJ)
+{
+	bool shouldDelete = false;
+	UCustomStandardObject StandardObj(OBJ);
+
+	if (StandardObj.IsPrefixNonstandarized())
+	{
+		DlgMsgLog(EAppMsgType::Ok,FString::Printf(L"[Prefix Error]%s",*StandardObj.GetClassValidObjectName()));
+
+		shouldDelete = true;
+	}
+
+	if (shouldDelete)
+	{
+		UAssetsChecker::DeleteObject(OBJ);
+	}
+}
+
+void FAssetsManagerModule::OnEditorDelegatePreImport(UFactory* Factory, UClass* InClass, UObject* Outer, const FName& Name, const TCHAR* Type)
+{
+	MsgLog(L"PreImport");
+}
+
+void FAssetsManagerModule::OnEditorDelegatePostImport(UFactory* Factory, UObject* CreatedObject)
+{
+	if (CreatedObject)
+	{
+		if(CreatedObject->IsA<UTexture2D>())
+		{
+			bool shouldDelete = false;
+			UCustomStandardObject StandardObj(CreatedObject);
+
+			if (StandardObj.GetCommonAssetCategory() == AssetCategory::Character && StandardObj.IsPrefixNonstandarized())
+			{
+				NtfyMsgLog(FString::Printf(L"[Prefix Error]%s", *StandardObj.GetClassValidObjectName()),true);
+
+				shouldDelete = true;
+			}
+
+			if (shouldDelete)
+			{
+				UAssetsChecker::DeleteObject(CreatedObject);
+				return;
+			}
+
+		}
+		
+		if(CreatedObject->IsAsset())
+		{	
+			MsgLog(FString::Printf(L"Verification completed: %s", *CreatedObject->GetName()));
+		}
+	}
+	
 }
 
 void FAssetsManagerModule::RegisterMenus()
@@ -144,6 +361,34 @@ void FAssetsManagerModule::RegisterMenus()
 				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FAssetsManagerCommands::Get().PluginAction_LookDev));
 				Entry.SetCommandList(PluginCommands);
 				Entry.Icon = FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "LevelEditor.ManagerLookDev");
+			}
+		}
+	}
+
+	// register CharacterLookDev Button
+
+	{
+		UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window");
+		{
+			FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
+			Section.AddMenuEntryWithCommandList(
+				FAssetsManagerCommands::Get().PluginAction_CharacterLookDev,
+				PluginCommands,
+				TAttribute<FText>(),
+				TAttribute<FText>(),
+				FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "LevelEditor.CharacterLookDev")
+			);
+		}
+	}
+
+	{
+		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
+		{
+			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("AssetsManager");
+			{
+				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FAssetsManagerCommands::Get().PluginAction_CharacterLookDev));
+				Entry.SetCommandList(PluginCommands);
+				Entry.Icon = FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "LevelEditor.CharacterLookDev");
 			}
 		}
 	}
@@ -238,6 +483,19 @@ TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnMaterialCreatorSlateTab(const 
 				.TitleText("Material Creator")
 		];
 }
+
+TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnCharacterLookDevSlateTab(const FSpawnTabArgs& SpawnTabArgs)
+{
+	//TSharedPtr<SCharacterLookDev> CharacterLookDev;
+	return
+		SNew(SDockTab).TabRole(ETabRole::NomadTab)
+		[
+			//SAssignNew(CharacterLookDev, SCharacterLookDev)
+			SNew(SCharacterLookDev)
+			.TitleText("CharacterLookDev")
+		];
+}
+
 
 #pragma endregion
 

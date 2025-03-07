@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 #include "CoreMinimal.h"
@@ -19,6 +19,12 @@ public:
 	virtual void ShutdownModule() override;
 
 private:
+	void OnInterchangeAssetPostImport(UObject * OBJ);
+	
+	void OnEditorDelegatePreImport(UFactory* Factory, UClass* InClass, UObject* Outer, const FName& Name, const TCHAR* Type);
+
+	void OnEditorDelegatePostImport(UFactory* Factory, UObject* CreatedObject);
+
 	void RegisterMenus();
 
 	void OnDeleteUnusedAssetButtonClicked();
@@ -27,6 +33,7 @@ private:
 	void OnAssetsManagerWithCurrentPathButtonClicked();
 	void OnMaterialCreatButtonClicked();
 	void OnLookDevButtonClicked();
+	void OnCharacterLookDevButtonClicked();
 
 	
 	TArray<FString> SelectedContentFolderPaths;
@@ -36,5 +43,6 @@ private:
 #pragma region CustomEditorTab
 	TSharedRef<SDockTab> OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs);
 	TSharedRef<SDockTab> OnSpawnMaterialCreatorSlateTab(const FSpawnTabArgs& SpawnTabArgs);
+	TSharedRef<SDockTab> OnSpawnCharacterLookDevSlateTab(const FSpawnTabArgs& SpawnTabArgs);
 #pragma endregion
 };

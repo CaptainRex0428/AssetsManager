@@ -31,6 +31,9 @@ public class AssetsManager : ModuleRules
 			new string[]
 			{
 				"Core",
+                "Engine",
+                "Slate",
+                "SlateCore",
                 "Blutility",
 				"EditorScriptingUtilities",
 				"UMG",
@@ -47,7 +50,15 @@ public class AssetsManager : ModuleRules
                 "UMGEditor",
 				"AssetManagerEditor",
                 "HairStrandsCore",
-				"LevelEditor"
+				"LevelEditor",
+                "TextureEditor",
+                "PhysicsCore",
+                "InterchangeCore",
+				"InterchangeEngine",
+				"InterchangePipelines",
+				"InterchangeNodes",
+                "EditorSubsystem"
+                
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -57,9 +68,6 @@ public class AssetsManager : ModuleRules
 			new string[]
 			{
 				"CoreUObject",
-				"Engine",
-				"Slate",
-				"SlateCore",
                 "Projects",
                 "InputCore",
                 "EditorFramework",

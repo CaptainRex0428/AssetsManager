@@ -54,7 +54,7 @@ class ASSETSMANAGER_API UAssetsHandler : public UAssetActionUtility
 #pragma endregion
 
 #pragma region BlueprintCallable
-	
+
 
 #pragma endregion
 

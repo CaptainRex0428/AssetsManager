@@ -21,8 +21,67 @@
 
 #include "ConfigManager.h"
 
+
 #define VNAME_STRUCT(value) VNAME(value),value
 #define VCLASSNAME_STRUCT(value) value,value->GetName()
+
+UENUM(BlueprintType)
+enum class AssetCategory : uint8
+{
+	Undefined = 0 UMETA(DisplayName = "Undefined", ToolTip="Tags are defined in AssetsManger.ini"),
+	Character UMETA(DisplayName = "Character", ToolTip = "Tags are defined in AssetsManger.ini"),
+	Effect UMETA(DisplayName = "Effect", ToolTip = "Tags are defined in AssetsManger.ini"),
+	Scene UMETA(DisplayName = "Scene", ToolTip = "Tags are defined in AssetsManger.ini"),
+	UI UMETA(DisplayName = "UI", ToolTip = "Tags are defined in AssetsManger.ini"),
+	Hair UMETA(DisplayName = "Hair", ToolTip = "Tags are defined in AssetsManger.ini"),
+	LastCatergory
+};
+
+class ASSETSMANAGER_API UCustomStandardObject
+{
+
+public:
+	UCustomStandardObject(UObject* InObj, bool StricCheckMode = false);
+	virtual ~UCustomStandardObject();
+
+	TWeakObjectPtr<UObject> Get();
+
+	FString GetClassValidObjectName();
+
+	TSharedPtr<FString> GetAssetNameInfoByIndex(const int32& index);
+
+	const TSharedPtr<FString> GetAssetPrefix();
+
+	const TSharedPtr<FString> GetAssetSuffix();
+
+	const uint32 GetAssetNameInfoCount() const;
+
+	FString GetAssetNameWithoutPrefix();
+
+	bool IsPrefixNonstandarized();
+
+	const TSharedPtr<FString> GetAssetStandardPrefix();
+
+	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
+
+	virtual int64 GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel, bool bEstimatedTotal = true);
+
+	AssetCategory GetCommonAssetCategory();
+
+	AssetCategory GetStrictAssetCategory();
+
+	bool IsCatogryStandarized();
+
+protected:
+	bool bStrictCheckMode;
+
+	TArray<FString> AssetNameInfoList;
+	
+	TSharedPtr<FString> AssetConfigGlobalSection;
+
+private:
+	TWeakObjectPtr<UObject> Object;
+};
 
 /**
  * 
@@ -30,59 +89,20 @@
 class ASSETSMANAGER_API FCustomStandardAssetData : public FAssetData
 {
 public:
-	enum Category
-	{
-		Undefined = 0,
-		Character, Effect, Scene, UI, Hair,
-		LastCatergory
-	};
-
 	FCustomStandardAssetData(const FAssetData & AssetData, bool StricCheckMode = false);
 	virtual ~FCustomStandardAssetData();
 
-	TSharedPtr<FString> GetAssetNameInfoByIndex(
-		const int32 & index,
-		bool bContainsInfoStartIndex = false);
+	UCustomStandardObject& Get();
 
-	const TSharedPtr<FString> GetAssetPrefix() const;
-	const TSharedPtr<FString> GetAssetSuffix();
-	const uint32 GetAssetNameInfoCount() const;
-	FString GetAssetNameWithoutPrefix() const;
-	
-	bool IsPrefixStandarized() const;
-	const TSharedPtr<FString> GetAssetStandardPrefix();
-
-	const FCustomStandardAssetData::Category& GetCommonAssetCategory();
-	const FCustomStandardAssetData::Category& GetStrictAssetCategory();
-	const FCustomStandardAssetData::Category GetConfirmAssetCategory();
-	bool IsCatogryStandarized();
-
-	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
-	virtual int64 GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel,bool bEstimatedTotal = true);
 	virtual int64 GetDiskSize();
 	virtual int64 GetDiskSize(AssetsInfoDisplayLevel& DisplayLevel);
 
-private:
-
-	TArray<FString> GetValidCategoryTag(
-		Category Cate);
-
 protected:
+
 	bool bStrictCheckMode;
-	
-	TArray<FString> m_AssetNameInfoList;
 
-	uint32 m_AssetNameInfoStartIndex;
-
-	FCustomStandardAssetData::Category m_CommonAssetCategory;
-	TSharedPtr<FString> m_CommonAssetCategoryTag;
-
-	FCustomStandardAssetData::Category m_StrictAssetCategory;
-	TSharedPtr<FString> m_StrictAssetCategoryTag;
-
-	TSharedPtr<FString> AssetConfigGlobalSection;
-
-	bool bHasStandardPrefix;
+private:
+	UCustomStandardObject Object;
 };
 
 static const TMap<UClass*, FString> UClassNameMap =

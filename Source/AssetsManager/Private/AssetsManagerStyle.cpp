@@ -123,6 +123,10 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::Create()
 	CustomStyleSet->Set(
 		"LevelEditor.ManagerLookDev",
 		new FSlateImageBrush(IconDirectory / "Icon_LOOKDEV_32.png", ListIcon));
+	
+	CustomStyleSet->Set(
+		"LevelEditor.CharacterLookDev",
+		new FSlateImageBrush(IconDirectory / "Icon_CharacterLookDev32.png", ListIcon));
 
 	return CustomStyleSet;
 }

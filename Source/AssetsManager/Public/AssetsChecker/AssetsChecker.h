@@ -6,8 +6,10 @@
 #include "AssetActionUtility.h"
 
 #include "ConfigManager.h"
+#include "StandardAsset/FCustomStandardAsset.h"
 
 #include "AssetManagerEditorModule.h"
+
 
 /*
  * 
@@ -71,18 +73,25 @@ public:
 #pragma endregion
 
 #pragma region DesktopOperator
+
 	static bool OpenLocalFolder(const FString& FolderPath);
+
+#pragma endregion
+
+#pragma region EditorOperator
 
 	static bool OpenSizeMapUI(TArray<TSharedPtr<FAssetData>> AssetsIn);
 	static bool OpenSizeMapUI(TSharedPtr<FAssetData> AssetIn);
 
 	static bool OpenEditorUI(TSharedPtr<FAssetData> AssetIn);
-#pragma endregion
-
 
 	static TArray<FString> GetCurrentContentBrowserSelectedPaths();
 	static FString GetCurrentContentBrowserPath();
 
+	static bool SaveAsset(const FString & AssetToSave, bool bOnlyIfIsDirty = true);
+	static bool SaveAsset(UObject * ObjectToSave);
+
+#pragma endregion
 
 #pragma region Standard Check Tools
 	
@@ -90,6 +99,12 @@ public:
 		const TArray<FAssetData>& AssetsDataSelected, 
 		int NumOfDupicates, 
 		bool forced);
+
+	static TArray<FString> GetValidCategoryTag(
+		AssetCategory Category,
+		FString ConfigSection);
+
+	static FString GetCategoryTag(AssetCategory Category);
 	
 #pragma region FixPrefix
 
@@ -177,8 +192,12 @@ public:
 
 	static uint32 DeleteAssets(
 		const TArray<FAssetData>& AssetsData);
+
 	static uint32 DeleteAsset(
-		const FAssetData& AssetData);
+		const FAssetData& AssetData); 
+	
+	static uint32 DeleteObject(
+		UObject * OBJ);
 
 #pragma endregion
 

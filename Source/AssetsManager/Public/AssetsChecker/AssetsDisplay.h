@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "HairStrandsCore/Public/GroomComponent.h"
+#include "GroomComponent.h"
+#include "Components/BillboardComponent.h"
 #include "AssetsDisplay.generated.h"
 
 UENUM(BlueprintType)
@@ -28,7 +29,7 @@ public:
 	// Batching Check
 
 	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
-	virtual void CheckComponentsLOD(LODCheckType CheckType, int32 LOD, int32 GroomGroupIndex = 0);
+	virtual void CheckComponentsLOD(LODCheckType CheckType, int32 LOD, int32 GroomGroupIndex = 0,int32 GroomRelative = 0);
 
 	UFUNCTION(BlueprintCallable, Category = "AssetsManager|AssetsDisplay")
 	virtual void ResetComponentsLOD(int32 GroomGroupIndex = 0);
@@ -71,4 +72,7 @@ public:
 	virtual void SetGroomComponentGroupAutoLOD(UGroomComponent* InGroom, int32 GroupIndex, bool bAutoLOD);
 
 #pragma endregion
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UBillboardComponent> DisplayRoot;
 };

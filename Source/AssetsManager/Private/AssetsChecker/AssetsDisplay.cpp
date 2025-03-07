@@ -11,6 +11,9 @@ AAssetsDisplay::AAssetsDisplay()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	DisplayRoot = CreateOptionalDefaultSubobject<UBillboardComponent>("DisplayRoot");
+
+	RootComponent = DisplayRoot;
 }
 
 void AAssetsDisplay::SetComponentsMinLOD(int32 MinLOD)
@@ -57,7 +60,7 @@ void AAssetsDisplay::SetComponentsForcedLOD(int32 ForcedLOD)
 	}
 }
 
-void AAssetsDisplay::CheckComponentsLOD(LODCheckType CheckType, int32 LOD, int32 GroomGroupIndex)
+void AAssetsDisplay::CheckComponentsLOD(LODCheckType CheckType, int32 LOD, int32 GroomGroupIndex, int32 GroomRelative)
 {
 	if(CheckType == LODCheckType::MinLOD)
 	{
@@ -65,7 +68,7 @@ void AAssetsDisplay::CheckComponentsLOD(LODCheckType CheckType, int32 LOD, int32
 		SetComponentsMinLOD(LOD);
 
 		// SetGroomComponentsForcedLOD(0);
-		SetGroomComponentsLODBias(LOD, GroomGroupIndex);
+		SetGroomComponentsLODBias(((LOD + GroomRelative > 0) ? LOD + GroomRelative : 0), GroomGroupIndex);
 	}
 
 	if (CheckType == LODCheckType::ForcedLOD)
@@ -73,8 +76,7 @@ void AAssetsDisplay::CheckComponentsLOD(LODCheckType CheckType, int32 LOD, int32
 		SetComponentsMinLOD(0);
 		SetComponentsForcedLOD(LOD);
 
-		SetGroomComponentsLODBias(LOD, GroomGroupIndex);
-		// SetGroomComponentsForcedLOD(LOD);
+		SetGroomComponentsLODBias(((LOD+GroomRelative > 0) ? LOD + GroomRelative : 0), GroomGroupIndex);
 	}
 }
 
@@ -82,7 +84,7 @@ void AAssetsDisplay::ResetComponentsLOD(int32 GroomGroupIndex)
 {
 	SetComponentsMinLOD(0);
 	SetComponentsForcedLOD(0);
-	// SetGroomComponentsForcedLOD(0);
+
 	SetGroomComponentsLODBias(0, GroomGroupIndex);
 
 }

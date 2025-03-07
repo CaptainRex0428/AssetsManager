@@ -5,11 +5,13 @@
 #include "AssetsChecker/AssetsChecker.h"
 
 #include "ManagerLogger.h"
-#include "StandardAsset/FCustomStandardAssetData.h"
-#include "StandardAsset/FCustomStandardTexture2DData.h"
+#include "StandardAsset/FCustomStandardAsset.h"
+#include "StandardAsset/FCustomStandardTexture2D.h"
 
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
+
+#include "UObject/SavePackage.h"
 
 #include "ConfigManager.h"
 
@@ -18,6 +20,8 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "ContentBrowserModule.h"
 #include "IContentBrowserSingleton.h"
+
+
 
 
 #define PATHLOOPIGNORE(Path) if (##Path.Contains("Developers") || ##Path.Contains("Collections")) continue;
@@ -93,6 +97,96 @@ int UAssetsChecker::DuplicateAssets(
 	return Counter;
 }
 
+TArray<FString> UAssetsChecker::GetValidCategoryTag(
+	AssetCategory Category,
+	FString ConfigSection)
+{
+	if (UManagerConfig::Get().GetSection(*ConfigSection))
+	{
+		TArray<FConfigValue> TagValue;
+		TagValue.Empty();
+
+		switch (Category)
+		{
+
+		case AssetCategory::Character:
+		{
+			TagValue = UManagerConfig::Get().GetSectionValuesArray(
+				*ConfigSection,
+				"CharacterCategoryTag");
+			break;
+		}
+		case AssetCategory::Effect:
+		{
+			TagValue = UManagerConfig::Get().GetSectionValuesArray(
+				*ConfigSection,
+				"EffectCategoryTag");
+			break;
+		}
+		case AssetCategory::Scene:
+		{
+			TagValue = UManagerConfig::Get().GetSectionValuesArray(
+				*ConfigSection,
+				"SceneCategoryTag");
+			break;
+		}
+		case AssetCategory::UI:
+		{
+			TagValue = UManagerConfig::Get().GetSectionValuesArray(
+				*ConfigSection,
+				"UICategoryTag");
+			break;
+		}
+		case AssetCategory::Hair:
+		{
+			TagValue = UManagerConfig::Get().GetSectionValuesArray(
+				*ConfigSection,
+				"HairCategoryTag");
+			break;
+		}
+		case AssetCategory::Undefined:
+		case AssetCategory::LastCatergory:
+		default:
+		{
+			break;
+		}
+		}
+
+		TArray<FString> Tags;
+		Tags.Empty();
+
+		for (FConfigValue& value : TagValue)
+		{
+			Tags.Add(value.GetValue());
+		}
+
+		return Tags;
+	}
+
+	return TArray<FString>();
+}
+
+FString UAssetsChecker::GetCategoryTag(AssetCategory Category)
+{
+	switch (Category)
+	{
+	case AssetCategory::Character:
+		return L"Character";
+	case AssetCategory::Effect:
+		return L"Effect";
+	case AssetCategory::Scene:
+		return L"Scene";
+	case AssetCategory::UI:
+		return L"UI";
+	case AssetCategory::Hair:
+		return L"Hair";
+	case AssetCategory::Undefined:
+	case AssetCategory::LastCatergory:
+	default:
+		return L"Global";
+	}
+}
+
 bool UAssetsChecker::ConfirmPrefixes(
 	TArray< TSharedPtr<FAssetData>>& AssetsSelected,
 	TArray< TSharedPtr<FAssetData>>& ReadyToFixAssets)
@@ -107,7 +201,7 @@ bool UAssetsChecker::ConfirmPrefixes(
 
 		FCustomStandardAssetData StandardAsset(*selectedObj);
 
-		if (StandardAsset.IsPrefixStandarized() || !StandardAsset.GetAssetStandardPrefix())
+		if (!StandardAsset.Get().IsPrefixNonstandarized() || !StandardAsset.Get().GetAssetStandardPrefix())
 		{
 			continue;
 		};
@@ -123,7 +217,7 @@ bool UAssetsChecker::ConfirmPrefixes(
 			OldName.RemoveFromEnd("_Inst");
 		}
 
-		const FString NewName = *StandardAsset.GetAssetStandardPrefix() + "_" + OldName;
+		const FString NewName = *StandardAsset.Get().GetAssetStandardPrefix() + "_" + OldName;
 
 		NewAssetsName.Append(NewName + "\n");
 
@@ -162,13 +256,13 @@ void UAssetsChecker::AddPrefixes(
 
 		FCustomStandardAssetData StandardAsset(selectedAsset);
 
-		if (StandardAsset.IsPrefixStandarized())
+		if (!StandardAsset.Get().IsPrefixNonstandarized())
 		{
 			continue;
 		};
 
 
-		if (!StandardAsset.GetAssetStandardPrefix())
+		if (!StandardAsset.Get().GetAssetStandardPrefix())
 		{
 #ifdef ZH_CN
 			NtfyMsgLog(TEXT("找不到资产[") + StandardAsset.GetClass()->GetName()+ TEXT("]对应的前缀"));
@@ -180,7 +274,7 @@ void UAssetsChecker::AddPrefixes(
 
 		FString OldName = StandardAsset.AssetName.ToString();
 
-		if (StandardAsset.IsPrefixStandarized())
+		if (!StandardAsset.Get().IsPrefixNonstandarized())
 		{
 #ifdef ZH_CN
 			NtfyMsgLog(OldName + TEXT("已有正确的命名前缀"));
@@ -198,7 +292,7 @@ void UAssetsChecker::AddPrefixes(
 			OldName.RemoveFromEnd("_Inst");
 		}
 
-		const FString NewName = *StandardAsset.GetAssetStandardPrefix() + "_" + OldName;
+		const FString NewName = *StandardAsset.Get().GetAssetStandardPrefix() + "_" + OldName;
 
 		UEditorUtilityLibrary::RenameAsset(StandardAsset.GetAsset(), NewName);
 
@@ -228,13 +322,13 @@ void UAssetsChecker::AddPrefixes(
 
 		FCustomStandardAssetData StandardAsset(AssetDataIn);
 
-		if (StandardAsset.IsPrefixStandarized())
+		if (!StandardAsset.Get().IsPrefixNonstandarized())
 		{
 			continue;
 		};
 
 
-		if (!StandardAsset.GetAssetStandardPrefix())
+		if (!StandardAsset.Get().GetAssetStandardPrefix())
 		{
 #ifdef ZH_CN
 			NtfyMsgLog(TEXT("找不到资产[") + StandardAsset.GetClass()->GetName() + TEXT("]对应的前缀"));
@@ -246,7 +340,7 @@ void UAssetsChecker::AddPrefixes(
 
 		FString OldName = StandardAsset.AssetName.ToString();
 
-		if (StandardAsset.IsPrefixStandarized())
+		if (!StandardAsset.Get().IsPrefixNonstandarized())
 		{
 #ifdef ZH_CN
 			NtfyMsgLog(OldName + TEXT("已有正确的命名前缀"));
@@ -264,7 +358,7 @@ void UAssetsChecker::AddPrefixes(
 			OldName.RemoveFromEnd("_Inst");
 		}
 
-		const FString NewName = *StandardAsset.GetAssetStandardPrefix() + "_" + OldName;
+		const FString NewName = *StandardAsset.Get().GetAssetStandardPrefix() + "_" + OldName;
 
 		UEditorUtilityLibrary::RenameAsset(StandardAsset.GetAsset(), NewName);
 
@@ -333,9 +427,9 @@ bool UAssetsChecker::SetTextureStandardSettings(FAssetData& ClickedAssetData)
 {
 	FCustomStandardTexture2DData SAsset(ClickedAssetData);
 
-	TSharedPtr<FString> subfix = SAsset.GetAssetSuffix();
+	TSharedPtr<FString> subfix = SAsset.Get().GetAssetSuffix();
 
-	if (!SAsset.GetAssetSuffix().IsValid())
+	if (!SAsset.Get().GetAssetSuffix().IsValid())
 	{
 #ifdef ZH_CN
 		NtfyMsgLog(TEXT("资产后缀错误\n") + ClickedAssetData.AssetName.ToString());
@@ -754,7 +848,7 @@ void UAssetsChecker::FilterPrefixErrorAssetsForAssetList(
 	{
 		FCustomStandardAssetData StandardAsset(*AssetDPtr);
 
-		if (!StandardAsset.IsPrefixStandarized())
+		if (StandardAsset.Get().IsPrefixNonstandarized())
 		{
 			if (isAdditiveMode)
 			{
@@ -1024,6 +1118,39 @@ uint32 UAssetsChecker::DeleteAsset(
 	AssetsData.Add(AssetData);
 
 	return ObjectTools::DeleteAssets(AssetsData);
+}
+
+uint32 UAssetsChecker::DeleteObject(UObject* OBJ)
+{
+	if(!OBJ)
+	{
+		return -1;
+	}
+
+	// call AssetRegistry to mark the object as deleted
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+	AssetRegistryModule.Get().AssetDeleted(OBJ);
+
+	// Update content browser
+	GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllEditorsForAsset(OBJ);
+
+	UPackage* Package = OBJ->GetOutermost();
+	if (Package)
+	{
+		Package->SetDirtyFlag(false);  // Marked as no need to save
+	}
+
+	// force GC
+	OBJ->MarkAsGarbage();
+	GEngine->ForceGarbageCollection(true);
+
+	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
+	ContentBrowserModule.Get().SyncBrowserToAssets(TArray<FAssetData>());
+
+	OBJ->ConditionalBeginDestroy();
+	OBJ = nullptr;
+
+	return 1;
 }
 
 void UAssetsChecker::RemoveUnusedAssets(
@@ -1380,7 +1507,7 @@ TSharedPtr<FString> UAssetsChecker::GetAssetNameSubfix(const FAssetData& AssetSe
 {
 	FCustomStandardAssetData AssetS(AssetSelected);
 
-	return AssetS.GetAssetSuffix();
+	return AssetS.Get().GetAssetSuffix();
 }
 
 void UAssetsChecker::FixUpRedirectors(
@@ -1776,4 +1903,34 @@ FString UAssetsChecker::GetCurrentContentBrowserPath()
 	PathStr.RemoveFromStart(L"/All");
 
 	return PathStr;
+}
+
+bool UAssetsChecker::SaveAsset(const FString& AssetToSave, bool bOnlyIfIsDirty)
+{
+	return UEditorAssetLibrary::SaveAsset(AssetToSave, bOnlyIfIsDirty);
+}
+
+bool UAssetsChecker::SaveAsset(UObject* ObjectToSave)
+{
+	if (ObjectToSave && ObjectToSave->MarkPackageDirty())
+    {
+        UPackage* AssetPackage = ObjectToSave->GetOutermost();
+
+        if (AssetPackage)
+        {
+            FString PackageFilePath = FPackageName::LongPackageNameToFilename(AssetPackage->GetName(), FPackageName::GetAssetPackageExtension());
+
+            FSavePackageArgs SaveArgs;
+            SaveArgs.TopLevelFlags = EObjectFlags::RF_Public | EObjectFlags::RF_Standalone;
+            SaveArgs.Error = GError;
+            SaveArgs.bForceByteSwapping = true;
+            SaveArgs.SaveFlags = SAVE_None;
+
+            return UPackage::SavePackage(AssetPackage, ObjectToSave, *PackageFilePath, SaveArgs);
+        }
+
+        return false;
+    }
+
+    return false;
 }

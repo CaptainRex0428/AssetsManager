@@ -6,7 +6,7 @@
 #include "SlateWidgets/SCustomTable.h"
 #include "SlateWidgets/SCustomEditableText.h"
 
-#include "StandardAsset/FCustomStandardAssetData.h"
+#include "StandardAsset/FCustomStandardAsset.h"
 
 #define CONTENTFOLDER_MANAGERTAB_NAME "AssetsManager"
 
@@ -61,7 +61,7 @@ private:
 	TArray<CustomTableColumnType> SManagerCustomTableTitleRowColumnsType;
 
 	ClassCheckState m_ClassCheckState;
-	FCustomStandardAssetData::Category m_CategoryCheckState;
+	AssetCategory m_CategoryCheckState;
 	UsageCheckState m_UsageCheckState;
 
 	TSharedPtr<SCustomTable<TSharedPtr<FAssetData>>> CustomTableList;
