@@ -11,7 +11,6 @@
 #include "SlateWidgets/ManagerSlate.h"
 #include "SlateWidgets/BatchRenameSlate.h"
 #include "SlateWidgets/Material/MaterialCreatorSlate.h"
-#include "SlateWidgets/SCharacterLookDev.h"
 #include "AssetToolsModule.h"
 #include "AssetsManagerStyle.h"
 #include "ContentBrowserModule.h"
@@ -66,11 +65,6 @@ void FAssetsManagerModule::StartupModule()
 		FCanExecuteAction());
 
 	PluginCommands->MapAction(
-		FAssetsManagerCommands::Get().PluginAction_CharacterLookDev,
-		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnCharacterLookDevButtonClicked),
-		FCanExecuteAction());
-
-	PluginCommands->MapAction(
 		FAssetsManagerCommands::Get().PluginAction_OpenAssetsManagerWindowWithCurrentPath,
 		FExecuteAction::CreateRaw(this, &FAssetsManagerModule::OnAssetsManagerWithCurrentPathButtonClicked),
 		FCanExecuteAction());
@@ -95,14 +89,6 @@ void FAssetsManagerModule::StartupModule()
 		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDER_MANAGERTAB_NAME)))
 		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "ContentBrowser.AssetsManager"))
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
-
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
-		FName(CONTENTFOLDER_CHARACTERLOOKDEVTAB_NAME),
-		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnCharacterLookDevSlateTab))
-		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDER_CHARACTERLOOKDEVTAB_NAME)))
-		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "LevelEditor.CharacterLookDev"))
-		.SetMenuType(ETabSpawnerMenuType::Hidden);
-
 
 	
 	// OnAssetPre/PostImport
@@ -186,7 +172,7 @@ void FAssetsManagerModule::ShutdownModule()
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_MANAGERTAB_NAME));
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_MATERIALCREATORTAB_NAME));
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(TABNAME_BATCHRENAME));
-	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_CHARACTERLOOKDEVTAB_NAME));
+	
 	FAssetsMangerStyle::ShutDown();
 
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
@@ -271,11 +257,6 @@ void FAssetsManagerModule::OnLookDevButtonClicked()
 
 	IMainFrameModule& MainFrameModule = FModuleManager::Get().LoadModuleChecked<IMainFrameModule>(TEXT("MainFrame"));
 	MainFrameModule.SetLevelNameForWindowTitle(TEXT("LookDev *"));
-}
-
-void FAssetsManagerModule::OnCharacterLookDevButtonClicked()
-{
-	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDER_CHARACTERLOOKDEVTAB_NAME));
 }
 
 void FAssetsManagerModule::OnInterchangeAssetPostImport(UObject* OBJ)
@@ -481,18 +462,6 @@ TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnMaterialCreatorSlateTab(const 
 			SNew(SMaterialCreatorSlate)
 				//.TitleText(CONTENTFOLDER_MANAGERTAB_NAME)
 				.TitleText("Material Creator")
-		];
-}
-
-TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnCharacterLookDevSlateTab(const FSpawnTabArgs& SpawnTabArgs)
-{
-	//TSharedPtr<SCharacterLookDev> CharacterLookDev;
-	return
-		SNew(SDockTab).TabRole(ETabRole::NomadTab)
-		[
-			//SAssignNew(CharacterLookDev, SCharacterLookDev)
-			SNew(SCharacterLookDev)
-			.TitleText("CharacterLookDev")
 		];
 }
 
