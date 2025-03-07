@@ -120,7 +120,7 @@ class ASSETSMANAGER_API UManagerSettings : public UObject
 	GENERATED_BODY()
 
 public:
-	// ≈‰÷√—°œÓ
+	// ???????
 
 	UPROPERTY(EditAnywhere, config, Category = "LookDev")
 	TSoftObjectPtr<UBlueprint> StandardCharacterDisplay;

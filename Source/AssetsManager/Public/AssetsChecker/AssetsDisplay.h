@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "HairStrandsCore/Public/GroomComponent.h"
+#include "GroomComponent.h"
 #include "Components/BillboardComponent.h"
 #include "AssetsDisplay.generated.h"
 
@@ -74,5 +74,5 @@ public:
 #pragma endregion
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	UBillboardComponent* DisplayRoot;
+	TObjectPtr<UBillboardComponent> DisplayRoot;
 };

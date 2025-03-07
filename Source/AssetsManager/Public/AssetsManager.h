@@ -43,5 +43,6 @@ private:
 #pragma region CustomEditorTab
 	TSharedRef<SDockTab> OnSpawnManagerSlateTab(const FSpawnTabArgs& SpawnTabArgs);
 	TSharedRef<SDockTab> OnSpawnMaterialCreatorSlateTab(const FSpawnTabArgs& SpawnTabArgs);
+	TSharedRef<SDockTab> OnSpawnCharacterLookDevSlateTab(const FSpawnTabArgs& SpawnTabArgs);
 #pragma endregion
 };

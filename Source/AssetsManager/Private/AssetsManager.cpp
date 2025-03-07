@@ -11,6 +11,7 @@
 #include "SlateWidgets/ManagerSlate.h"
 #include "SlateWidgets/BatchRenameSlate.h"
 #include "SlateWidgets/Material/MaterialCreatorSlate.h"
+#include "SlateWidgets/SCharacterLookDev.h"
 #include "AssetToolsModule.h"
 #include "AssetsManagerStyle.h"
 #include "ContentBrowserModule.h"
@@ -95,6 +96,13 @@ void FAssetsManagerModule::StartupModule()
 		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "ContentBrowser.AssetsManager"))
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
 
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
+		FName(CONTENTFOLDER_CHARACTERLOOKDEVTAB_NAME),
+		FOnSpawnTab::CreateRaw(this, &FAssetsManagerModule::OnSpawnCharacterLookDevSlateTab))
+		.SetDisplayName(FText::FromString(TEXT(CONTENTFOLDER_CHARACTERLOOKDEVTAB_NAME)))
+		.SetIcon(FSlateIcon(FAssetsMangerStyle::GetStyleSetName(), "LevelEditor.CharacterLookDev"))
+		.SetMenuType(ETabSpawnerMenuType::Hidden);
+
 
 	
 	// OnAssetPre/PostImport
@@ -109,7 +117,7 @@ void FAssetsManagerModule::StartupModule()
 				ImportSubsystem->OnAssetPostImport.AddRaw(this, &FAssetsManagerModule::OnEditorDelegatePostImport);
 			}
 
-			GEngine->Exec(nullptr, TEXT("Interchange.FeatureFlags.Import.FBX true"));
+			// GEngine->Exec(nullptr, TEXT("Interchange.FeatureFlags.Import.FBX true"));
 		}
 	});
 
@@ -131,7 +139,7 @@ void FAssetsManagerModule::StartupModule()
 	
 	// AssetTypeActions
 	TSharedRef<UCustomTexture2DAssetTypeActions> CustomAssetTypeAction = MakeShareable(new UCustomTexture2DAssetTypeActions());
-	AssetTools.RegisterAssetTypeActions(CustomAssetTypeAction);
+	// AssetTools.RegisterAssetTypeActions(CustomAssetTypeAction);
 
 	// 创建自定义 UFBXImporterFactory 的实例并注册
 	UCustomFBXImporterFactory* CustomFactory = NewObject<UCustomFBXImporterFactory>(UCustomFBXImporterFactory::StaticClass());
@@ -178,6 +186,7 @@ void FAssetsManagerModule::ShutdownModule()
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_MANAGERTAB_NAME));
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_MATERIALCREATORTAB_NAME));
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(TABNAME_BATCHRENAME));
+	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(FName(CONTENTFOLDER_CHARACTERLOOKDEVTAB_NAME));
 	FAssetsMangerStyle::ShutDown();
 
 	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
@@ -266,64 +275,7 @@ void FAssetsManagerModule::OnLookDevButtonClicked()
 
 void FAssetsManagerModule::OnCharacterLookDevButtonClicked()
 {
-
-	UWorld* World = GEditor->GetEditorWorldContext().World();
-	
-	if (!World)
-	{
-		MsgLog(L"No world context found");
-		return;
-	}
-
-	const UManagerSettings* Settings = GetDefault<UManagerSettings>();
-
-	if (!Settings)
-	{
-		MsgLog(L"Get Settings Error");
-		return;
-	}
-
-	UBlueprint* Blueprint = Settings->StandardCharacterDisplay.LoadSynchronous();
-
-	if (!Blueprint)
-	{
-		MsgLog(L"Blueprint asset not found or failed to load.");
-		return;
-	}
-
-	// Viewport
-	FEditorViewportClient* ViewportClient = (FEditorViewportClient*)GEditor->GetActiveViewport()->GetClient();
-	if (!ViewportClient)
-	{
-		MsgLog("Lost viewport.");
-		return;
-	}
-
-	FVector SpawnLocation = ViewportClient->GetViewLocation();
-	FRotator SpawnRotation = ViewportClient->GetViewRotation();
-
-	FVector ForwardVector = SpawnRotation.Vector();
-	SpawnLocation += ForwardVector * 500.0f;
-
-	// Spawn the actor
-	UClass* ActorClass = Blueprint->GeneratedClass;
-	if (!ActorClass)
-	{
-		MsgLog(L"Blueprint class initialize error.");
-		return;
-	}
-
-	if (!ActorClass->IsChildOf<AAssetsDisplay>())
-	{
-		MsgLog(L"LookDev blueprint type is not allowed.");
-		return;
-	}
-	
-	AActor* SpawnedActor = World->SpawnActor<AActor>(ActorClass, SpawnLocation, FRotator(0, 0, 0));
-	if (SpawnedActor)
-	{
-		MsgLog("Actor spawned.");
-	}
+	FGlobalTabmanager::Get()->TryInvokeTab(FName(CONTENTFOLDER_CHARACTERLOOKDEVTAB_NAME));
 }
 
 void FAssetsManagerModule::OnInterchangeAssetPostImport(UObject* OBJ)
@@ -358,7 +310,7 @@ void FAssetsManagerModule::OnEditorDelegatePostImport(UFactory* Factory, UObject
 			bool shouldDelete = false;
 			UCustomStandardObject StandardObj(CreatedObject);
 
-			if (StandardObj.IsPrefixNonstandarized())
+			if (StandardObj.GetCommonAssetCategory() == AssetCategory::Character && StandardObj.IsPrefixNonstandarized())
 			{
 				NtfyMsgLog(FString::Printf(L"[Prefix Error]%s", *StandardObj.GetClassValidObjectName()),true);
 
@@ -368,12 +320,12 @@ void FAssetsManagerModule::OnEditorDelegatePostImport(UFactory* Factory, UObject
 			if (shouldDelete)
 			{
 				UAssetsChecker::DeleteObject(CreatedObject);
+				return;
 			}
 
-			return;
 		}
 		
- if(CreatedObject->IsAsset())
+		if(CreatedObject->IsAsset())
 		{	
 			MsgLog(FString::Printf(L"Verification completed: %s", *CreatedObject->GetName()));
 		}
@@ -531,6 +483,19 @@ TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnMaterialCreatorSlateTab(const 
 				.TitleText("Material Creator")
 		];
 }
+
+TSharedRef<SDockTab> FAssetsManagerModule::OnSpawnCharacterLookDevSlateTab(const FSpawnTabArgs& SpawnTabArgs)
+{
+	//TSharedPtr<SCharacterLookDev> CharacterLookDev;
+	return
+		SNew(SDockTab).TabRole(ETabRole::NomadTab)
+		[
+			//SAssignNew(CharacterLookDev, SCharacterLookDev)
+			SNew(SCharacterLookDev)
+			.TitleText("CharacterLookDev")
+		];
+}
+
 
 #pragma endregion
 

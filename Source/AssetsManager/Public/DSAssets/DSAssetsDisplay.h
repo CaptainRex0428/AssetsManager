@@ -20,29 +20,29 @@ public:
 	
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* Body;
+	TObjectPtr<USkeletalMeshComponent> Body;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* Face;
+	TObjectPtr<USkeletalMeshComponent> Face;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* ParasiteA;
+	TObjectPtr<USkeletalMeshComponent> ParasiteA;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* ParasiteB;
+	TObjectPtr<USkeletalMeshComponent> ParasiteB;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* WeaponL;
+	TObjectPtr<USkeletalMeshComponent> WeaponL;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* WeaponR;
+	TObjectPtr<USkeletalMeshComponent> WeaponR;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UGroomComponent* Groom_A;
+	TObjectPtr<UGroomComponent> Groom_A;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UGroomComponent* Groom_B;
+	TObjectPtr<UGroomComponent> Groom_B;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UGroomComponent* Groom_C;
+	TObjectPtr<UGroomComponent> Groom_C;
 };
