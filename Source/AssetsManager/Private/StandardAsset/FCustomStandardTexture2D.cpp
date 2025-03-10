@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "StandardAsset/FCustomStandardTexture2D.h"
@@ -243,12 +243,14 @@ int64 FCustomStandardTexture2DData::GetMemorySize(AssetsInfoDisplayLevel& Displa
 
 FVector2D FCustomStandardTexture2DData::GetSourceSize()
 {
-	return FVector2D(this->SourceSizeX,this->SourceSizeY);
+	UCustomStandardTexture2D StandardTexture(this->GetTexture2D());
+	return StandardTexture.GetSourceSize();
 }
 
 FVector2D FCustomStandardTexture2DData::GetMaxInGameSize()
 {
-	return FVector2D(this->MaxInGameSizeX,this->MaxInGameSizeY);
+	UCustomStandardTexture2D StandardTexture(this->GetTexture2D());
+	return StandardTexture.GetMaxInGameSize();
 }
 
 TSharedPtr<TextureCompressionSettings> FCustomStandardTexture2DData::GetCompressionSettings()
@@ -319,10 +321,12 @@ TSharedPtr<TextureCompressionSettings> FCustomStandardTexture2DData::GetStandard
 	
 }
 
-FCustomStandardTexture2DData::CompressionSettingsInfo 
+CompressionSettingsInfo &
 FCustomStandardTexture2DData::GetCompressionSettingsInfo() const
 {
-	return this->CompressionSettings;
+	UCustomStandardTexture2D STexture(this->GetAsset());
+
+	return *STexture.GetCompressionSettingsInfo();
 }
 
 TSharedPtr<bool> FCustomStandardTexture2DData::GetsRGBSettings()
@@ -547,13 +551,13 @@ double FCustomStandardTexture2DData::GetStandardMaxSizeStrict()
 	return GetStandardMaxSize();
 }
 
-FCustomStandardTexture2DData::CompressionSettingsInfo 
+CompressionSettingsInfo 
 FCustomStandardTexture2DData::ConstructCompressionConfigPairs(
 	FString ConfigName, 
 	TextureCompressionSettings Setting, 
 	FString DisplayName)
 {
-	FCustomStandardTexture2DData::CompressionSettingsInfo Info;
+	CompressionSettingsInfo Info;
 
 	Info.ConfigName = ConfigName;
 	Info.Setting = Setting;
@@ -589,25 +593,13 @@ bool FCustomStandardTexture2DData::IsSuffixStandarized()
 }
 
 UCustomStandardTexture2D::UCustomStandardTexture2D(UObject* InObj, bool StricCheckMode):
-	UCustomStandardObject(InObj, StricCheckMode),
-	Texture2DObject(nullptr)
+	UCustomStandardObject(InObj, StricCheckMode)
 {
-	UTexture2D* InTexture2D = Cast<UTexture2D>(InObj);
-
-	if (InTexture2D)
-	{
-		Texture2DObject = InTexture2D;
-	}
 }
 
 UCustomStandardTexture2D::UCustomStandardTexture2D(UTexture2D* InTexture2D, bool StricCheckMode):
-	UCustomStandardObject(InTexture2D, StricCheckMode),
-	Texture2DObject(nullptr)
+	UCustomStandardObject(InTexture2D, StricCheckMode)
 {
-	if (InTexture2D)
-	{
-		Texture2DObject = InTexture2D;
-	}
 }
 
 UCustomStandardTexture2D::~UCustomStandardTexture2D()
@@ -616,7 +608,7 @@ UCustomStandardTexture2D::~UCustomStandardTexture2D()
 
 TWeakObjectPtr<UTexture2D> UCustomStandardTexture2D::Get()
 {
-	return this->Texture2DObject;
+	return Cast<UTexture2D>(UCustomStandardObject::Get());
 }
 
 bool UCustomStandardTexture2D::IsTexture2D()
@@ -626,12 +618,12 @@ bool UCustomStandardTexture2D::IsTexture2D()
 
 TIndirectArray<struct FTexture2DMipMap> * UCustomStandardTexture2D::GetTextureMipMaps()
 {
-	if(!this->Texture2DObject.IsValid())
+	if(!this->IsTexture2D())
 	{
 		return nullptr;
 	}
 
-	UTexture2D* Texture2D = Texture2DObject.Get();
+	UTexture2D* Texture2D = this->Get().Get();
 	FTexturePlatformData* PlatformData = Texture2D->GetPlatformData();
 
 	if (!PlatformData)
@@ -642,47 +634,52 @@ TIndirectArray<struct FTexture2DMipMap> * UCustomStandardTexture2D::GetTextureMi
 	return & PlatformData->Mips;
 }
 
-void UCustomStandardTexture2D::ResizeTextureSourceSize(int targetSize)
+void UCustomStandardTexture2D::ResizeSource(int targetSize, bool forceSave)
 {
+	if(!this->IsTexture2D())
+	{
+		return;
+	}
+
 	// we do the resizing considering only Mip/LOD/build settings for the running Editor platform (Windows ...)
 	const ITargetPlatform* RunningPlatform = GetTargetPlatformManagerRef().GetRunningTargetPlatform();
 
 	int32 BeforeSizeX;
 	int32 BeforeSizeY;
-	this->Texture2DObject->GetBuiltTextureSize(RunningPlatform, BeforeSizeX, BeforeSizeY);
+	this->Get()->GetBuiltTextureSize(RunningPlatform, BeforeSizeX, BeforeSizeY);
 
-	const FIntPoint BeforeSourceSize = this->Texture2DObject->Source.GetLogicalSize();
-	MsgLog(FString::Printf(TEXT("Texture (%s) Resizing to <= %d Source Size=%dx%d Built Size=%dx%d"), *this->Texture2DObject->GetName(), targetSize,
+	const FIntPoint BeforeSourceSize = this->Get()->Source.GetLogicalSize();
+	MsgLog(FString::Printf(TEXT("Texture (%s) Resizing to <= %d Source Size=%dx%d Built Size=%dx%d"), *this->Get()->GetName(), targetSize,
 		BeforeSourceSize.X, BeforeSourceSize.Y, BeforeSizeX, BeforeSizeY));
 
-	if (!UE::TextureUtilitiesCommon::Experimental::DownsizeTextureSourceData(this->Texture2DObject.Get(), targetSize, RunningPlatform))
+	if (!UE::TextureUtilitiesCommon::Experimental::DownsizeTextureSourceData(this->Get().Get(), targetSize, RunningPlatform))
 	{
-		MsgLog(FString::Printf(TEXT("Texture (%s) did not resize."), *this->Texture2DObject->GetName()));
+		MsgLog(FString::Printf(TEXT("Texture (%s) did not resize."), *this->Get()->GetName()));
 
 		// did not resize, but may have done PreEditChange
 		return;
 	}
 
-	const FIntPoint AfterSourceSize = this->Texture2DObject->Source.GetLogicalSize();
+	const FIntPoint AfterSourceSize = this->Get()->Source.GetLogicalSize();
 
-	this->Texture2DObject->LODBias = 0;
+	this->Get()->LODBias = 0;
 
 	int32 AfterSizeX;
 	int32 AfterSizeY;
-	this->Texture2DObject->GetBuiltTextureSize(RunningPlatform, AfterSizeX, AfterSizeY);
+	this->Get()->GetBuiltTextureSize(RunningPlatform, AfterSizeX, AfterSizeY);
 
 	// if AfterSize > BeforeSize , kick up LODBias
 	//	to try to preserve GetBuiltTextureSize
-	this->Texture2DObject->LODBias = FMath::RoundToInt32(FMath::Log2((double)FMath::Max(AfterSizeX, AfterSizeY) / FMath::Max(BeforeSizeX, BeforeSizeY)));
-	this->Texture2DObject->LODBias = FMath::Max(0, this->Texture2DObject->LODBias);
+	this->Get()->LODBias = FMath::RoundToInt32(FMath::Log2((double)FMath::Max(AfterSizeX, AfterSizeY) / FMath::Max(BeforeSizeX, BeforeSizeY)));
+	this->Get()->LODBias = FMath::Max(0, this->Get()->LODBias);
 
 	// recompute AfterSize if we changed LODBias
-	if (this->Texture2DObject->LODBias != 0)
+	if (this->Get()->LODBias != 0)
 	{
-		this->Texture2DObject->GetBuiltTextureSize(RunningPlatform, AfterSizeX, AfterSizeY);
+		this->Get()->GetBuiltTextureSize(RunningPlatform, AfterSizeX, AfterSizeY);
 	}
 
-	MsgLog(FString::Printf(TEXT("Texture (%s) did resize Source Size=%dx%d Built Size=%dx%d"), *this->Texture2DObject->GetName(),
+	MsgLog(FString::Printf(TEXT("Texture (%s) did resize Source Size=%dx%d Built Size=%dx%d"), *this->Get()->GetName(),
 		AfterSourceSize.X, AfterSourceSize.Y, AfterSizeX, AfterSizeY));
 
 	if (BeforeSizeX != AfterSizeX || BeforeSizeY != AfterSizeY)
@@ -693,33 +690,43 @@ void UCustomStandardTexture2D::ResizeTextureSourceSize(int targetSize)
 		MsgLog(FString::Printf(TEXT("DoResizeTextureSource failed to preserve built size; was: %dx%d now: %dx%d on [%s]"),
 			BeforeSizeX, BeforeSizeY,
 			AfterSizeX, AfterSizeY,
-			*this->Texture2DObject->GetFullName()));
+			*this->Get()->GetFullName()));
 	}
 
 	// this counts as a reimport :
-	UE::TextureUtilitiesCommon::ApplyDefaultsForNewlyImportedTextures(this->Texture2DObject.Get(), true);
+	UE::TextureUtilitiesCommon::ApplyDefaultsForNewlyImportedTextures(this->Get().Get(), true);
 
 	// DownsizeTextureSourceData did the PreEditChange
-	this->Texture2DObject->PostEditChange();
+	this->Get()->PostEditChange();
+
+	if(forceSave)
+	{
+		this->ForceSave();
+	}
 }
 
-void UCustomStandardTexture2D::ResizeTexturePowerOf2()
+void UCustomStandardTexture2D::ResizeSourcePowerOf2(bool forceSave)
 {
-	check(!this->Texture2DObject->Source.AreAllBlocksPowerOfTwo()); // already filtered for
-
-	const FIntPoint BeforeSourceSize = this->Texture2DObject->Source.GetLogicalSize();
-
-	if (!UE::TextureUtilitiesCommon::Experimental::ResizeTextureSourceDataToNearestPowerOfTwo(this->Texture2DObject.Get()))
+	if(!this->IsTexture2D())
 	{
-		MsgLog(FString::Printf(TEXT("Texture (%s) did not resize."), *this->Texture2DObject->GetName()));
+		return;
+	}
+
+	check(!this->Get()->Source.AreAllBlocksPowerOfTwo()); // already filtered for
+
+	const FIntPoint BeforeSourceSize = this->Get()->Source.GetLogicalSize();
+
+	if (!UE::TextureUtilitiesCommon::Experimental::ResizeTextureSourceDataToNearestPowerOfTwo(this->Get().Get()))
+	{
+		MsgLog(FString::Printf(TEXT("Texture (%s) did not resize."), *this->Get()->GetName()));
 
 		// did not resize, but may have done PreEditChange
 		return;
 	}
 
-	const FIntPoint AfterSourceSize = this->Texture2DObject->Source.GetLogicalSize();
+	const FIntPoint AfterSourceSize = this->Get()->Source.GetLogicalSize();
 
-	MsgLog(FString::Printf(TEXT("Texture (%s) did resize Before Size=%dx%d After Size=%dx%d"), *this->Texture2DObject->GetName(),
+	MsgLog(FString::Printf(TEXT("Texture (%s) did resize Before Size=%dx%d After Size=%dx%d"), *this->Get()->GetName(),
 		BeforeSourceSize.X, BeforeSourceSize.Y, AfterSourceSize.X, AfterSourceSize.Y));
 
 	// ?? if Texture was set to stretch to Pow2, we could remove that now, but leaving it is harmless
@@ -727,54 +734,227 @@ void UCustomStandardTexture2D::ResizeTexturePowerOf2()
 
 	// if Texture was set to MipGen = NoMipMaps, change to FromTextureGroup ?
 	// assume that since we changed to Pow2, we want mips and streaming
-	if (this->Texture2DObject->MipGenSettings == TMGS_NoMipmaps)
+	if (this->Get()->MipGenSettings == TMGS_NoMipmaps)
 	{
-		this->Texture2DObject->MipGenSettings = TMGS_FromTextureGroup;
+		this->Get()->MipGenSettings = TMGS_FromTextureGroup;
 	}
-	this->Texture2DObject->NeverStream = false;
+	this->Get()->NeverStream = false;
 
 	// this counts as a reimport :
-	UE::TextureUtilitiesCommon::ApplyDefaultsForNewlyImportedTextures(this->Texture2DObject.Get(), true);
+	UE::TextureUtilitiesCommon::ApplyDefaultsForNewlyImportedTextures(this->Get().Get(), true);
 
 	// DownsizeTextureSourceData did the PreEditChange
-	this->Texture2DObject->PostEditChange();
+	this->Get()->PostEditChange();
+
+	if (forceSave)
+	{
+		this->ForceSave();
+	}
 }
 
-void UCustomStandardTexture2D::ConvertTo8bitTextureSource(bool NormalMapsKeep16bits)
+void UCustomStandardTexture2D::ConvertSourceTo8bit(bool NormalMapsKeep16bits, bool forceSave)
 {
-	if (this->Texture2DObject->Source.GetNumLayers() > 1)
+	if (!this->IsTexture2D())
+	{
+		return;
+	}
+
+	if (this->Get()->Source.GetNumLayers() > 1)
 	{
 		check(0);
 		return;
 	}
 
-	ETextureSourceFormat InTSF = this->Texture2DObject->Source.GetFormat();
-	ETextureSourceFormat OutTSF = GetReducedTextureSourceFormat(this->Texture2DObject->CompressionSettings, InTSF, NormalMapsKeep16bits);
+	ETextureSourceFormat InTSF = this->Get()->Source.GetFormat();
+	ETextureSourceFormat OutTSF = GetReducedTextureSourceFormat(this->Get()->CompressionSettings, InTSF, NormalMapsKeep16bits);
 	if (InTSF == OutTSF)
 	{
 		return;
 	}
 
 	MsgLog(FString::Printf(TEXT("Texture (%s) changing format from %s to %s, TC = %s"),
-		*this->Texture2DObject->GetName(),
+		*this->Get()->GetName(),
 		*StaticEnum<ETextureSourceFormat>()->GetDisplayNameTextByValue(InTSF).ToString(), // these have TSF_ on the strings
 		*StaticEnum<ETextureSourceFormat>()->GetDisplayNameTextByValue(OutTSF).ToString(),
-		*StaticEnum<TextureCompressionSettings>()->GetDisplayNameTextByValue(this->Texture2DObject->CompressionSettings).ToString())
+		*StaticEnum<TextureCompressionSettings>()->GetDisplayNameTextByValue(this->Get()->CompressionSettings).ToString())
 	);
 
 	// calls Pre/PostEditChange :
-	UE::TextureUtilitiesCommon::Experimental::ChangeTextureSourceFormat(this->Texture2DObject.Get(), OutTSF);
+	UE::TextureUtilitiesCommon::Experimental::ChangeTextureSourceFormat(this->Get().Get(), OutTSF);
+
+
+	if (forceSave)
+	{
+		this->ForceSave();
+	}
 }
 
-void UCustomStandardTexture2D::CompressTextureWithJPEG()
+void UCustomStandardTexture2D::CompressWithJPEG(bool forceSave)
 {
+	if (!this->IsTexture2D())
+	{
+		return;
+	}
+
 	// calls Pre/PostEditChange :
-	bool bDid = UE::TextureUtilitiesCommon::Experimental::CompressTextureSourceWithJPEG(this->Texture2DObject.Get());
+	bool bDid = UE::TextureUtilitiesCommon::Experimental::CompressTextureSourceWithJPEG(this->Get().Get());
 
 	MsgLog(FString::Printf(TEXT("Texture (%s) %s"),
-		*this->Texture2DObject->GetName(),
+		*this->Get()->GetName(),
 		bDid ? TEXT("was changed to JPEG compression.") : TEXT("was not changed."))
 	);
+
+	if (forceSave)
+	{
+		this->ForceSave();
+	}
+}
+
+FVector2D UCustomStandardTexture2D::GetSourceSize()
+{
+	if (!this->IsTexture2D())
+	{
+		return FVector2D(-1,-1);
+	}
+
+	int SourceSizeX = this->Get()->GetImportedSize().X;
+	int SourceSizeY = this->Get()->GetImportedSize().Y;
+
+	return FVector2D(SourceSizeX, SourceSizeY);
+}
+
+FVector2D UCustomStandardTexture2D::GetMaxInGameSize()
+{
+	if (!this->IsTexture2D())
+	{
+		return FVector2D(-1, -1);
+	}
+
+	FVector2D SourceSize = GetSourceSize();
+	
+	FVector2D size;
+	size.X = SourceSize.X;
+	size.Y = SourceSize.Y;
+
+	uint32 bias = this->Get()->GetCachedLODBias();
+
+	int32 MaximumTextureSize = this->Get()->MaxTextureSize;
+
+	if (MaximumTextureSize == 0 && bias == 0)
+	{
+		return SourceSize;
+	}
+	else
+	{
+		float rate;
+
+		if (MaximumTextureSize == 0)
+		{
+			rate = 1;
+		}
+		else
+		{
+			rate = (MaximumTextureSize / (size.X > size.Y ? size.X : size.X));
+		}
+
+		size.X *= (rate > 1 ? 1 : rate);
+		size.Y *= (rate > 1 ? 1 : rate);
+
+		if (bias > 0)
+		{
+
+			double scale = pow(2, bias);
+			size.X /= scale;
+			size.Y /= scale;
+
+			size.X = size.X > 1 ? size.X : 1;
+			size.Y = size.Y > 1 ? size.Y : 1;
+		}
+
+		return size;
+	}
+}
+
+TSharedPtr<TextureCompressionSettings> UCustomStandardTexture2D::GetCompressionSettings()
+{
+	if (!this->IsTexture2D())
+	{
+		return nullptr;
+	}
+
+	return MakeShared<TextureCompressionSettings>(this->Get()->CompressionSettings.GetValue());
+}
+
+TSharedPtr<CompressionSettingsInfo> UCustomStandardTexture2D::GetCompressionSettingsInfo()
+{
+	if (!this->IsTexture2D())
+	{
+		return nullptr;
+	}
+
+	TSharedPtr<TextureCompressionSettings> CompSettings = GetCompressionSettings();
+
+	for (const CompressionSettingsInfo& CConfig : ValidCompressionConfig)
+	{
+		if (CConfig.Setting == *CompSettings)
+		{
+			CompressionSettingsInfo CSI;
+
+			CSI.ConfigName = CConfig.ConfigName;
+			CSI.DisplayName = CConfig.DisplayName;
+			CSI.Setting = CConfig.Setting;
+
+			return MakeShared<CompressionSettingsInfo>(CSI);
+		}
+	}
+
+	return nullptr;
+}
+
+bool UCustomStandardTexture2D::SetCompressionSettings(const TEnumAsByte<TextureCompressionSettings>& CompressionSetting, bool forceSave)
+{
+	if (!this->IsTexture2D())
+	{
+		return false;
+	}
+
+	this->GetCompressionSettingsInfo()->Setting;
+
+
+	if (this->GetCompressionSettingsInfo()->Setting != CompressionSetting)
+	{
+
+		this->Get()->CompressionSettings = CompressionSetting;
+		this->Get()->UpdateResource();
+
+		FString DisplayInfo;
+
+		for (CompressionSettingsInfo info : ValidCompressionConfig)
+		{
+			if (info.Setting == CompressionSetting)
+			{
+				DisplayInfo = info.DisplayName;
+				break;
+			}
+		}
+
+#ifdef ZH_CN
+		NtfyMsgLog(TEXT("成功设置贴图压缩格式为\n")
+			+ DisplayInfo + "\n"
+			+ this->Get()->GetName());
+#else
+		NtfyMsgLog(TEXT("Successfully set the compression settings as\n")
+			+ *TextureCompressionMap.Find(CompressionSetting) + "\n"
+			+ this->Get()->GetName());
+#endif
+
+		if (forceSave)
+		{
+			return this->ForceSave();
+		}
+	}
+
+	return true;
 }
 
 ETextureSourceFormat UCustomStandardTexture2D::GetReducedTextureSourceFormat(const TextureCompressionSettings TC, const ETextureSourceFormat InTSF, const bool NormalMapsKeep16bits)

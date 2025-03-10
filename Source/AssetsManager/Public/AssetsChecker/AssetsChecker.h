@@ -149,19 +149,16 @@ public:
 
 	static FVector2D GetTextureAssetMaxInGameSize(
 		const FAssetData& AssetData);
-	
-	static TSharedPtr<TextureCompressionSettings> GetTextureAssetCompressionSettings(
-		const FAssetData& AssetData);
 
 	static TSharedPtr<TextureGroup> GetTextureAssetTextureGroup(
 		const FAssetData& AssetData);
 
-	static bool SetTextureAssetCompressionSettings(
-		const FAssetData& AssetData,
-		const TEnumAsByte<TextureCompressionSettings> & CompressionSetting);
-
 	static TSharedPtr<bool> GetTextureAssetSRGBSettings(
 		const FAssetData& AssetData);
+
+	static bool SetTextureAssetCompressionSettings(
+		const FAssetData& AssetData,
+		const TEnumAsByte<TextureCompressionSettings>& CompressionSetting);
 
 	static bool SetTextureSRGBSettings(
 		const FAssetData& AssetData,

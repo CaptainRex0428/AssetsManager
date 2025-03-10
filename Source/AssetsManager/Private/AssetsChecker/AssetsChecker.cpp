@@ -561,20 +561,6 @@ FVector2D UAssetsChecker::GetTextureAssetMaxInGameSize(
 	return FVector2D(0, 0);
 }
 
-TSharedPtr<TextureCompressionSettings> UAssetsChecker::GetTextureAssetCompressionSettings(
-	const FAssetData& AssetData)
-{
-	FCustomStandardTexture2DData AsTextureData(AssetData);
-
-	if(AsTextureData.IsTexture2D())
-	{
-		return MakeShared<TextureCompressionSettings>(
-			AsTextureData.GetCompressionSettingsInfo().Setting);
-	}
-
-	return nullptr;
-}
-
 TSharedPtr<TextureGroup> UAssetsChecker::GetTextureAssetTextureGroup(const FAssetData& AssetData)
 {
 	UObject* AssetOBJ = AssetData.GetAsset();
@@ -603,51 +589,8 @@ bool UAssetsChecker::SetTextureAssetCompressionSettings(
 	const FAssetData& AssetData,
 	const TEnumAsByte<TextureCompressionSettings>& CompressionSetting)
 {
-	UObject* AssetOBJ = AssetData.GetAsset();
-
-	if (!AssetOBJ)
-	{
-		return false;
-	}
-
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return false;
-	}
-
-	UTexture2D* AssetT = Cast<UTexture2D>(AssetOBJ);
-
-	if (AssetT && (*GetTextureAssetCompressionSettings(AssetData) != CompressionSetting))
-	{
-		
-		AssetT->CompressionSettings = CompressionSetting;
-		AssetT->UpdateResource();
-
-		FString DisplayInfo;
-
-		for (FCustomStandardTexture2DData::CompressionSettingsInfo info :ValidCompressionConfig)
-		{
-			if (info.Setting == CompressionSetting)
-			{
-				DisplayInfo = info.DisplayName;
-				break;
-			}
-		}
-
-#ifdef ZH_CN
-		NtfyMsgLog(TEXT("成功设置贴图压缩格式为\n") 
-			+ DisplayInfo + "\n"
-			+ AssetData.AssetName.ToString());
-#else
-		NtfyMsgLog(TEXT("Successfully set the compression settings as\n")
-			+ *TextureCompressionMap.Find(CompressionSetting) + "\n"
-			+ AssetData.AssetName.ToString());
-#endif
-
-		return UEditorAssetLibrary::SaveAsset(AssetData.GetObjectPathString(), false);
-	}
-
-	return true;
+	UCustomStandardTexture2D STexture(AssetData.GetAsset());
+	return STexture.SetCompressionSettings(CompressionSetting,true);
 }
 
 TSharedPtr<bool> UAssetsChecker::GetTextureAssetSRGBSettings(const FAssetData& AssetData)

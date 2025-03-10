@@ -57,9 +57,6 @@ public:
 
 	bool SetLODMaterialMap(int32 LODIndex, TArray<int32> LODMaterialMap);
 
-private:
-	TWeakObjectPtr<USkeletalMesh> SkeletalMeshObject;
-
 };
 
 /**

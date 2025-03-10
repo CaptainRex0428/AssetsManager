@@ -1076,12 +1076,14 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureCompressionSetting
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
+	UCustomStandardTexture2D STexture(AssetDataToDisplay->GetAsset());
+	
 	TSharedPtr<TextureCompressionSettings> CompressionSettings 
-		= UAssetsChecker::GetTextureAssetCompressionSettings(*AssetDataToDisplay);
+		= STexture.GetCompressionSettings();
 
 	if (CompressionSettings.IsValid())
 	{
-		for (FCustomStandardTexture2DData::CompressionSettingsInfo CompressionConfig :ValidCompressionConfig)
+		for (CompressionSettingsInfo CompressionConfig :ValidCompressionConfig)
 		{
 			if (*CompressionSettings == CompressionConfig.Setting)
 			{

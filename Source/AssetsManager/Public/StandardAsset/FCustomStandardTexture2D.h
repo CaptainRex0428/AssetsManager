@@ -1,9 +1,16 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "FCustomStandardAsset.h"
+
+struct CompressionSettingsInfo
+{
+	FString ConfigName;
+	TextureCompressionSettings Setting;
+	FString DisplayName;
+};
 
 class ASSETSMANAGER_API UCustomStandardTexture2D : public UCustomStandardObject
 {
@@ -17,19 +24,23 @@ public:
 	bool IsTexture2D();
 
 	TIndirectArray<struct FTexture2DMipMap>* GetTextureMipMaps();
-	void ResizeTextureSourceSize(int targetSize);
+	void ResizeSource(int targetSize, bool forceSave = false);
+	void ResizeSourcePowerOf2(bool forceSave = false);
+	void ConvertSourceTo8bit(bool NormalMapsKeep16bits, bool forceSave= false);
+	void CompressWithJPEG(bool forceSave = false);
 
-	void ResizeTexturePowerOf2();
-	void ConvertTo8bitTextureSource(bool NormalMapsKeep16bits);
-	void CompressTextureWithJPEG();
+	FVector2D GetSourceSize();
+	FVector2D GetMaxInGameSize();
+
+	TSharedPtr<TextureCompressionSettings> GetCompressionSettings();
+	TSharedPtr<CompressionSettingsInfo> GetCompressionSettingsInfo();
+	bool SetCompressionSettings(const TEnumAsByte<TextureCompressionSettings>& CompressionSetting, bool forceSave = false);
+	
+
 
 	static ETextureSourceFormat GetReducedTextureSourceFormat(const TextureCompressionSettings TC, const ETextureSourceFormat InTSF, const bool NormalMapsKeep16bits);
 
-private:
-	TWeakObjectPtr<UTexture2D> Texture2DObject;
-
 };
-
 
 /**
  * 
@@ -42,13 +53,6 @@ public:
 		const FAssetData& AssetData, 
 		bool StrictCheckMode = false);
 	virtual ~FCustomStandardTexture2DData();
-
-	struct CompressionSettingsInfo
-	{
-		FString ConfigName;
-		TextureCompressionSettings Setting;
-		FString DisplayName;
-	};
 
 	static CompressionSettingsInfo ConstructCompressionConfigPairs(
 		FString ConfigName,
@@ -75,7 +79,7 @@ public:
 
 	TSharedPtr<TextureCompressionSettings> GetCompressionSettings();
 	TSharedPtr<TextureCompressionSettings> GetStandardCompressionSettings(bool forced = false);
-	CompressionSettingsInfo GetCompressionSettingsInfo() const;
+	CompressionSettingsInfo & GetCompressionSettingsInfo() const;
 
 	TSharedPtr<bool> GetsRGBSettings();
 	TSharedPtr<bool> GetStandardsRGBSettings(bool forced = false);
@@ -108,7 +112,7 @@ protected:
 
 };
 
-static const TArray<FCustomStandardTexture2DData::CompressionSettingsInfo> ValidCompressionConfig =
+static const TArray<CompressionSettingsInfo> ValidCompressionConfig =
 {
 	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Default),"Default (BC1 or BC3 with A)"),
 	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Normalmap),"NormalMap (BC5)"),
