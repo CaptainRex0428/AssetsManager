@@ -65,7 +65,7 @@ public:
 class ASSETSMANAGER_API FCustomStandardSkeletalMeshData : public FCustomStandardAssetData
 {
 public:
-	FCustomStandardSkeletalMeshData(FAssetData & AssetData);
+	FCustomStandardSkeletalMeshData(FAssetData & AssetData, bool StrictMode = false);
 	~FCustomStandardSkeletalMeshData();
 
 	UCustomStandardSkeletalMeshObject& Get();

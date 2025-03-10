@@ -7,9 +7,9 @@
 #include "AssetsChecker/AssetsChecker.h"
 
 
-FCustomStandardSkeletalMeshData::FCustomStandardSkeletalMeshData(FAssetData& AssetData)
-	:FCustomStandardAssetData(AssetData),
-	StandardSkeletalMeshObject(AssetData.GetAsset())
+FCustomStandardSkeletalMeshData::FCustomStandardSkeletalMeshData(FAssetData& AssetData, bool StrictMode)
+	:FCustomStandardAssetData(AssetData, StrictMode),
+	StandardSkeletalMeshObject(AssetData.GetAsset(),StrictMode)
 {
 }
 

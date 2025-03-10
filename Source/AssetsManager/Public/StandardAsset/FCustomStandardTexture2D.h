@@ -24,6 +24,7 @@ public:
 	bool IsTexture2D();
 
 	TIndirectArray<struct FTexture2DMipMap>* GetTextureMipMaps();
+
 	void ResizeSource(int targetSize, bool forceSave = false);
 	void ResizeSourcePowerOf2(bool forceSave = false);
 	void ConvertSourceTo8bit(bool NormalMapsKeep16bits, bool forceSave= false);
@@ -33,10 +34,9 @@ public:
 	FVector2D GetMaxInGameSize();
 
 	TSharedPtr<TextureCompressionSettings> GetCompressionSettings();
+	TSharedPtr<TextureCompressionSettings> GetStandardCompressionSettings(bool forced = false);
 	TSharedPtr<CompressionSettingsInfo> GetCompressionSettingsInfo();
 	bool SetCompressionSettings(const TEnumAsByte<TextureCompressionSettings>& CompressionSetting, bool forceSave = false);
-	
-
 
 	static ETextureSourceFormat GetReducedTextureSourceFormat(const TextureCompressionSettings TC, const ETextureSourceFormat InTSF, const bool NormalMapsKeep16bits);
 
@@ -63,6 +63,7 @@ public:
 
 	bool IsTexture2D();
 
+	UCustomStandardTexture2D& Get();
 	UTexture2D* GetTexture2D();
 
 	bool IsTextureMaxInGameOverSize();
@@ -77,9 +78,7 @@ public:
 	double GetStandardMaxSize();
 	double GetStandardMaxSizeStrict();
 
-	TSharedPtr<TextureCompressionSettings> GetCompressionSettings();
 	TSharedPtr<TextureCompressionSettings> GetStandardCompressionSettings(bool forced = false);
-	CompressionSettingsInfo & GetCompressionSettingsInfo() const;
 
 	TSharedPtr<bool> GetsRGBSettings();
 	TSharedPtr<bool> GetStandardsRGBSettings(bool forced = false);
@@ -108,7 +107,7 @@ protected:
 	double SourceSizeX;
 	double SourceSizeY;
 
-	CompressionSettingsInfo CompressionSettings;
+	UCustomStandardTexture2D StandardTexture2DObject;
 
 };
 
