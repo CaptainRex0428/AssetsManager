@@ -49,7 +49,7 @@ class ASSETSMANAGER_API UAssetsHandler : public UAssetActionUtility
 		const FString& ReplaceStr);
 
 	UFUNCTION(CallInEditor, Category = "AssetsHandler")
-	void Check();
+	void Check(int target);
 
 #pragma endregion
 

@@ -184,7 +184,7 @@ void UAssetsHandler::ReplaceName(const FString& OriginStr, const FString& Replac
 	}
 }
 
-void UAssetsHandler::Check()
+void UAssetsHandler::Check(int target)
 {
 	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
 
@@ -194,12 +194,9 @@ void UAssetsHandler::Check()
 
 		if(texture.IsTexture2D())
 		{
-			int num = texture.GetTextureMipMaps()->Num();
-
-			if(num>2)
-			{
-				texture.RemoveMipMapsAt(0);
-			}
+			
+			texture.ResizeTextureSourceSize(target);
+			
 		}
 
 		

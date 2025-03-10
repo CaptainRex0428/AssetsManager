@@ -6,6 +6,11 @@
 #include "ManagerLogger.h"
 #include "AssetsChecker/AssetsChecker.h"
 
+#include "TextureAssetActions.h"
+#include "TextureSourceDataUtils.h"
+#include "TextureImportSettings.h"
+
+
 FCustomStandardTexture2DData::FCustomStandardTexture2DData(
 	const FAssetData& AssetData,
 	bool StrictCheckMode)
@@ -637,39 +642,262 @@ TIndirectArray<struct FTexture2DMipMap> * UCustomStandardTexture2D::GetTextureMi
 	return & PlatformData->Mips;
 }
 
-int UCustomStandardTexture2D::RemoveMipMapsAt(int idx)
+void UCustomStandardTexture2D::ResizeTextureSourceSize(int targetSize)
 {
-	if (!this->Texture2DObject.IsValid())
+	// we do the resizing considering only Mip/LOD/build settings for the running Editor platform (Windows ...)
+	const ITargetPlatform* RunningPlatform = GetTargetPlatformManagerRef().GetRunningTargetPlatform();
+
+	int32 BeforeSizeX;
+	int32 BeforeSizeY;
+	this->Texture2DObject->GetBuiltTextureSize(RunningPlatform, BeforeSizeX, BeforeSizeY);
+
+	const FIntPoint BeforeSourceSize = this->Texture2DObject->Source.GetLogicalSize();
+	MsgLog(FString::Printf(TEXT("Texture (%s) Resizing to <= %d Source Size=%dx%d Built Size=%dx%d"), *this->Texture2DObject->GetName(), targetSize,
+		BeforeSourceSize.X, BeforeSourceSize.Y, BeforeSizeX, BeforeSizeY));
+
+	if (!UE::TextureUtilitiesCommon::Experimental::DownsizeTextureSourceData(this->Texture2DObject.Get(), targetSize, RunningPlatform))
 	{
-		return -1;
+		MsgLog(FString::Printf(TEXT("Texture (%s) did not resize."), *this->Texture2DObject->GetName()));
+
+		// did not resize, but may have done PreEditChange
+		return;
 	}
 
-	UTexture2D* Texture2D = Texture2DObject.Get();
-	FTexturePlatformData* PlatformData = Texture2D->GetPlatformData();
+	const FIntPoint AfterSourceSize = this->Texture2DObject->Source.GetLogicalSize();
 
-	if (!PlatformData)
+	this->Texture2DObject->LODBias = 0;
+
+	int32 AfterSizeX;
+	int32 AfterSizeY;
+	this->Texture2DObject->GetBuiltTextureSize(RunningPlatform, AfterSizeX, AfterSizeY);
+
+	// if AfterSize > BeforeSize , kick up LODBias
+	//	to try to preserve GetBuiltTextureSize
+	this->Texture2DObject->LODBias = FMath::RoundToInt32(FMath::Log2((double)FMath::Max(AfterSizeX, AfterSizeY) / FMath::Max(BeforeSizeX, BeforeSizeY)));
+	this->Texture2DObject->LODBias = FMath::Max(0, this->Texture2DObject->LODBias);
+
+	// recompute AfterSize if we changed LODBias
+	if (this->Texture2DObject->LODBias != 0)
 	{
-		return -2;
+		this->Texture2DObject->GetBuiltTextureSize(RunningPlatform, AfterSizeX, AfterSizeY);
 	}
 
-	int32 MipCount = PlatformData->Mips.Num();
-	
-	if (idx > MipCount)
+	MsgLog(FString::Printf(TEXT("Texture (%s) did resize Source Size=%dx%d Built Size=%dx%d"), *this->Texture2DObject->GetName(),
+		AfterSourceSize.X, AfterSourceSize.Y, AfterSizeX, AfterSizeY));
+
+	if (BeforeSizeX != AfterSizeX || BeforeSizeY != AfterSizeY)
 	{
-		return 0;
+		// not a warning, just FYI
+		// changing built size is totally possible and expected to happen sometimes
+		//	basically any time you resize smaller than the previous in-game size
+		MsgLog(FString::Printf(TEXT("DoResizeTextureSource failed to preserve built size; was: %dx%d now: %dx%d on [%s]"),
+			BeforeSizeX, BeforeSizeY,
+			AfterSizeX, AfterSizeY,
+			*this->Texture2DObject->GetFullName()));
 	}
-	
-	PlatformData->Mips.RemoveAt(idx);
 
-	// Texture2D->InvalidateCompressedData(); // 清除压缩数据缓存
-	Texture2D->UpdateResource();           // 强制更新渲染资源
-	Texture2D->PostEditChange();           // 触发编辑器更新
+	// this counts as a reimport :
+	UE::TextureUtilitiesCommon::ApplyDefaultsForNewlyImportedTextures(this->Texture2DObject.Get(), true);
 
-	Texture2D->MarkPackageDirty();
-	
-	FString PackageFileName = FPackageName::LongPackageNameToFilename(Texture2D->GetOutermost()->GetName(), FPackageName::GetAssetPackageExtension());
-	bool bSaved = UPackage::SavePackage(Texture2D->GetOutermost(), Texture2D, RF_Standalone, *PackageFileName);
+	// DownsizeTextureSourceData did the PreEditChange
+	this->Texture2DObject->PostEditChange();
+}
 
-	return 1;
+void UCustomStandardTexture2D::ResizeTexturePowerOf2()
+{
+	check(!this->Texture2DObject->Source.AreAllBlocksPowerOfTwo()); // already filtered for
+
+	const FIntPoint BeforeSourceSize = this->Texture2DObject->Source.GetLogicalSize();
+
+	if (!UE::TextureUtilitiesCommon::Experimental::ResizeTextureSourceDataToNearestPowerOfTwo(this->Texture2DObject.Get()))
+	{
+		MsgLog(FString::Printf(TEXT("Texture (%s) did not resize."), *this->Texture2DObject->GetName()));
+
+		// did not resize, but may have done PreEditChange
+		return;
+	}
+
+	const FIntPoint AfterSourceSize = this->Texture2DObject->Source.GetLogicalSize();
+
+	MsgLog(FString::Printf(TEXT("Texture (%s) did resize Before Size=%dx%d After Size=%dx%d"), *this->Texture2DObject->GetName(),
+		BeforeSourceSize.X, BeforeSourceSize.Y, AfterSourceSize.X, AfterSourceSize.Y));
+
+	// ?? if Texture was set to stretch to Pow2, we could remove that now, but leaving it is harmless
+	//Texture->PowerOfTwoMode = ETexturePowerOfTwoSetting::None;
+
+	// if Texture was set to MipGen = NoMipMaps, change to FromTextureGroup ?
+	// assume that since we changed to Pow2, we want mips and streaming
+	if (this->Texture2DObject->MipGenSettings == TMGS_NoMipmaps)
+	{
+		this->Texture2DObject->MipGenSettings = TMGS_FromTextureGroup;
+	}
+	this->Texture2DObject->NeverStream = false;
+
+	// this counts as a reimport :
+	UE::TextureUtilitiesCommon::ApplyDefaultsForNewlyImportedTextures(this->Texture2DObject.Get(), true);
+
+	// DownsizeTextureSourceData did the PreEditChange
+	this->Texture2DObject->PostEditChange();
+}
+
+void UCustomStandardTexture2D::ConvertTo8bitTextureSource(bool NormalMapsKeep16bits)
+{
+	if (this->Texture2DObject->Source.GetNumLayers() > 1)
+	{
+		check(0);
+		return;
+	}
+
+	ETextureSourceFormat InTSF = this->Texture2DObject->Source.GetFormat();
+	ETextureSourceFormat OutTSF = GetReducedTextureSourceFormat(this->Texture2DObject->CompressionSettings, InTSF, NormalMapsKeep16bits);
+	if (InTSF == OutTSF)
+	{
+		return;
+	}
+
+	MsgLog(FString::Printf(TEXT("Texture (%s) changing format from %s to %s, TC = %s"),
+		*this->Texture2DObject->GetName(),
+		*StaticEnum<ETextureSourceFormat>()->GetDisplayNameTextByValue(InTSF).ToString(), // these have TSF_ on the strings
+		*StaticEnum<ETextureSourceFormat>()->GetDisplayNameTextByValue(OutTSF).ToString(),
+		*StaticEnum<TextureCompressionSettings>()->GetDisplayNameTextByValue(this->Texture2DObject->CompressionSettings).ToString())
+	);
+
+	// calls Pre/PostEditChange :
+	UE::TextureUtilitiesCommon::Experimental::ChangeTextureSourceFormat(this->Texture2DObject.Get(), OutTSF);
+}
+
+void UCustomStandardTexture2D::CompressTextureWithJPEG()
+{
+	// calls Pre/PostEditChange :
+	bool bDid = UE::TextureUtilitiesCommon::Experimental::CompressTextureSourceWithJPEG(this->Texture2DObject.Get());
+
+	MsgLog(FString::Printf(TEXT("Texture (%s) %s"),
+		*this->Texture2DObject->GetName(),
+		bDid ? TEXT("was changed to JPEG compression.") : TEXT("was not changed."))
+	);
+}
+
+ETextureSourceFormat UCustomStandardTexture2D::GetReducedTextureSourceFormat(const TextureCompressionSettings TC, const ETextureSourceFormat InTSF, const bool NormalMapsKeep16bits)
+{
+	if (InTSF == TSF_BGRE8)
+	{
+		// don't change BGRE
+		return InTSF;
+	}
+
+	bool Out8bit = false;
+	bool OutBC45 = false;
+	bool OutHDR = false;
+	bool OutSingleChannel = false;
+
+	switch (TC)
+	{
+	case TC_Grayscale: //"Grayscale (G8/16, RGB8 sRGB)"),
+	case TC_Displacementmap: //"Displacementmap (G8/16)"),
+		// Gray and Displacement pass through G16 ; note they do not do that for RGBA16 (see GetDefaultTextureFormatName)
+		//	do this conditional on NormalMapsKeep16bits just so we have a way to toggle it, even though it's not really a normal map
+		if (InTSF == TSF_G16 && NormalMapsKeep16bits) return InTSF;
+		// otherwise we will convert to G8
+		// [[fallthrough]];
+	case TC_DistanceFieldFont: //"DistanceFieldFont (G8)"),
+		Out8bit = true;
+		OutSingleChannel = true;
+		break;
+
+	case TC_Default: //"Default (DXT1/5, BC1/3 on DX11)"),
+	case TC_Masks: //"Masks (no sRGB)"),
+	case TC_VectorDisplacementmap: //"VectorDisplacementmap (RGBA8)"),
+	case TC_EditorIcon: //"UserInterface2D (RGBA)"),
+	case TC_BC7: //"BC7 (DX11, optional A)"),
+	case TC_LQ: // "Low Quality (BGR565/BGR555A1)", ToolTip = "BGR565/BGR555A1, fallback to DXT1/DXT5 on Mac platform"),
+		Out8bit = true;
+		break;
+
+	case TC_Normalmap: //"Normalmap (DXT5, BC5 on DX11)"),
+		OutBC45 = true;
+		break;
+
+	case TC_Alpha: //"Alpha (no sRGB, BC4 on DX11)"),
+		OutBC45 = true;
+		OutSingleChannel = true;
+		break;
+
+	case TC_HDR: //"HDR (RGBA16F, no sRGB)"),
+	case TC_HDR_Compressed: //"HDR Compressed (RGB, BC6H, DX11)"),
+		OutHDR = true;
+		break;
+
+	case TC_HalfFloat: //"Half Float (R16F)"),
+	case TC_SingleFloat: //"Single Float (R32F)"),
+		OutHDR = true;
+		OutSingleChannel = true;
+		break;
+
+	case TC_EncodedReflectionCapture:
+	case TC_HDR_F32: //"HDR High Precision (RGBA32F)"),
+		// don't change :
+		return InTSF;
+
+	default:
+		check(0);
+		return InTSF;
+	}
+
+	if (OutBC45 && !NormalMapsKeep16bits)
+	{
+		// if NormalMaps don't keep 16 bit sources, then just treat them like 8 bit :
+		Out8bit = true;
+	}
+
+	ETextureSourceFormat OutTSF = InTSF;
+
+	if (Out8bit)
+	{
+		OutTSF = (OutSingleChannel) ? TSF_G8 : TSF_BGRA8;
+	}
+	else if (OutBC45)
+	{
+		check(NormalMapsKeep16bits);
+
+		// just choose a 16 bit output format, even if source was 8 bit
+		//	we will only convert if bytes per pixel goes down
+		OutTSF = (OutSingleChannel) ? TSF_G16 : TSF_RGBA16;
+
+		if (OutSingleChannel && InTSF == TSF_BGRA8)
+		{
+			// don't do BGRA8 -> G16 , use G8 instead
+			OutTSF = TSF_G8;
+		}
+	}
+	else
+	{
+		check(OutHDR);
+		check(TC != TC_HDR_F32); // already handled
+
+		if (TC == TC_SingleFloat &&
+			(InTSF == TSF_RGBA32F || InTSF == TSF_R32F))
+		{
+			// 32 bit output, 32 bit input, keep it 32 bit
+			OutTSF = TSF_R32F;
+		}
+		else
+		{
+			OutTSF = (OutSingleChannel) ? TSF_R16F : TSF_RGBA16F;
+		}
+	}
+
+	int64 InBPP = FTextureSource::GetBytesPerPixel(InTSF);
+	int64 OutBPP = FTextureSource::GetBytesPerPixel(OutTSF);
+
+	if (InBPP <= OutBPP)
+	{
+		// if bytes per pixel didn't go down, don't change
+		return InTSF;
+	}
+	else
+	{
+		// reducing
+		return OutTSF;
+	}
 }
 

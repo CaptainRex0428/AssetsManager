@@ -17,7 +17,13 @@ public:
 	bool IsTexture2D();
 
 	TIndirectArray<struct FTexture2DMipMap>* GetTextureMipMaps();
-	int RemoveMipMapsAt(int idx);
+	void ResizeTextureSourceSize(int targetSize);
+
+	void ResizeTexturePowerOf2();
+	void ConvertTo8bitTextureSource(bool NormalMapsKeep16bits);
+	void CompressTextureWithJPEG();
+
+	static ETextureSourceFormat GetReducedTextureSourceFormat(const TextureCompressionSettings TC, const ETextureSourceFormat InTSF, const bool NormalMapsKeep16bits);
 
 private:
 	TWeakObjectPtr<UTexture2D> Texture2DObject;
