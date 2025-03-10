@@ -7,9 +7,9 @@
 #include "AssetsChecker/AssetsChecker.h"
 
 
-FCustomStandardSkeletalMeshData::FCustomStandardSkeletalMeshData(FAssetData& AssetData)
-	:FCustomStandardAssetData(AssetData),
-	StandardSkeletalMeshObject(AssetData.GetAsset())
+FCustomStandardSkeletalMeshData::FCustomStandardSkeletalMeshData(FAssetData& AssetData, bool StrictMode)
+	:FCustomStandardAssetData(AssetData, StrictMode),
+	StandardSkeletalMeshObject(AssetData.GetAsset(),StrictMode)
 {
 }
 
@@ -37,27 +37,15 @@ USkeletalMesh* FCustomStandardSkeletalMeshData::GetSkeletalMesh()
 UCustomStandardSkeletalMeshObject::UCustomStandardSkeletalMeshObject(
 	UObject* InObj, 
 	bool StricCheckMode)
-	:UCustomStandardObject(InObj,StricCheckMode),
-	SkeletalMeshObject(nullptr)
+	:UCustomStandardObject(InObj,StricCheckMode)
 {
-	USkeletalMesh * InSkeletal = Cast<USkeletalMesh>(InObj);
-	
-	if(InSkeletal)
-	{
-		SkeletalMeshObject = InSkeletal;
-	}
 }
 
 UCustomStandardSkeletalMeshObject::UCustomStandardSkeletalMeshObject(
 	USkeletalMesh* InSkeletalMesh, 
 	bool StricCheckMode)
-	:UCustomStandardObject(InSkeletalMesh, StricCheckMode),
-	SkeletalMeshObject(nullptr)
+	:UCustomStandardObject(InSkeletalMesh, StricCheckMode)
 {
-	if(InSkeletalMesh)
-	{
-		SkeletalMeshObject = InSkeletalMesh;
-	}
 }
 
 UCustomStandardSkeletalMeshObject::~UCustomStandardSkeletalMeshObject()
@@ -66,7 +54,7 @@ UCustomStandardSkeletalMeshObject::~UCustomStandardSkeletalMeshObject()
 
 TWeakObjectPtr<USkeletalMesh> UCustomStandardSkeletalMeshObject::Get()
 {
-	return this->SkeletalMeshObject;
+	return Cast<USkeletalMesh>(UCustomStandardObject::Get());
 }
 
 bool UCustomStandardSkeletalMeshObject::IsSkeletalMesh()

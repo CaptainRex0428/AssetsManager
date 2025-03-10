@@ -195,7 +195,7 @@ void UAssetsHandler::Check(int target)
 		if(texture.IsTexture2D())
 		{
 			
-			texture.ResizeTextureSourceSize(target);
+			texture.ResizeSource(target);
 			
 		}
 

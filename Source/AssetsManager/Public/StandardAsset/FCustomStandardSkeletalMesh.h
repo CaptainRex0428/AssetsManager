@@ -57,9 +57,6 @@ public:
 
 	bool SetLODMaterialMap(int32 LODIndex, TArray<int32> LODMaterialMap);
 
-private:
-	TWeakObjectPtr<USkeletalMesh> SkeletalMeshObject;
-
 };
 
 /**
@@ -68,7 +65,7 @@ private:
 class ASSETSMANAGER_API FCustomStandardSkeletalMeshData : public FCustomStandardAssetData
 {
 public:
-	FCustomStandardSkeletalMeshData(FAssetData & AssetData);
+	FCustomStandardSkeletalMeshData(FAssetData & AssetData, bool StrictMode = false);
 	~FCustomStandardSkeletalMeshData();
 
 	UCustomStandardSkeletalMeshObject& Get();

@@ -73,6 +73,9 @@ public:
 	bool IsCatogryStandarized();
 
 protected:
+
+	virtual bool ForceSave();
+
 	bool bStrictCheckMode;
 
 	TArray<FString> AssetNameInfoList;
