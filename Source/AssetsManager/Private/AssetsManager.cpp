@@ -130,8 +130,8 @@ void FAssetsManagerModule::StartupModule()
 	IAssetTools& AssetTools = AssetToolsModule.Get();
 	
 	// AssetTypeActions
-	TSharedRef<UCustomTexture2DAssetTypeActions> CustomAssetTypeAction = MakeShareable(new UCustomTexture2DAssetTypeActions());
-	AssetTools.RegisterAssetTypeActions(CustomAssetTypeAction);
+	// TSharedRef<UCustomTexture2DAssetTypeActions> CustomAssetTypeAction = MakeShareable(new UCustomTexture2DAssetTypeActions());
+	// AssetTools.RegisterAssetTypeActions(CustomAssetTypeAction);
 
 	// 创建自定义 UFBXImporterFactory 的实例并注册
 	UCustomFBXImporterFactory* CustomFactory = NewObject<UCustomFBXImporterFactory>(UCustomFBXImporterFactory::StaticClass());
