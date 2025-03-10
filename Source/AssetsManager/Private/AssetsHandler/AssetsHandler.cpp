@@ -190,8 +190,18 @@ void UAssetsHandler::Check()
 
 	for (FAssetData AssetData : SelectedAssetsData)
 	{		
-		UCustomStandardObject s(AssetData.GetAsset());
+		UCustomStandardTexture2D texture(AssetData.GetAsset());
 
-		NtfyMsgLog(s.Get()->GetFName().ToString());
+		if(texture.IsTexture2D())
+		{
+			int num = texture.GetTextureMipMaps()->Num();
+
+			if(num>2)
+			{
+				texture.RemoveMipMapsAt(0);
+			}
+		}
+
+		
 	}
 }

@@ -582,3 +582,94 @@ bool FCustomStandardTexture2DData::IsSuffixStandarized()
 
 	return false;
 }
+
+UCustomStandardTexture2D::UCustomStandardTexture2D(UObject* InObj, bool StricCheckMode):
+	UCustomStandardObject(InObj, StricCheckMode),
+	Texture2DObject(nullptr)
+{
+	UTexture2D* InTexture2D = Cast<UTexture2D>(InObj);
+
+	if (InTexture2D)
+	{
+		Texture2DObject = InTexture2D;
+	}
+}
+
+UCustomStandardTexture2D::UCustomStandardTexture2D(UTexture2D* InTexture2D, bool StricCheckMode):
+	UCustomStandardObject(InTexture2D, StricCheckMode),
+	Texture2DObject(nullptr)
+{
+	if (InTexture2D)
+	{
+		Texture2DObject = InTexture2D;
+	}
+}
+
+UCustomStandardTexture2D::~UCustomStandardTexture2D()
+{
+}
+
+TWeakObjectPtr<UTexture2D> UCustomStandardTexture2D::Get()
+{
+	return this->Texture2DObject;
+}
+
+bool UCustomStandardTexture2D::IsTexture2D()
+{
+	return this->Get().IsValid();
+}
+
+TIndirectArray<struct FTexture2DMipMap> * UCustomStandardTexture2D::GetTextureMipMaps()
+{
+	if(!this->Texture2DObject.IsValid())
+	{
+		return nullptr;
+	}
+
+	UTexture2D* Texture2D = Texture2DObject.Get();
+	FTexturePlatformData* PlatformData = Texture2D->GetPlatformData();
+
+	if (!PlatformData)
+	{
+		return nullptr;
+	}
+
+	return & PlatformData->Mips;
+}
+
+int UCustomStandardTexture2D::RemoveMipMapsAt(int idx)
+{
+	if (!this->Texture2DObject.IsValid())
+	{
+		return -1;
+	}
+
+	UTexture2D* Texture2D = Texture2DObject.Get();
+	FTexturePlatformData* PlatformData = Texture2D->GetPlatformData();
+
+	if (!PlatformData)
+	{
+		return -2;
+	}
+
+	int32 MipCount = PlatformData->Mips.Num();
+	
+	if (idx > MipCount)
+	{
+		return 0;
+	}
+	
+	PlatformData->Mips.RemoveAt(idx);
+
+	// Texture2D->InvalidateCompressedData(); // 清除压缩数据缓存
+	Texture2D->UpdateResource();           // 强制更新渲染资源
+	Texture2D->PostEditChange();           // 触发编辑器更新
+
+	Texture2D->MarkPackageDirty();
+	
+	FString PackageFileName = FPackageName::LongPackageNameToFilename(Texture2D->GetOutermost()->GetName(), FPackageName::GetAssetPackageExtension());
+	bool bSaved = UPackage::SavePackage(Texture2D->GetOutermost(), Texture2D, RF_Standalone, *PackageFileName);
+
+	return 1;
+}
+

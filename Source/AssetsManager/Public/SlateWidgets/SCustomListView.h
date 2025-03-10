@@ -59,7 +59,7 @@ public:
 
 		FSuperListType::Construct(FSuperListType::FArguments()
 			.HeaderRow(this->InHeaderRow)
-			.ItemHeight(this->ItemHeight)
+			//.ItemHeight(this->ItemHeight)
 			.ListItemsSource(this->ListItemsSource)
 			.OnGenerateRow(this, &SCustomListView<ItemType>::OnGenerateRowForlist)
 			.OnMouseButtonDoubleClick(this, &SCustomListView<ItemType>::OnRowMouseButtonDoubleClicked));

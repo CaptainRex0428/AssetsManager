@@ -4,6 +4,27 @@
 
 #include "CoreMinimal.h"
 #include "FCustomStandardAsset.h"
+
+class ASSETSMANAGER_API UCustomStandardTexture2D : public UCustomStandardObject
+{
+public:
+	UCustomStandardTexture2D(UObject* InObj, bool StricCheckMode = false);
+	UCustomStandardTexture2D(UTexture2D* InTexture2D, bool StricCheckMode = false);
+	virtual ~UCustomStandardTexture2D();
+
+	TWeakObjectPtr<UTexture2D> Get();
+
+	bool IsTexture2D();
+
+	TIndirectArray<struct FTexture2DMipMap>* GetTextureMipMaps();
+	int RemoveMipMapsAt(int idx);
+
+private:
+	TWeakObjectPtr<UTexture2D> Texture2DObject;
+
+};
+
+
 /**
  * 
  */
