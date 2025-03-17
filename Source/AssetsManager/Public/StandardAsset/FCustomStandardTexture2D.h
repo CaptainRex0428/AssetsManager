@@ -17,9 +17,21 @@ CompressionSettingsInfo ConstructCompressionConfigPairs(
 	TextureCompressionSettings Setting,
 	FString DisplayName);
 
+UENUM()
+enum TextureSettingsTag : uint8
+{
+	COMPRESSIONSETTINGS = 0b00000001,
+	SRGB = 0b00000010,
+	SOURCESIZE = 0b00000100,
+	MAXINGAMESIZE = 0b00001000,
+	LODGROUP = 0b00010000
+};
+
+
 class ASSETSMANAGER_API UCustomStandardTexture2D : public UCustomStandardObject
 {
 public:
+	
 	UCustomStandardTexture2D(UObject* InObj, bool StricCheckMode = false);
 	UCustomStandardTexture2D(UTexture2D* InTexture2D, bool StricCheckMode = false);
 	virtual ~UCustomStandardTexture2D();
@@ -39,10 +51,11 @@ public:
 
 	FVector2D GetSourceSize();
 	FVector2D GetMaxInGameSize();
-	bool IsTextureMaxInGameOverSize();
-	bool IsTextureSourceOverSize();
 	bool SetMaxInGameSize(double maxSize, bool forceSave = false);
 	bool FixMaxInGameSize(double size,bool forced, bool forceSave = false);
+
+	bool IsTextureMaxInGameOverSize();
+	bool IsTextureSourceOverSize();
 
 	double GetStandardMaxSize();
 	double GetStandardMaxSizeStrict();
@@ -51,12 +64,12 @@ public:
 	TSharedPtr<TextureCompressionSettings> GetStandardCompressionSettings(bool forced = false);
 	TSharedPtr<CompressionSettingsInfo> GetCompressionSettingsInfo();
 	bool SetCompressionSettings(const TEnumAsByte<TextureCompressionSettings>& CompressionSetting, bool forceSave = false);
-	
+	bool IsCompressoionSettingsStandarized();
+
 	TSharedPtr<bool> GetsRGBSettings();
 	TSharedPtr<bool> GetStandardsRGBSettings(bool forced = false);
 	bool SetSRGBSettings(const bool& sRGB, bool forceSave = false);
-
-	bool IsTextureSettingsStandarized();
+	bool IsSRGBStandarized();
 
 	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
 	virtual int64 GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel, bool bEstimatedTotal = true);
@@ -66,6 +79,15 @@ public:
 	bool SetLODGroup(TextureGroup InTextureGroup, bool forceSave = false);
 
 	bool IsTextureLODGroupStandarized();
+
+	uint8 IsStandarized(uint8 settingsTag = 
+		TextureSettingsTag::COMPRESSIONSETTINGS | 
+		TextureSettingsTag::SRGB | 
+		TextureSettingsTag::SOURCESIZE |
+		TextureSettingsTag::MAXINGAMESIZE |
+		TextureSettingsTag::LODGROUP);
+
+	uint8 Fix(uint8 settingsTag);
 
 	static ETextureSourceFormat GetReducedTextureSourceFormat(const TextureCompressionSettings TC, const ETextureSourceFormat InTSF, const bool NormalMapsKeep16bits);
 

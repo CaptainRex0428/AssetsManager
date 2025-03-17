@@ -246,21 +246,17 @@ bool UCustomStandardTexture2D::SetSRGBSettings(const bool& sRGB, bool forceSave)
 	return true;
 }
 
-bool UCustomStandardTexture2D::IsTextureSettingsStandarized()
+bool UCustomStandardTexture2D::IsSRGBStandarized()
 {
 	if (!this->IsTexture2D())
 	{
 		return false;
 	}
 
-	TSharedPtr<TextureCompressionSettings> CurrentCS = this->GetCompressionSettings();
-	TSharedPtr<TextureCompressionSettings> StandardCS = this->GetStandardCompressionSettings(true);
-
 	TSharedPtr<bool> CurrentSRGB = GetsRGBSettings();
 	TSharedPtr<bool> StandardSRGB = GetStandardsRGBSettings(true);
 
-	return *CurrentCS == *StandardCS && *CurrentSRGB == *StandardSRGB;
-
+	return *CurrentSRGB == *StandardSRGB;
 }
 
 TSharedPtr<TextureGroup> UCustomStandardTexture2D::GetStandardLODGroup(
@@ -347,6 +343,83 @@ bool UCustomStandardTexture2D::IsTextureLODGroupStandarized()
 	TSharedPtr<TextureGroup> StandardTG = GetStandardLODGroup(true);
 
 	return *CurrentTG == *StandardTG;
+}
+
+uint8 UCustomStandardTexture2D::IsStandarized(uint8 settingsTag)
+{
+	if (!this->IsTexture2D())
+	{
+		return -1;
+	}
+
+	uint8 result = 0;
+
+	if (settingsTag & TextureSettingsTag::COMPRESSIONSETTINGS && this->IsCompressoionSettingsStandarized())
+	{
+		result | TextureSettingsTag::COMPRESSIONSETTINGS;
+	};
+
+	if (settingsTag & TextureSettingsTag::SRGB && this->IsSRGBStandarized())
+	{
+		result | TextureSettingsTag::SRGB;
+	};
+
+	if (settingsTag & TextureSettingsTag::SOURCESIZE && !this->IsTextureSourceOverSize())
+	{
+		result | TextureSettingsTag::SOURCESIZE;
+	};
+
+	if (settingsTag & TextureSettingsTag::MAXINGAMESIZE && !this->IsTextureMaxInGameOverSize())
+	{
+		result | TextureSettingsTag::MAXINGAMESIZE;
+	};
+
+	if (settingsTag & TextureSettingsTag::LODGROUP && this->IsTextureLODGroupStandarized())
+	{
+		result | TextureSettingsTag::LODGROUP;
+	};
+
+	return result;
+
+}
+
+uint8 UCustomStandardTexture2D::Fix(uint8 settingsTag)
+{
+	if (!this->IsTexture2D())
+	{
+		return -1;
+	}
+
+	uint8 PreDeal = this->IsStandarized(settingsTag);
+
+	uint8 result = 0;
+
+	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::COMPRESSIONSETTINGS)) 
+	{
+		
+	};
+
+	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::SRGB)) 
+	{
+		
+	};
+
+	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::SOURCESIZE)) 
+	{
+		
+	};
+
+	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::MAXINGAMESIZE)) 
+	{
+		
+	};
+
+	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::LODGROUP)) 
+	{
+		
+	};
+
+	return result;
 }
 
 double UCustomStandardTexture2D::GetStandardMaxSize()
@@ -869,6 +942,19 @@ bool UCustomStandardTexture2D::SetCompressionSettings(const TEnumAsByte<TextureC
 	}
 
 	return true;
+}
+
+bool UCustomStandardTexture2D::IsCompressoionSettingsStandarized()
+{
+	if (!this->IsTexture2D())
+	{
+		return false;
+	}
+
+	TSharedPtr<TextureCompressionSettings> CurrentCS = this->GetCompressionSettings();
+	TSharedPtr<TextureCompressionSettings> StandardCS = this->GetStandardCompressionSettings(true);
+
+	return *CurrentCS == *StandardCS;
 }
 
 TSharedPtr<TextureGroup> UCustomStandardTexture2D::GetLODGroup()

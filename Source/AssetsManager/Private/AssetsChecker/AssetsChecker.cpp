@@ -834,7 +834,9 @@ void UAssetsChecker::FilterTextureSettingsErrorAssetsForAssetList(
 
 		FCustomStandardTexture2DData TextureAsset(*AssetDPtr);
 
-		if (!TextureAsset.Get().IsTextureSettingsStandarized())
+		uint8 standarized = TextureAsset.Get().IsStandarized(COMPRESSIONSETTINGS | SRGB);
+
+		if (!((standarized & COMPRESSIONSETTINGS) && (standarized & SRGB)))
 		{
 			if (isAdditiveMode)
 			{
