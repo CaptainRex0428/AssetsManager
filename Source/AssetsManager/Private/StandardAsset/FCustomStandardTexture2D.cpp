@@ -10,6 +10,8 @@
 #include "TextureSourceDataUtils.h"
 #include "TextureImportSettings.h"
 
+#include "ConfigManager.h"
+
 
 FCustomStandardTexture2DData::FCustomStandardTexture2DData(
 	const FAssetData& AssetData,
@@ -53,6 +55,51 @@ bool UCustomStandardTexture2D::IsTextureSourceOverSize()
 	if (bStrictCheckMode) { return this->GetSourceSize().X > this->GetStandardMaxSizeStrict() || this->GetSourceSize().Y > this->GetStandardMaxSizeStrict(); };
 
 	return this->GetSourceSize().X > this->GetStandardMaxSize() || this->GetSourceSize().Y > this->GetStandardMaxSize();
+}
+
+bool UCustomStandardTexture2D::SetMaxInGameSize(double maxSize,bool forceSave)
+{
+	if(!this->IsTexture2D())
+	{
+		return false;
+	}
+
+	this->Get()->MaxTextureSize = maxSize;
+	this->Get()->UpdateResource();
+
+	if(forceSave)
+	{
+		return this->ForceSave();
+	}
+	
+	return true;
+}
+
+bool UCustomStandardTexture2D::FixMaxInGameSize(double size,bool forced, bool forceSave)
+{
+	if (!this->IsTexture2D())
+	{
+		return false;
+	}
+
+	FVector2D MaxInGameSize = this->GetMaxInGameSize();
+	double GameSize = MaxInGameSize.X > MaxInGameSize.Y ? MaxInGameSize.X : MaxInGameSize.Y;
+
+	// NtfyMsg("MaxSize:" + FString::FromInt(MaxSize));
+
+	if (forced && GameSize != size)
+	{
+		return SetMaxInGameSize(size, true);
+	}
+
+	if (GameSize > size &&
+		UAssetsChecker::bIsPowerOfTwo(MaxInGameSize.X) &&
+		UAssetsChecker::bIsPowerOfTwo(MaxInGameSize.Y))
+	{
+		return SetMaxInGameSize(size, true);
+	}
+
+	return false;
 }
 
 int64 UCustomStandardTexture2D::GetMemorySize(bool bEstimatedTotal)
@@ -164,6 +211,41 @@ TSharedPtr<bool> UCustomStandardTexture2D::GetStandardsRGBSettings(bool forced)
 	return nullptr;
 }
 
+bool UCustomStandardTexture2D::SetSRGBSettings(const bool& sRGB, bool forceSave)
+{
+	if (!this->IsTexture2D())
+	{
+		return false;
+	}
+
+	if (*this->GetsRGBSettings() != sRGB)
+	{
+
+		this->Get()->SRGB = sRGB;
+		this->Get()->UpdateResource();
+
+		FString result = sRGB ? TEXT("true") : TEXT("false");
+
+#ifdef ZH_CN
+		NtfyMsgLog(TEXT("成功设置贴图sRGB为\n")
+			+ result + "\n"
+			+ this->Get()->GetFName().ToString());
+#else
+		NtfyMsgLog(TEXT("Successfully set the sRGB settings as\n")
+			+ result + "\n"
+			+ this->Get()->GetFName().ToString());
+#endif
+		
+		if(forceSave)
+		{
+			return this->ForceSave();
+		}
+		
+	}
+
+	return true;
+}
+
 bool UCustomStandardTexture2D::IsTextureSettingsStandarized()
 {
 	if (!this->IsTexture2D())
@@ -230,6 +312,28 @@ TSharedPtr<TextureGroup> UCustomStandardTexture2D::GetStandardLODGroup(
 	return MakeShared<TextureGroup>(*this->GetCompressionSettings() == TC_Normalmap ?
 		TEXTUREGROUP_WorldNormalMap : TEXTUREGROUP_World);
 	
+}
+
+bool UCustomStandardTexture2D::SetLODGroup(TextureGroup InTextureGroup, bool forceSave)
+{
+	if (!this->IsTexture2D())
+	{
+		return false;
+	}
+
+	if (this->Get()->LODGroup != InTextureGroup)
+	{
+		this->Get()->LODGroup = InTextureGroup;
+
+		if(forceSave)
+		{
+			return this->ForceSave();
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 bool UCustomStandardTexture2D::IsTextureLODGroupStandarized()

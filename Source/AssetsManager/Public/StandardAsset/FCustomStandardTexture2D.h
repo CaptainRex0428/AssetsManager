@@ -41,6 +41,8 @@ public:
 	FVector2D GetMaxInGameSize();
 	bool IsTextureMaxInGameOverSize();
 	bool IsTextureSourceOverSize();
+	bool SetMaxInGameSize(double maxSize, bool forceSave = false);
+	bool FixMaxInGameSize(double size,bool forced, bool forceSave = false);
 
 	double GetStandardMaxSize();
 	double GetStandardMaxSizeStrict();
@@ -52,6 +54,7 @@ public:
 	
 	TSharedPtr<bool> GetsRGBSettings();
 	TSharedPtr<bool> GetStandardsRGBSettings(bool forced = false);
+	bool SetSRGBSettings(const bool& sRGB, bool forceSave = false);
 
 	bool IsTextureSettingsStandarized();
 
@@ -60,6 +63,7 @@ public:
 
 	TSharedPtr<TextureGroup> GetLODGroup();
 	TSharedPtr<TextureGroup> GetStandardLODGroup(bool forced = false);
+	bool SetLODGroup(TextureGroup InTextureGroup, bool forceSave = false);
 
 	bool IsTextureLODGroupStandarized();
 

@@ -362,7 +362,5 @@ bool UCustomStandardObject::ForceSave()
 	FName AssetName = this->Get()->GetFName();
 	FString PackageName = this->Get()->GetPackage()->GetName();
 
-	UEditorAssetLibrary::SaveAsset(PackageName + "." + AssetName.ToString(), false);
-
-	return true;
+	return UEditorAssetLibrary::SaveAsset(PackageName + "." + AssetName.ToString(), false);
 }

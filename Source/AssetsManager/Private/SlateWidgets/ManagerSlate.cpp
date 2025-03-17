@@ -1544,9 +1544,11 @@ FReply SManagerSlateTab::OnSingleTextureAsset2KButtonClicked(
 {
 	double maxSize = 2048;
 
+	UCustomStandardTexture2D StandardT2DObject(ClickedAssetData->GetAsset());
+
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!StandardT2DObject.FixMaxInGameSize(maxSize, true, true))
 		{
 
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1596,9 +1598,11 @@ FReply SManagerSlateTab::OnSingleTextureAsset1KButtonClicked(
 {
 	double maxSize = 1024;
 
+	UCustomStandardTexture2D StandardT2DObject(ClickedAssetData->GetAsset());
+
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!StandardT2DObject.FixMaxInGameSize(maxSize, true, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() 
@@ -1607,7 +1611,6 @@ FReply SManagerSlateTab::OnSingleTextureAsset1KButtonClicked(
 			NtfyMsg(ClickedAssetData->AssetName.ToString() 
 				+ TEXT("\nFaild or no need to fix this texture."));
 #endif
-			;
 		}
 		else
 		{
@@ -1647,10 +1650,11 @@ FReply SManagerSlateTab::OnSingleTextureAsset512ButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
 	double maxSize = 512;
+	UCustomStandardTexture2D StandardT2DObject(ClickedAssetData->GetAsset());
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!StandardT2DObject.FixMaxInGameSize(maxSize, true, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1699,10 +1703,11 @@ FReply SManagerSlateTab::OnSingleTextureAssetResetButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
 	double maxSize = 0;
+	UCustomStandardTexture2D StandardT2DObject(ClickedAssetData->GetAsset());
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!StandardT2DObject.FixMaxInGameSize(maxSize, true, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1805,7 +1810,7 @@ FReply SManagerSlateTab::OnSingleTextureLODGroupStandardFixButtonClicked(
 
 	if (STLODGroup)
 	{
-		UAssetsChecker::SetTextureLODGroup(*ClickedAssetData, *STLODGroup);
+		TAsset.Get().SetLODGroup( *STLODGroup, true);
 
 		RefreshAssetsListView(false);
 	}
@@ -2124,7 +2129,7 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 
 			if (STLODGroup)
 			{
-				UAssetsChecker::SetTextureLODGroup(*AssetData, *STLODGroup);
+				TAsset.Get().SetLODGroup( *STLODGroup, true);
 			}
 		}
 

@@ -156,32 +156,8 @@ public:
 	static TSharedPtr<bool> GetTextureAssetSRGBSettings(
 		const FAssetData& AssetData);
 
-	static bool SetTextureAssetCompressionSettings(
-		const FAssetData& AssetData,
-		const TEnumAsByte<TextureCompressionSettings>& CompressionSetting);
-
-	static bool SetTextureSRGBSettings(
-		const FAssetData& AssetData,
-		const bool & sRGB);
-
-	static bool FixTextureMaxSizeInGame(
-		FAssetData& ClickedAssetData, 
-		double maxSize, 
-		bool forced = false);
-
-	static bool SetTextureSize(
-		FAssetData& ClickedAssetData, 
-		double maxSize);
-
 	static bool SetTextureStandardSettings(
 		FAssetData& ClickedAssetData);
-
-	static TSharedPtr<TextureGroup> GetTextureLODGroup(
-		const FAssetData& AssetData);
-
-	static bool SetTextureLODGroup(
-		FAssetData& AssetData,
-		TextureGroup InTextureGroup);
 
 #pragma endregion
 

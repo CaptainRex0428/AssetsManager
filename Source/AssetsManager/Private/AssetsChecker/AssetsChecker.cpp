@@ -374,55 +374,6 @@ void UAssetsChecker::AddPrefixes(
 #endif
 }
 
-bool UAssetsChecker::FixTextureMaxSizeInGame(
-	FAssetData& ClickedAssetData, 
-	double maxSize, 
-	bool forced)
-{
-	if (!ClickedAssetData.GetAsset()->IsA<UTexture2D>())
-	{
-		return false;
-	}
-
-	FVector2D MaxInGameSize = GetTextureAssetMaxInGameSize(ClickedAssetData);
-	double GameSize = MaxInGameSize.X > MaxInGameSize.Y ? MaxInGameSize.X : MaxInGameSize.Y;
-
-	// NtfyMsg("MaxSize:" + FString::FromInt(MaxSize));
-
-	if(forced && GameSize != maxSize)
-	{
-		return SetTextureSize(ClickedAssetData, maxSize);
-	}
-		
-	if( GameSize > maxSize &&
-		bIsPowerOfTwo(MaxInGameSize.X) && 
-		bIsPowerOfTwo(MaxInGameSize.Y))
-	{
-		return SetTextureSize(ClickedAssetData, maxSize);
-	}
-
-	return false;
-}
-
-bool UAssetsChecker::SetTextureSize(
-	FAssetData& ClickedAssetData,
-	double maxSize)
-{
-	UObject* AssetObj = ClickedAssetData.GetAsset();
-
-	if (AssetObj->IsA<UTexture2D>())
-	{
-		UTexture2D * texture = Cast<UTexture2D>(AssetObj);
-		if (texture)
-		{
-			texture->MaxTextureSize = maxSize;
-			return UEditorAssetLibrary::SaveAsset(ClickedAssetData.GetObjectPathString(), false);
-		}
-	}
-
-	return false;
-}
-
 bool UAssetsChecker::SetTextureStandardSettings(FAssetData& ClickedAssetData)
 {
 	FCustomStandardTexture2DData SAsset(ClickedAssetData);
@@ -450,70 +401,11 @@ bool UAssetsChecker::SetTextureStandardSettings(FAssetData& ClickedAssetData)
 		return false;
 	}
 
-	bool StandardResult_Compression = SetTextureAssetCompressionSettings(
-		ClickedAssetData, *SAsset.Get().GetStandardCompressionSettings(true));
+	bool StandardResult_Compression = SAsset.Get().SetCompressionSettings(*SAsset.Get().GetStandardCompressionSettings(true),true);
 
-	bool StandardResult_sRGB = SetTextureSRGBSettings(
-		ClickedAssetData, 
-		*SAsset.Get().GetStandardsRGBSettings(true));
+	bool StandardResult_sRGB = SAsset.Get().SetSRGBSettings(*SAsset.Get().GetStandardsRGBSettings(true), true);
 
 	return  StandardResult_Compression && StandardResult_sRGB;
-}
-
-TSharedPtr<TextureGroup> UAssetsChecker::GetTextureLODGroup(const FAssetData& AssetData)
-{
-	UObject* AssetOBJ = AssetData.GetAsset();
-
-	if (!AssetOBJ)
-	{
-		return nullptr;
-	}
-
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return nullptr;
-	}
-
-	UTexture2D* STexture = Cast<UTexture2D>(AssetOBJ);
-
-	if (STexture)
-	{
-		return MakeShared<TextureGroup>(STexture->LODGroup);
-	}
-
-	return nullptr;
-}
-
-bool UAssetsChecker::SetTextureLODGroup(
-	FAssetData& AssetData, 
-	TextureGroup InTextureGroup)
-{
-	UObject* AssetOBJ = AssetData.GetAsset();
-
-	if (!AssetOBJ)
-	{
-		return false;
-	}
-
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return false;
-	}
-
-	UTexture2D* STexture = Cast<UTexture2D>(AssetOBJ);
-
-	if (STexture)
-	{
-		if (STexture->LODGroup == InTextureGroup)
-		{
-			return false;
-		}
-
-		STexture->LODGroup = InTextureGroup;
-		return UEditorAssetLibrary::SaveAsset(AssetData.GetObjectPathString(), false);
-	}
-
-	return false;
 }
 
 TArray<FString> UAssetsChecker::GetAssetReferencesPath(
@@ -585,14 +477,6 @@ TSharedPtr<TextureGroup> UAssetsChecker::GetTextureAssetTextureGroup(const FAsse
 	return nullptr;
 }
 
-bool UAssetsChecker::SetTextureAssetCompressionSettings(
-	const FAssetData& AssetData,
-	const TEnumAsByte<TextureCompressionSettings>& CompressionSetting)
-{
-	UCustomStandardTexture2D STexture(AssetData.GetAsset());
-	return STexture.SetCompressionSettings(CompressionSetting,true);
-}
-
 TSharedPtr<bool> UAssetsChecker::GetTextureAssetSRGBSettings(const FAssetData& AssetData)
 {
 	UObject* AssetOBJ = AssetData.GetAsset();
@@ -615,48 +499,6 @@ TSharedPtr<bool> UAssetsChecker::GetTextureAssetSRGBSettings(const FAssetData& A
 	}
 
 	return nullptr;
-}
-
-bool UAssetsChecker::SetTextureSRGBSettings(
-	const FAssetData& AssetData, 
-	const bool& sRGB)
-{
-	UObject* AssetOBJ = AssetData.GetAsset();
-
-	if (!AssetOBJ)
-	{
-		return false;
-	}
-
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return false;
-	}
-
-	UTexture2D* AssetT = Cast<UTexture2D>(AssetOBJ);
-
-	if (AssetT && (*GetTextureAssetSRGBSettings(AssetData) != sRGB))
-	{
-
-		AssetT->SRGB = sRGB;
-		AssetT->UpdateResource();
-
-		FString result = sRGB ? TEXT("true") : TEXT("false");
-
-#ifdef ZH_CN
-		NtfyMsgLog(TEXT("成功设置贴图sRGB为\n")
-			+  result + "\n"
-			+ AssetData.AssetName.ToString());
-#else
-		NtfyMsgLog(TEXT("Successfully set the sRGB settings as\n")
-			+ result + "\n"
-			+ AssetData.AssetName.ToString());
-#endif
-
-		return UEditorAssetLibrary::SaveAsset(AssetData.GetObjectPathString(), false);
-	}
-
-	return true;
 }
 
 void UAssetsChecker::FilterUnusedAssetsForAssetList(
