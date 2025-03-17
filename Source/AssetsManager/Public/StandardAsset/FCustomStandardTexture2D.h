@@ -12,6 +12,11 @@ struct CompressionSettingsInfo
 	FString DisplayName;
 };
 
+CompressionSettingsInfo ConstructCompressionConfigPairs(
+	FString ConfigName,
+	TextureCompressionSettings Setting,
+	FString DisplayName);
+
 class ASSETSMANAGER_API UCustomStandardTexture2D : public UCustomStandardObject
 {
 public:
@@ -23,6 +28,8 @@ public:
 
 	bool IsTexture2D();
 
+	bool IsSuffixStandarized();
+
 	TIndirectArray<struct FTexture2DMipMap>* GetTextureMipMaps();
 
 	void ResizeSource(int targetSize, bool forceSave = false);
@@ -32,13 +39,29 @@ public:
 
 	FVector2D GetSourceSize();
 	FVector2D GetMaxInGameSize();
+	bool IsTextureMaxInGameOverSize();
+	bool IsTextureSourceOverSize();
+
+	double GetStandardMaxSize();
+	double GetStandardMaxSizeStrict();
 
 	TSharedPtr<TextureCompressionSettings> GetCompressionSettings();
 	TSharedPtr<TextureCompressionSettings> GetStandardCompressionSettings(bool forced = false);
 	TSharedPtr<CompressionSettingsInfo> GetCompressionSettingsInfo();
 	bool SetCompressionSettings(const TEnumAsByte<TextureCompressionSettings>& CompressionSetting, bool forceSave = false);
 	
+	TSharedPtr<bool> GetsRGBSettings();
+	TSharedPtr<bool> GetStandardsRGBSettings(bool forced = false);
+
+	bool IsTextureSettingsStandarized();
+
+	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
+	virtual int64 GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel, bool bEstimatedTotal = true);
+
 	TSharedPtr<TextureGroup> GetLODGroup();
+	TSharedPtr<TextureGroup> GetStandardLODGroup(bool forced = false);
+
+	bool IsTextureLODGroupStandarized();
 
 	static ETextureSourceFormat GetReducedTextureSourceFormat(const TextureCompressionSettings TC, const ETextureSourceFormat InTSF, const bool NormalMapsKeep16bits);
 
@@ -50,7 +73,6 @@ protected:
 	TSharedPtr<FString> TextureGlobalConfigSection;
 	TSharedPtr<FString> TextureCategoryCommonConfigSection;
 	TSharedPtr<FString> TextureCategoryStrictConfigSection;
-	
 };
 
 /**
@@ -65,49 +87,14 @@ public:
 		bool StrictCheckMode = false);
 	virtual ~FCustomStandardTexture2DData();
 
-	static CompressionSettingsInfo ConstructCompressionConfigPairs(
-		FString ConfigName,
-		TextureCompressionSettings Setting,
-		FString DisplayName);
-
-	bool IsSuffixStandarized();
-
 	UCustomStandardTexture2D& Get();
 	UTexture2D* GetTexture2D();
 
-	bool IsTextureMaxInGameOverSize();
-	bool IsTextureSourceOverSize();
+	
 
-	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
-	virtual int64 GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel,bool bEstimatedTotal = true);
-
-	double GetStandardMaxSize();
-	double GetStandardMaxSizeStrict();
-
-	TSharedPtr<bool> GetsRGBSettings();
-	TSharedPtr<bool> GetStandardsRGBSettings(bool forced = false);
-
-	bool IsTextureSettingsStandarized();
-
-	TSharedPtr<TextureGroup> GetLODGroup();
-	TSharedPtr<TextureGroup> GetStandardLODGroup(bool forced = false);
-
-	bool IsTextureLODGroupStandarized();
+	
 
 protected:
-
-	TSharedPtr<FString> TextureGlobalConfigSection;
-	TSharedPtr<FString> TextureCategoryCommonConfigSection;
-	TSharedPtr<FString> TextureCategoryStrictConfigSection;
-
-	bool bTexture2D;
-	
-	double GlobalMaxSize;
-	double MaxSize;
-	double MaxInGameSizeX;
-	double MaxInGameSizeY;
-	double SourceSizeX;
-	double SourceSizeY;
 
 	UCustomStandardTexture2D StandardTexture2DObject;
 
@@ -115,23 +102,23 @@ protected:
 
 static const TArray<CompressionSettingsInfo> ValidCompressionConfig =
 {
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Default),"Default (BC1 or BC3 with A)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Normalmap),"NormalMap (BC5)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Masks),"Masks (no sRGB)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Grayscale),"Grayscale (G8/16, RGB8 sRGB)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Displacementmap),"DisplacementMap (G8/16)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_VectorDisplacementmap),"VectorDisplacementmap (RGBA8)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_HDR),"HDR (RGBA16F, no sRGB)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_EditorIcon),"UserInterface2D (RGBA8)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Alpha),"Alpha (no sRGB, BC4)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_DistanceFieldFont),"DistanceFieldFont (G8)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_HDR_Compressed),"HDR Compressed (RGB, BC6H)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_BC7),"BC7 (RGBA)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_HalfFloat),"Half Float (R16F)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_LQ),"Low Quality (BGR565/BGR555A1)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_EncodedReflectionCapture),"EncodedReflectionCapture"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_SingleFloat),"Single Float (R32F)"),
-	FCustomStandardTexture2DData::ConstructCompressionConfigPairs(VNAME_STRUCT(TC_HDR_F32),"HDR High Precision (RGBA32F)")
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Default),"Default (BC1 or BC3 with A)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Normalmap),"NormalMap (BC5)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Masks),"Masks (no sRGB)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Grayscale),"Grayscale (G8/16, RGB8 sRGB)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Displacementmap),"DisplacementMap (G8/16)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_VectorDisplacementmap),"VectorDisplacementmap (RGBA8)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_HDR),"HDR (RGBA16F, no sRGB)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_EditorIcon),"UserInterface2D (RGBA8)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_Alpha),"Alpha (no sRGB, BC4)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_DistanceFieldFont),"DistanceFieldFont (G8)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_HDR_Compressed),"HDR Compressed (RGB, BC6H)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_BC7),"BC7 (RGBA)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_HalfFloat),"Half Float (R16F)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_LQ),"Low Quality (BGR565/BGR555A1)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_EncodedReflectionCapture),"EncodedReflectionCapture"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_SingleFloat),"Single Float (R32F)"),
+	ConstructCompressionConfigPairs(VNAME_STRUCT(TC_HDR_F32),"HDR High Precision (RGBA32F)")
 };
 
 static const TMap<FString, TextureGroup> TextureGroupNameMap =

@@ -440,7 +440,7 @@ bool UAssetsChecker::SetTextureStandardSettings(FAssetData& ClickedAssetData)
 	}
 
 	if (!SAsset.Get().GetStandardCompressionSettings(true).IsValid() || 
-		!SAsset.GetStandardsRGBSettings(true).IsValid())
+		!SAsset.Get().GetStandardsRGBSettings(true).IsValid())
 	{
 #ifdef ZH_CN
 		NtfyMsgLog(TEXT("找不到资产对应的正确配置\n") + ClickedAssetData.AssetName.ToString());
@@ -455,7 +455,7 @@ bool UAssetsChecker::SetTextureStandardSettings(FAssetData& ClickedAssetData)
 
 	bool StandardResult_sRGB = SetTextureSRGBSettings(
 		ClickedAssetData, 
-		*SAsset.GetStandardsRGBSettings(true));
+		*SAsset.Get().GetStandardsRGBSettings(true));
 
 	return  StandardResult_Compression && StandardResult_sRGB;
 }
@@ -883,7 +883,7 @@ void UAssetsChecker::FilterMaxInGameSizeErrorAssetsForAssetList(
 
 		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr, bStrictMode);
 
-		if (CustomStandardAsset.IsTextureMaxInGameOverSize())
+		if (CustomStandardAsset.Get().IsTextureMaxInGameOverSize())
 		{
 			OutList.Add(AssetDPtr);
 		}
@@ -919,7 +919,7 @@ void UAssetsChecker::FilterSourceSizeErrorAssetsForAssetList(
 
 		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr,bStrictMode);
 
-		if (CustomStandardAsset.IsTextureSourceOverSize())
+		if (CustomStandardAsset.Get().IsTextureSourceOverSize())
 		{
 			OutList.Add(AssetDPtr);
 		}
@@ -953,7 +953,7 @@ void UAssetsChecker::FilterTextureSubfixErrorAssetsForAssetList(
 
 		FCustomStandardTexture2DData Asset(*AssetDPtr);
 
-		if (!Asset.IsSuffixStandarized())
+		if (!Asset.Get().IsSuffixStandarized())
 		{
 			if (isAdditiveMode)
 			{
@@ -992,7 +992,7 @@ void UAssetsChecker::FilterTextureSettingsErrorAssetsForAssetList(
 
 		FCustomStandardTexture2DData TextureAsset(*AssetDPtr);
 
-		if (!TextureAsset.IsTextureSettingsStandarized())
+		if (!TextureAsset.Get().IsTextureSettingsStandarized())
 		{
 			if (isAdditiveMode)
 			{
@@ -1031,7 +1031,7 @@ void UAssetsChecker::FilterTextureLODGroupErrorAssetsForAssetList(
 
 		FCustomStandardTexture2DData SAsset(*AssetDPtr);
 
-		if (!SAsset.IsTextureLODGroupStandarized())
+		if (!SAsset.Get().IsTextureLODGroupStandarized())
 		{
 			if (isAdditiveMode)
 			{

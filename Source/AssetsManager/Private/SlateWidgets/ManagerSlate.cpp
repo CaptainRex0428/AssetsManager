@@ -1167,7 +1167,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetMemorySizeRowBox(
 	if (AssetDataToDisplay->GetAsset()->IsA<UTexture2D>())
 	{
 		FCustomStandardTexture2DData StandardAsset(*AssetDataToDisplay);
-		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetMemorySize(DisplayLevel), AssetSizeDisplayUnit::MB);
+		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.Get().GetMemorySize(DisplayLevel), AssetSizeDisplayUnit::MB);
 	}
 	else
 	{
@@ -1801,7 +1801,7 @@ FReply SManagerSlateTab::OnSingleTextureLODGroupStandardFixButtonClicked(
 	FCustomStandardTexture2DData TAsset(*ClickedAssetData);
 
 	TSharedPtr<TextureGroup> STLODGroup =
-		TAsset.GetStandardLODGroup();
+		TAsset.Get().GetStandardLODGroup();
 
 	if (STLODGroup)
 	{
@@ -2120,7 +2120,7 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 			FCustomStandardTexture2DData TAsset(*AssetData);
 
 			TSharedPtr<TextureGroup> STLODGroup =
-				TAsset.GetStandardLODGroup();
+				TAsset.Get().GetStandardLODGroup();
 
 			if (STLODGroup)
 			{

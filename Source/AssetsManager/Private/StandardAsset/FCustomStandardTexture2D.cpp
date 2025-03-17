@@ -15,112 +15,8 @@ FCustomStandardTexture2DData::FCustomStandardTexture2DData(
 	const FAssetData& AssetData,
 	bool StrictCheckMode)
 	:FCustomStandardAssetData(AssetData, StrictCheckMode),
-	StandardTexture2DObject(AssetData.GetAsset(),StrictCheckMode),
-	TextureGlobalConfigSection(nullptr),
-	TextureCategoryCommonConfigSection(nullptr),
-	TextureCategoryStrictConfigSection(nullptr),
-	bTexture2D(false),
-	GlobalMaxSize(0), MaxSize(0),
-	MaxInGameSizeX(0),MaxInGameSizeY(0),
-	SourceSizeX(0),SourceSizeY(0)
-	
+	StandardTexture2DObject(AssetData.GetAsset(),StrictCheckMode)
 {
-
-	/*
-	* Get sections
-	*/
-
-	FString TGlobalSection = FPaths::Combine(ModuleConfigMaster, TEXT("Global"),TEXT("Texture"));
-
-	if (UManagerConfig::Get().GetSection(*TGlobalSection))
-	{
-		this->TextureGlobalConfigSection = MakeShareable(new FString(TGlobalSection));
-	}
-
-	
-	this->TextureCategoryStrictConfigSection
-		= MakeShareable(new FString(FPaths::Combine(ModuleConfigMaster, *UAssetsChecker::GetCategoryTag(this->Get().GetStrictAssetCategory()), TEXT("Texture"))));
-	
-	this->TextureCategoryCommonConfigSection
-		= MakeShareable(new FString(FPaths::Combine(ModuleConfigMaster, *UAssetsChecker::GetCategoryTag(this->Get().GetCommonAssetCategory()), TEXT("Texture"))));
-	
-
-	/*
-	* Set global & strict max size
-	*/
-
-	this->GlobalMaxSize = GetStandardMaxSize();
-	this->MaxSize = GetStandardMaxSizeStrict();
-
-	/*
-	* Judge texture validity
-	*/
-
-	UObject* AssetPtr = AssetData.GetAsset();
-
-	if(AssetPtr && AssetPtr->IsA<UTexture2D>())
-	{
-		this->bTexture2D = true;
-	}
-
-
-	/*
-	* Get texture real size in game and source
-	*/
-
-	FVector2D size(0, 0);
-
-	if(this->bTexture2D)
-	{
-		TObjectPtr<UTexture2D> AssetAsT = Cast<UTexture2D>(AssetData.GetAsset());
-
-		this->SourceSizeX = AssetAsT->GetImportedSize().X;
-		this->SourceSizeY = AssetAsT->GetImportedSize().Y;
-
-		size.X = AssetAsT->GetImportedSize().X;
-		size.Y = AssetAsT->GetImportedSize().Y;
-
-		uint32 bias = AssetAsT->GetCachedLODBias();
-
-		int32 MaximumTextureSize = AssetAsT->MaxTextureSize;
-
-		if (MaximumTextureSize == 0 && bias == 0)
-		{
-			this->MaxInGameSizeX = this->SourceSizeX;
-			this->MaxInGameSizeY = this->SourceSizeY;
-		}
-		else
-		{
-			float rate;
-
-			if (MaximumTextureSize == 0)
-			{
-				rate = 1;
-			}
-			else
-			{
-				rate = (MaximumTextureSize / (size.X > size.Y ? size.X : size.X));
-			}
-
-			size.X *= (rate > 1 ? 1 : rate);
-			size.Y *= (rate > 1 ? 1 : rate);
-
-			if (bias > 0)
-			{
-
-				double scale = pow(2, bias);
-				size.X /= scale;
-				size.Y /= scale;
-
-				size.X = size.X > 1 ? size.X : 1;
-				size.Y = size.Y > 1 ? size.Y : 1;
-			}
-
-			this->MaxInGameSizeX = size.X;
-			this->MaxInGameSizeY = size.Y;
-		}
-	}
-
 }
 
 FCustomStandardTexture2DData::~FCustomStandardTexture2DData()
@@ -134,7 +30,7 @@ UCustomStandardTexture2D& FCustomStandardTexture2DData::Get()
 
 UTexture2D* FCustomStandardTexture2DData::GetTexture2D()
 {
-	if (!bTexture2D) 
+	if (!this->Get().IsTexture2D())
 	{
 		return nullptr;
 	}
@@ -145,41 +41,34 @@ UTexture2D* FCustomStandardTexture2DData::GetTexture2D()
 
 }
 
-bool FCustomStandardTexture2DData::IsTextureMaxInGameOverSize()
+bool UCustomStandardTexture2D::IsTextureMaxInGameOverSize()
 {
-	if (this->bStrictCheckMode) { return this->MaxInGameSizeX > this->MaxSize || this->MaxInGameSizeY > this->MaxSize; };
+	if (this->bStrictCheckMode) { return this->GetMaxInGameSize().X > this->GetStandardMaxSizeStrict() || this->GetMaxInGameSize().Y > this->GetStandardMaxSizeStrict(); };
 	
-	return this->MaxInGameSizeX > this->GlobalMaxSize || this->MaxInGameSizeY > this->GlobalMaxSize;
+	return this->GetMaxInGameSize().X > this->GetStandardMaxSize() || this->GetMaxInGameSize().Y > this->GetStandardMaxSize();
 }
 
-bool FCustomStandardTexture2DData::IsTextureSourceOverSize()
+bool UCustomStandardTexture2D::IsTextureSourceOverSize()
 {
-	if (bStrictCheckMode) { return this->SourceSizeX > this->MaxSize || this->SourceSizeY > this->MaxSize; };
+	if (bStrictCheckMode) { return this->GetSourceSize().X > this->GetStandardMaxSizeStrict() || this->GetSourceSize().Y > this->GetStandardMaxSizeStrict(); };
 
-	return this->SourceSizeX > this->GlobalMaxSize || this->SourceSizeY > this->GlobalMaxSize;
+	return this->GetSourceSize().X > this->GetStandardMaxSize() || this->GetSourceSize().Y > this->GetStandardMaxSize();
 }
 
-int64 FCustomStandardTexture2DData::GetMemorySize(bool bEstimatedTotal)
+int64 UCustomStandardTexture2D::GetMemorySize(bool bEstimatedTotal)
 {
-	if (!bTexture2D)
+	if (!this->IsTexture2D())
 	{
-		return FCustomStandardAssetData::Get().GetMemorySize(bEstimatedTotal);
+		return UCustomStandardObject::GetMemorySize(bEstimatedTotal);
 	}
 
-	UTexture2D* AssetT = Cast<UTexture2D>(this->GetAsset());
-
-	if (!AssetT)
-	{
-		return 0;
-	}
-
-	AssetT->PostLoad();
-	return AssetT->GetResourceSizeBytes(bEstimatedTotal ? EResourceSizeMode::EstimatedTotal : EResourceSizeMode::Exclusive);
+	this->Get()->PostLoad();
+	return this->Get()->GetResourceSizeBytes(bEstimatedTotal ? EResourceSizeMode::EstimatedTotal : EResourceSizeMode::Exclusive);
 }
 
-int64 FCustomStandardTexture2DData::GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel, bool bEstimatedTotal)
+int64 UCustomStandardTexture2D::GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel, bool bEstimatedTotal)
 {
-	int64 MemorySize = FCustomStandardAssetData::Get().GetMemorySize(bEstimatedTotal);
+	int64 MemorySize = UCustomStandardObject::GetMemorySize(bEstimatedTotal);
 
 	FString AssetGlobalSection = "/AssetsManager/Global";
 
@@ -222,41 +111,29 @@ int64 FCustomStandardTexture2DData::GetMemorySize(AssetsInfoDisplayLevel& Displa
 	return int64();
 }
 
-TSharedPtr<bool> FCustomStandardTexture2DData::GetsRGBSettings()
+TSharedPtr<bool> UCustomStandardTexture2D::GetsRGBSettings()
 {
-	if (!bTexture2D)
+	if (!this->IsTexture2D())
 	{
 		return nullptr;
 	}
 
-	UTexture2D* AssetT = Cast<UTexture2D>(this->GetAsset());
-
-	if (AssetT)
-	{
-		if (AssetT->SRGB)
-		{
-			return MakeShared<bool>(true);
-		}
-
-		return MakeShared<bool>(false);
-	}
-
-	return nullptr;
+	return MakeShared<bool>(this->Get().Get()->SRGB ? true : false);
 }
+		
 
-TSharedPtr<bool> FCustomStandardTexture2DData::GetStandardsRGBSettings(
-	bool forced)
+TSharedPtr<bool> UCustomStandardTexture2D::GetStandardsRGBSettings(bool forced)
 {
-	if (!bTexture2D)
+	if (!this->IsTexture2D())
 	{
 		return nullptr;
 	}
 
-	TSharedPtr<FString> suffix = this->Get().GetAssetSuffix();
+	TSharedPtr<FString> suffix = this->GetAssetSuffix();
 
 	if (suffix.IsValid())
 	{
-		FString ValidSection = this->Get().GetTextureVaidSection();
+		FString ValidSection = this->GetTextureVaidSection();
 
 		TSharedPtr<FString> DisplaySRGB = UManagerConfig::Get().FindInSectionStructArray(
 			*ValidSection,
@@ -287,15 +164,15 @@ TSharedPtr<bool> FCustomStandardTexture2DData::GetStandardsRGBSettings(
 	return nullptr;
 }
 
-bool FCustomStandardTexture2DData::IsTextureSettingsStandarized()
+bool UCustomStandardTexture2D::IsTextureSettingsStandarized()
 {
-	if (!bTexture2D)
+	if (!this->IsTexture2D())
 	{
 		return false;
 	}
 
-	TSharedPtr<TextureCompressionSettings> CurrentCS = this->Get().GetCompressionSettings();
-	TSharedPtr<TextureCompressionSettings> StandardCS = this->Get().GetStandardCompressionSettings(true);
+	TSharedPtr<TextureCompressionSettings> CurrentCS = this->GetCompressionSettings();
+	TSharedPtr<TextureCompressionSettings> StandardCS = this->GetStandardCompressionSettings(true);
 
 	TSharedPtr<bool> CurrentSRGB = GetsRGBSettings();
 	TSharedPtr<bool> StandardSRGB = GetStandardsRGBSettings(true);
@@ -304,31 +181,19 @@ bool FCustomStandardTexture2DData::IsTextureSettingsStandarized()
 
 }
 
-TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetLODGroup()
-{
-	if (!bTexture2D)
-	{
-		return nullptr;
-	}
-
-	UTexture2D* TAsset = Cast<UTexture2D>(this->GetAsset());
-
-	return MakeShared<TextureGroup>(TAsset->LODGroup);
-}
-
-TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetStandardLODGroup(
+TSharedPtr<TextureGroup> UCustomStandardTexture2D::GetStandardLODGroup(
 	bool forced)
 {
-	if (!bTexture2D)
+	if (!this->IsTexture2D())
 	{
 		return nullptr;
 	}
 
-	TSharedPtr<FString> suffix = this->Get().GetAssetSuffix();
+	TSharedPtr<FString> suffix = this->GetAssetSuffix();
 
 	if (suffix.IsValid())
 	{
-		FString ValidSection = this->Get().GetTextureVaidSection();
+		FString ValidSection = this->GetTextureVaidSection();
 
 		TSharedPtr<FString> LODGroup = UManagerConfig::Get().FindInSectionStructArray(
 			*ValidSection,
@@ -349,7 +214,7 @@ TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetStandardLODGroup(
 
 		const FConfigValue* CommonLODGroup = 
 			UManagerConfig::Get().GetSectionValue(*ValidSection, 
-				*this->Get().GetCompressionSettings() == TC_Normalmap?"DefaultNormalLODGroup" : "DefaultLODGroup");
+				*this->GetCompressionSettings() == TC_Normalmap?"DefaultNormalLODGroup" : "DefaultLODGroup");
 
 		if (CommonLODGroup)
 		{
@@ -362,14 +227,14 @@ TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetStandardLODGroup(
 		}
 	}
 
-	return MakeShared<TextureGroup>(*this->Get().GetCompressionSettings() == TC_Normalmap ?
+	return MakeShared<TextureGroup>(*this->GetCompressionSettings() == TC_Normalmap ?
 		TEXTUREGROUP_WorldNormalMap : TEXTUREGROUP_World);
 	
 }
 
-bool FCustomStandardTexture2DData::IsTextureLODGroupStandarized()
+bool UCustomStandardTexture2D::IsTextureLODGroupStandarized()
 {
-	if (!bTexture2D)
+	if (!this->IsTexture2D())
 	{
 		return false;
 	}
@@ -380,9 +245,9 @@ bool FCustomStandardTexture2DData::IsTextureLODGroupStandarized()
 	return *CurrentTG == *StandardTG;
 }
 
-double FCustomStandardTexture2DData::GetStandardMaxSize()
+double UCustomStandardTexture2D::GetStandardMaxSize()
 {
-	FString ValidSection = this->Get().GetTextureVaidSection();
+	FString ValidSection = this->GetTextureVaidSection();
 
 	const FConfigValue* value = UManagerConfig::Get().GetSectionValue(
 		*ValidSection, "MaxSize");
@@ -395,16 +260,16 @@ double FCustomStandardTexture2DData::GetStandardMaxSize()
 	return 2048.f;
 }
 
-double FCustomStandardTexture2DData::GetStandardMaxSizeStrict()
+double UCustomStandardTexture2D::GetStandardMaxSizeStrict()
 {
-	TSharedPtr<FString> suffixCurrent = this->Get().GetAssetSuffix();
+	TSharedPtr<FString> suffixCurrent = this->GetAssetSuffix();
 	
 	if(!suffixCurrent.IsValid() || suffixCurrent->IsEmpty())
 	{
 		return GetStandardMaxSize();
 	}
 
-	FString ValidSection = this->Get().GetTextureVaidSection();
+	FString ValidSection = this->GetTextureVaidSection();
 
 	TSharedPtr<FString> SizeInStr =
 		UManagerConfig::Get().FindInSectionStructArray(
@@ -422,8 +287,7 @@ double FCustomStandardTexture2DData::GetStandardMaxSizeStrict()
 	return GetStandardMaxSize();
 }
 
-CompressionSettingsInfo 
-FCustomStandardTexture2DData::ConstructCompressionConfigPairs(
+CompressionSettingsInfo ConstructCompressionConfigPairs(
 	FString ConfigName, 
 	TextureCompressionSettings Setting, 
 	FString DisplayName)
@@ -437,17 +301,17 @@ FCustomStandardTexture2DData::ConstructCompressionConfigPairs(
 	return Info;
 }
 
-bool FCustomStandardTexture2DData::IsSuffixStandarized()
+bool UCustomStandardTexture2D::IsSuffixStandarized()
 {
 
-	TSharedPtr<FString> suffix = this->Get().GetAssetSuffix();
+	TSharedPtr<FString> suffix = this->GetAssetSuffix();
 
 	if (!suffix.IsValid())
 	{
 		return false;
 	}
 
-	FString ValidSection = this->Get().GetTextureVaidSection();
+	FString ValidSection = this->GetTextureVaidSection();
 
 	TArray<FString> ValidSuffixArray =
 		UManagerConfig::Get().GenerateStructKeyValueArray(
