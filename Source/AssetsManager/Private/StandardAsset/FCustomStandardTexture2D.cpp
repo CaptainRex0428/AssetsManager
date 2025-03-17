@@ -127,11 +127,6 @@ FCustomStandardTexture2DData::~FCustomStandardTexture2DData()
 {
 }
 
-bool FCustomStandardTexture2DData::IsTexture2D()
-{
-	return bTexture2D;
-}
-
 UCustomStandardTexture2D& FCustomStandardTexture2DData::Get()
 {
 	return StandardTexture2DObject;
@@ -227,69 +222,6 @@ int64 FCustomStandardTexture2DData::GetMemorySize(AssetsInfoDisplayLevel& Displa
 	return int64();
 }
 
-FVector2D FCustomStandardTexture2DData::GetSourceSize()
-{
-	UCustomStandardTexture2D StandardTexture(this->GetTexture2D());
-	return StandardTexture.GetSourceSize();
-}
-
-FVector2D FCustomStandardTexture2DData::GetMaxInGameSize()
-{
-	UCustomStandardTexture2D StandardTexture(this->GetTexture2D());
-	return StandardTexture.GetMaxInGameSize();
-}
-
-TSharedPtr<TextureCompressionSettings> FCustomStandardTexture2DData::GetStandardCompressionSettings(
-	bool forced)
-{
-	if (!bTexture2D)
-	{
-		return nullptr;
-	}
-
-	TSharedPtr<FString> suffix = this->Get().GetAssetSuffix();
-
-	if (suffix.IsValid())
-	{
-		FString ValidSection = GetTextureVaidSection();
-
-		TSharedPtr<FString> DisplayCompression = UManagerConfig::Get().FindInSectionStructArray(
-			*ValidSection,
-			"SuffixStandard",
-			"Suffix",
-			*suffix,
-			"CompressionSettings");
-
-		if (DisplayCompression.IsValid())
-		{
-			for (CompressionSettingsInfo info : ValidCompressionConfig)
-			{
-				if (info.ConfigName == *DisplayCompression)
-				{
-					return MakeShared<TextureCompressionSettings>(info.Setting);
-				}
-			}
-		}
-	}
-
-
-	if (forced)
-	{
-		if (*GetLODGroup() == TEXTUREGROUP_WorldNormalMap ||
-			*GetLODGroup() == TEXTUREGROUP_CharacterNormalMap ||
-			*GetLODGroup() == TEXTUREGROUP_WeaponNormalMap ||
-			*GetLODGroup() == TEXTUREGROUP_VehicleNormalMap)
-		{
-			return MakeShared<TextureCompressionSettings>(TC_Normalmap);
-		}
-
-		return MakeShared<TextureCompressionSettings>(TC_Default);
-	}
-
-	return nullptr;
-	
-}
-
 TSharedPtr<bool> FCustomStandardTexture2DData::GetsRGBSettings()
 {
 	if (!bTexture2D)
@@ -324,7 +256,7 @@ TSharedPtr<bool> FCustomStandardTexture2DData::GetStandardsRGBSettings(
 
 	if (suffix.IsValid())
 	{
-		FString ValidSection = GetTextureVaidSection();
+		FString ValidSection = this->Get().GetTextureVaidSection();
 
 		TSharedPtr<FString> DisplaySRGB = UManagerConfig::Get().FindInSectionStructArray(
 			*ValidSection,
@@ -363,7 +295,7 @@ bool FCustomStandardTexture2DData::IsTextureSettingsStandarized()
 	}
 
 	TSharedPtr<TextureCompressionSettings> CurrentCS = this->Get().GetCompressionSettings();
-	TSharedPtr<TextureCompressionSettings> StandardCS = GetStandardCompressionSettings(true);
+	TSharedPtr<TextureCompressionSettings> StandardCS = this->Get().GetStandardCompressionSettings(true);
 
 	TSharedPtr<bool> CurrentSRGB = GetsRGBSettings();
 	TSharedPtr<bool> StandardSRGB = GetStandardsRGBSettings(true);
@@ -396,7 +328,7 @@ TSharedPtr<TextureGroup> FCustomStandardTexture2DData::GetStandardLODGroup(
 
 	if (suffix.IsValid())
 	{
-		FString ValidSection = GetTextureVaidSection();
+		FString ValidSection = this->Get().GetTextureVaidSection();
 
 		TSharedPtr<FString> LODGroup = UManagerConfig::Get().FindInSectionStructArray(
 			*ValidSection,
@@ -448,31 +380,9 @@ bool FCustomStandardTexture2DData::IsTextureLODGroupStandarized()
 	return *CurrentTG == *StandardTG;
 }
 
-FString FCustomStandardTexture2DData::GetTextureVaidSection()
-{
-	FString ValidSection = "/AssetsManager/Global/Texture";
-
-	if (TextureGlobalConfigSection.IsValid())
-	{
-		ValidSection = *TextureGlobalConfigSection;
-	}
-
-	if (TextureCategoryCommonConfigSection.IsValid())
-	{
-		ValidSection = *TextureCategoryCommonConfigSection;
-	}
-
-	if (TextureCategoryStrictConfigSection.IsValid())
-	{
-		ValidSection = *TextureCategoryStrictConfigSection;
-	}
-
-	return ValidSection;
-}
-
 double FCustomStandardTexture2DData::GetStandardMaxSize()
 {
-	FString ValidSection = GetTextureVaidSection();
+	FString ValidSection = this->Get().GetTextureVaidSection();
 
 	const FConfigValue* value = UManagerConfig::Get().GetSectionValue(
 		*ValidSection, "MaxSize");
@@ -494,7 +404,7 @@ double FCustomStandardTexture2DData::GetStandardMaxSizeStrict()
 		return GetStandardMaxSize();
 	}
 
-	FString ValidSection = GetTextureVaidSection();
+	FString ValidSection = this->Get().GetTextureVaidSection();
 
 	TSharedPtr<FString> SizeInStr =
 		UManagerConfig::Get().FindInSectionStructArray(
@@ -537,7 +447,7 @@ bool FCustomStandardTexture2DData::IsSuffixStandarized()
 		return false;
 	}
 
-	FString ValidSection = GetTextureVaidSection();
+	FString ValidSection = this->Get().GetTextureVaidSection();
 
 	TArray<FString> ValidSuffixArray =
 		UManagerConfig::Get().GenerateStructKeyValueArray(
@@ -556,11 +466,37 @@ bool FCustomStandardTexture2DData::IsSuffixStandarized()
 UCustomStandardTexture2D::UCustomStandardTexture2D(UObject* InObj, bool StricCheckMode):
 	UCustomStandardObject(InObj, StricCheckMode)
 {
+	FString TGlobalSection = FPaths::Combine(ModuleConfigMaster, TEXT("Global"), TEXT("Texture"));
+
+	if (UManagerConfig::Get().GetSection(*TGlobalSection))
+	{
+		this->TextureGlobalConfigSection = MakeShareable(new FString(TGlobalSection));
+	}
+
+
+	this->TextureCategoryStrictConfigSection
+		= MakeShareable(new FString(FPaths::Combine(ModuleConfigMaster, *UAssetsChecker::GetCategoryTag(this->GetStrictAssetCategory()), TEXT("Texture"))));
+
+	this->TextureCategoryCommonConfigSection
+		= MakeShareable(new FString(FPaths::Combine(ModuleConfigMaster, *UAssetsChecker::GetCategoryTag(this->GetCommonAssetCategory()), TEXT("Texture"))));
 }
 
 UCustomStandardTexture2D::UCustomStandardTexture2D(UTexture2D* InTexture2D, bool StricCheckMode):
 	UCustomStandardObject(InTexture2D, StricCheckMode)
 {
+	FString TGlobalSection = FPaths::Combine(ModuleConfigMaster, TEXT("Global"), TEXT("Texture"));
+
+	if (UManagerConfig::Get().GetSection(*TGlobalSection))
+	{
+		this->TextureGlobalConfigSection = MakeShareable(new FString(TGlobalSection));
+	}
+
+
+	this->TextureCategoryStrictConfigSection
+		= MakeShareable(new FString(FPaths::Combine(ModuleConfigMaster, *UAssetsChecker::GetCategoryTag(this->GetStrictAssetCategory()), TEXT("Texture"))));
+
+	this->TextureCategoryCommonConfigSection
+		= MakeShareable(new FString(FPaths::Combine(ModuleConfigMaster, *UAssetsChecker::GetCategoryTag(this->GetCommonAssetCategory()), TEXT("Texture"))));
 }
 
 UCustomStandardTexture2D::~UCustomStandardTexture2D()
@@ -846,6 +782,55 @@ TSharedPtr<TextureCompressionSettings> UCustomStandardTexture2D::GetCompressionS
 	return MakeShared<TextureCompressionSettings>(this->Get()->CompressionSettings.GetValue());
 }
 
+TSharedPtr<TextureCompressionSettings> UCustomStandardTexture2D::GetStandardCompressionSettings(bool forced)
+{
+	if (!this->IsTexture2D())
+	{
+		return nullptr;
+	}
+
+	TSharedPtr<FString> suffix = this->GetAssetSuffix();
+
+	if (suffix.IsValid())
+	{
+		FString ValidSection = GetTextureVaidSection();
+
+		TSharedPtr<FString> DisplayCompression = UManagerConfig::Get().FindInSectionStructArray(
+			*ValidSection,
+			"SuffixStandard",
+			"Suffix",
+			*suffix,
+			"CompressionSettings");
+
+		if (DisplayCompression.IsValid())
+		{
+			for (CompressionSettingsInfo info : ValidCompressionConfig)
+			{
+				if (info.ConfigName == *DisplayCompression)
+				{
+					return MakeShared<TextureCompressionSettings>(info.Setting);
+				}
+			}
+		}
+	}
+
+
+	if (forced)
+	{
+		if (*GetLODGroup() == TEXTUREGROUP_WorldNormalMap ||
+			*GetLODGroup() == TEXTUREGROUP_CharacterNormalMap ||
+			*GetLODGroup() == TEXTUREGROUP_WeaponNormalMap ||
+			*GetLODGroup() == TEXTUREGROUP_VehicleNormalMap)
+		{
+			return MakeShared<TextureCompressionSettings>(TC_Normalmap);
+		}
+
+		return MakeShared<TextureCompressionSettings>(TC_Default);
+	}
+
+	return nullptr;
+}
+
 TSharedPtr<CompressionSettingsInfo> UCustomStandardTexture2D::GetCompressionSettingsInfo()
 {
 	if (!this->IsTexture2D())
@@ -916,6 +901,16 @@ bool UCustomStandardTexture2D::SetCompressionSettings(const TEnumAsByte<TextureC
 	}
 
 	return true;
+}
+
+TSharedPtr<TextureGroup> UCustomStandardTexture2D::GetLODGroup()
+{
+	if (!this->IsTexture2D())
+	{
+		return nullptr;
+	}
+
+	return MakeShared<TextureGroup>(this->Get()->LODGroup);
 }
 
 ETextureSourceFormat UCustomStandardTexture2D::GetReducedTextureSourceFormat(const TextureCompressionSettings TC, const ETextureSourceFormat InTSF, const bool NormalMapsKeep16bits)
@@ -1040,5 +1035,27 @@ ETextureSourceFormat UCustomStandardTexture2D::GetReducedTextureSourceFormat(con
 		// reducing
 		return OutTSF;
 	}
+}
+
+FString UCustomStandardTexture2D::GetTextureVaidSection()
+{
+	FString ValidSection = "/AssetsManager/Global/Texture";
+
+	if (this->TextureGlobalConfigSection.IsValid())
+	{
+		ValidSection = *TextureGlobalConfigSection;
+	}
+
+	if (this->TextureCategoryCommonConfigSection.IsValid())
+	{
+		ValidSection = *TextureCategoryCommonConfigSection;
+	}
+
+	if (this->TextureCategoryStrictConfigSection.IsValid())
+	{
+		ValidSection = *TextureCategoryStrictConfigSection;
+	}
+
+	return ValidSection;
 }
 

@@ -37,9 +37,20 @@ public:
 	TSharedPtr<TextureCompressionSettings> GetStandardCompressionSettings(bool forced = false);
 	TSharedPtr<CompressionSettingsInfo> GetCompressionSettingsInfo();
 	bool SetCompressionSettings(const TEnumAsByte<TextureCompressionSettings>& CompressionSetting, bool forceSave = false);
+	
+	TSharedPtr<TextureGroup> GetLODGroup();
 
 	static ETextureSourceFormat GetReducedTextureSourceFormat(const TextureCompressionSettings TC, const ETextureSourceFormat InTSF, const bool NormalMapsKeep16bits);
 
+	FString GetTextureVaidSection();
+
+protected:
+	
+	
+	TSharedPtr<FString> TextureGlobalConfigSection;
+	TSharedPtr<FString> TextureCategoryCommonConfigSection;
+	TSharedPtr<FString> TextureCategoryStrictConfigSection;
+	
 };
 
 /**
@@ -61,8 +72,6 @@ public:
 
 	bool IsSuffixStandarized();
 
-	bool IsTexture2D();
-
 	UCustomStandardTexture2D& Get();
 	UTexture2D* GetTexture2D();
 
@@ -72,13 +81,8 @@ public:
 	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
 	virtual int64 GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel,bool bEstimatedTotal = true);
 
-	FVector2D GetSourceSize();
-	FVector2D GetMaxInGameSize();
-
 	double GetStandardMaxSize();
 	double GetStandardMaxSizeStrict();
-
-	TSharedPtr<TextureCompressionSettings> GetStandardCompressionSettings(bool forced = false);
 
 	TSharedPtr<bool> GetsRGBSettings();
 	TSharedPtr<bool> GetStandardsRGBSettings(bool forced = false);
@@ -89,8 +93,6 @@ public:
 	TSharedPtr<TextureGroup> GetStandardLODGroup(bool forced = false);
 
 	bool IsTextureLODGroupStandarized();
-
-	FString GetTextureVaidSection();
 
 protected:
 

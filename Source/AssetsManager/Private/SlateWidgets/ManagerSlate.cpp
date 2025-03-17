@@ -2274,8 +2274,8 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 			{
 				FCustomStandardTexture2DData T1(*ip1);
 				FCustomStandardTexture2DData T2(*ip2);
-				FVector2D c1 = T1.GetMaxInGameSize();
-				FVector2D c2 = T2.GetMaxInGameSize();
+				FVector2D c1 = T1.Get().GetMaxInGameSize();
+				FVector2D c2 = T2.Get().GetMaxInGameSize();
 				return UAssetsChecker::JudgeSort(c1,c2,true);
 			});
 	}
@@ -2310,8 +2310,8 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 			FString ResourceSize;
 			UAssetsChecker::ByteConversion(StandardTexture.Get().GetMemorySize(), ResourceSize, false);
 
-			FVector2D MaxInGameTextureSize = StandardTexture.GetMaxInGameSize();
-			FVector2D SourceTextureSize = StandardTexture.GetSourceSize();
+			FVector2D MaxInGameTextureSize = StandardTexture.Get().GetMaxInGameSize();
+			FVector2D SourceTextureSize = StandardTexture.Get().GetSourceSize();
 
 			FString MaxInGameTextureSizeString = FString::Printf(L"(%dx%d)", (int32)MaxInGameTextureSize.X, (int32)MaxInGameTextureSize.Y);
 			FString SourceTextureSizeString = FString::Printf(L"(%dx%d)", (int32)SourceTextureSize.X, (int32)SourceTextureSize.Y);

@@ -439,7 +439,7 @@ bool UAssetsChecker::SetTextureStandardSettings(FAssetData& ClickedAssetData)
 		return false;
 	}
 
-	if (!SAsset.GetStandardCompressionSettings(true).IsValid() || 
+	if (!SAsset.Get().GetStandardCompressionSettings(true).IsValid() || 
 		!SAsset.GetStandardsRGBSettings(true).IsValid())
 	{
 #ifdef ZH_CN
@@ -451,7 +451,7 @@ bool UAssetsChecker::SetTextureStandardSettings(FAssetData& ClickedAssetData)
 	}
 
 	bool StandardResult_Compression = SetTextureAssetCompressionSettings(
-		ClickedAssetData, *SAsset.GetStandardCompressionSettings(true));
+		ClickedAssetData, *SAsset.Get().GetStandardCompressionSettings(true));
 
 	bool StandardResult_sRGB = SetTextureSRGBSettings(
 		ClickedAssetData, 
@@ -540,9 +540,9 @@ FVector2D UAssetsChecker::GetTextureAssetSourceSize(
 {
 	FCustomStandardTexture2DData AsTextureData(AssetData);
 
-	if (AsTextureData.IsTexture2D())
+	if (AsTextureData.Get().IsTexture2D())
 	{
-		return AsTextureData.GetSourceSize();
+		return AsTextureData.Get().GetSourceSize();
 	}
 
 	return FVector2D(0, 0);
@@ -553,9 +553,9 @@ FVector2D UAssetsChecker::GetTextureAssetMaxInGameSize(
 {
 	FCustomStandardTexture2DData AsTextureData(AssetData);
 
-	if(AsTextureData.IsTexture2D())
+	if(AsTextureData.Get().IsTexture2D())
 	{
-		return AsTextureData.GetMaxInGameSize();
+		return AsTextureData.Get().GetMaxInGameSize();
 	}
 
 	return FVector2D(0, 0);
