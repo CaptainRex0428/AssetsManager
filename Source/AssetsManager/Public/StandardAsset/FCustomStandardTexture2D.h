@@ -24,7 +24,8 @@ enum TextureSettingsTag : uint8
 	SRGB = 0b00000010,
 	SOURCESIZE = 0b00000100,
 	MAXINGAMESIZE = 0b00001000,
-	LODGROUP = 0b00010000
+	LODGROUP = 0b00010000,
+	SUFFIX = 0b00100000
 };
 
 
@@ -40,8 +41,6 @@ public:
 
 	bool IsTexture2D();
 
-	bool IsSuffixStandarized();
-
 	TIndirectArray<struct FTexture2DMipMap>* GetTextureMipMaps();
 
 	void ResizeSource(int targetSize, bool forceSave = false);
@@ -52,10 +51,7 @@ public:
 	FVector2D GetSourceSize();
 	FVector2D GetMaxInGameSize();
 	bool SetMaxInGameSize(double maxSize, bool forceSave = false);
-	bool FixMaxInGameSize(double size,bool forced, bool forceSave = false);
-
-	bool IsTextureMaxInGameOverSize();
-	bool IsTextureSourceOverSize();
+	bool CustomMaxInGameSize(double size,bool forced, bool forceSave = false);
 
 	double GetStandardMaxSize();
 	double GetStandardMaxSizeStrict();
@@ -64,12 +60,10 @@ public:
 	TSharedPtr<TextureCompressionSettings> GetStandardCompressionSettings(bool forced = false);
 	TSharedPtr<CompressionSettingsInfo> GetCompressionSettingsInfo();
 	bool SetCompressionSettings(const TEnumAsByte<TextureCompressionSettings>& CompressionSetting, bool forceSave = false);
-	bool IsCompressoionSettingsStandarized();
-
+	
 	TSharedPtr<bool> GetsRGBSettings();
 	TSharedPtr<bool> GetStandardsRGBSettings(bool forced = false);
 	bool SetSRGBSettings(const bool& sRGB, bool forceSave = false);
-	bool IsSRGBStandarized();
 
 	virtual int64 GetMemorySize(bool bEstimatedTotal = true);
 	virtual int64 GetMemorySize(AssetsInfoDisplayLevel& DisplayLevel, bool bEstimatedTotal = true);
@@ -78,8 +72,6 @@ public:
 	TSharedPtr<TextureGroup> GetStandardLODGroup(bool forced = false);
 	bool SetLODGroup(TextureGroup InTextureGroup, bool forceSave = false);
 
-	bool IsTextureLODGroupStandarized();
-
 	uint8 IsStandarized(uint8 settingsTag = 
 		TextureSettingsTag::COMPRESSIONSETTINGS | 
 		TextureSettingsTag::SRGB | 
@@ -87,14 +79,19 @@ public:
 		TextureSettingsTag::MAXINGAMESIZE |
 		TextureSettingsTag::LODGROUP);
 
-	uint8 Fix(uint8 settingsTag);
+	uint8 Fix(uint8 settingsTag, bool forceMode = false ,bool forceSave = false);
 
 	static ETextureSourceFormat GetReducedTextureSourceFormat(const TextureCompressionSettings TC, const ETextureSourceFormat InTSF, const bool NormalMapsKeep16bits);
 
 	FString GetTextureVaidSection();
 
 protected:
-	
+	bool IsSRGBStandarized();
+	bool IsCompressoionSettingsStandarized();
+	bool IsTextureMaxInGameOverSize();
+	bool IsTextureSourceOverSize();
+	bool IsTextureLODGroupStandarized();
+	bool IsSuffixStandarized();
 	
 	TSharedPtr<FString> TextureGlobalConfigSection;
 	TSharedPtr<FString> TextureCategoryCommonConfigSection;

@@ -725,7 +725,9 @@ void UAssetsChecker::FilterMaxInGameSizeErrorAssetsForAssetList(
 
 		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr, bStrictMode);
 
-		if (CustomStandardAsset.Get().IsTextureMaxInGameOverSize())
+		uint8 checkResult = CustomStandardAsset.Get().IsStandarized(MAXINGAMESIZE);
+
+		if (!(checkResult & MAXINGAMESIZE))
 		{
 			OutList.Add(AssetDPtr);
 		}
@@ -760,8 +762,10 @@ void UAssetsChecker::FilterSourceSizeErrorAssetsForAssetList(
 		}
 
 		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr,bStrictMode);
+		
+		uint8 checkResult = CustomStandardAsset.Get().IsStandarized(SOURCESIZE);
 
-		if (CustomStandardAsset.Get().IsTextureSourceOverSize())
+		if (!(checkResult & SOURCESIZE))
 		{
 			OutList.Add(AssetDPtr);
 		}
@@ -795,7 +799,9 @@ void UAssetsChecker::FilterTextureSubfixErrorAssetsForAssetList(
 
 		FCustomStandardTexture2DData Asset(*AssetDPtr);
 
-		if (!Asset.Get().IsSuffixStandarized())
+		uint8 checkResult = Asset.Get().IsStandarized(SUFFIX);
+
+		if (!(checkResult & SUFFIX))
 		{
 			if (isAdditiveMode)
 			{
@@ -875,7 +881,9 @@ void UAssetsChecker::FilterTextureLODGroupErrorAssetsForAssetList(
 
 		FCustomStandardTexture2DData SAsset(*AssetDPtr);
 
-		if (!SAsset.Get().IsTextureLODGroupStandarized())
+		uint8 checkResult = SAsset.Get().IsStandarized(LODGROUP);
+
+		if (!(checkResult & LODGROUP))
 		{
 			if (isAdditiveMode)
 			{

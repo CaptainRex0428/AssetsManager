@@ -75,7 +75,7 @@ bool UCustomStandardTexture2D::SetMaxInGameSize(double maxSize,bool forceSave)
 	return true;
 }
 
-bool UCustomStandardTexture2D::FixMaxInGameSize(double size,bool forced, bool forceSave)
+bool UCustomStandardTexture2D::CustomMaxInGameSize(double size,bool forced, bool forceSave)
 {
 	if (!this->IsTexture2D())
 	{
@@ -84,8 +84,6 @@ bool UCustomStandardTexture2D::FixMaxInGameSize(double size,bool forced, bool fo
 
 	FVector2D MaxInGameSize = this->GetMaxInGameSize();
 	double GameSize = MaxInGameSize.X > MaxInGameSize.Y ? MaxInGameSize.X : MaxInGameSize.Y;
-
-	// NtfyMsg("MaxSize:" + FString::FromInt(MaxSize));
 
 	if (forced && GameSize != size)
 	{
@@ -259,8 +257,7 @@ bool UCustomStandardTexture2D::IsSRGBStandarized()
 	return *CurrentSRGB == *StandardSRGB;
 }
 
-TSharedPtr<TextureGroup> UCustomStandardTexture2D::GetStandardLODGroup(
-	bool forced)
+TSharedPtr<TextureGroup> UCustomStandardTexture2D::GetStandardLODGroup(bool forced)
 {
 	if (!this->IsTexture2D())
 	{
@@ -305,8 +302,13 @@ TSharedPtr<TextureGroup> UCustomStandardTexture2D::GetStandardLODGroup(
 		}
 	}
 
-	return MakeShared<TextureGroup>(*this->GetCompressionSettings() == TC_Normalmap ?
-		TEXTUREGROUP_WorldNormalMap : TEXTUREGROUP_World);
+	if(forced)
+	{
+		return MakeShared<TextureGroup>(*this->GetCompressionSettings() == TC_Normalmap ?
+			TEXTUREGROUP_WorldNormalMap : TEXTUREGROUP_World);
+	}
+	
+	return nullptr;
 	
 }
 
@@ -354,36 +356,41 @@ uint8 UCustomStandardTexture2D::IsStandarized(uint8 settingsTag)
 
 	uint8 result = 0;
 
-	if (settingsTag & TextureSettingsTag::COMPRESSIONSETTINGS && this->IsCompressoionSettingsStandarized())
+	if ((settingsTag & TextureSettingsTag::COMPRESSIONSETTINGS) && this->IsCompressoionSettingsStandarized())
 	{
-		result | TextureSettingsTag::COMPRESSIONSETTINGS;
+		result |= TextureSettingsTag::COMPRESSIONSETTINGS;
 	};
 
-	if (settingsTag & TextureSettingsTag::SRGB && this->IsSRGBStandarized())
+	if ((settingsTag & TextureSettingsTag::SRGB) && this->IsSRGBStandarized())
 	{
-		result | TextureSettingsTag::SRGB;
+		result |= TextureSettingsTag::SRGB;
 	};
 
-	if (settingsTag & TextureSettingsTag::SOURCESIZE && !this->IsTextureSourceOverSize())
+	if ((settingsTag & TextureSettingsTag::SOURCESIZE) && !this->IsTextureSourceOverSize())
 	{
-		result | TextureSettingsTag::SOURCESIZE;
+		result |= TextureSettingsTag::SOURCESIZE;
 	};
 
-	if (settingsTag & TextureSettingsTag::MAXINGAMESIZE && !this->IsTextureMaxInGameOverSize())
+	if ((settingsTag & TextureSettingsTag::MAXINGAMESIZE) && !this->IsTextureMaxInGameOverSize())
 	{
-		result | TextureSettingsTag::MAXINGAMESIZE;
+		result |= TextureSettingsTag::MAXINGAMESIZE;
 	};
 
-	if (settingsTag & TextureSettingsTag::LODGROUP && this->IsTextureLODGroupStandarized())
+	if ((settingsTag & TextureSettingsTag::LODGROUP) && this->IsTextureLODGroupStandarized())
 	{
-		result | TextureSettingsTag::LODGROUP;
+		result |= TextureSettingsTag::LODGROUP;
+	};
+
+	if ((settingsTag & TextureSettingsTag::SUFFIX) && this->IsSuffixStandarized())
+	{
+		result |= TextureSettingsTag::SUFFIX;
 	};
 
 	return result;
 
 }
 
-uint8 UCustomStandardTexture2D::Fix(uint8 settingsTag)
+uint8 UCustomStandardTexture2D::Fix(uint8 settingsTag, bool forceMode, bool forceSave)
 {
 	if (!this->IsTexture2D())
 	{
@@ -396,27 +403,53 @@ uint8 UCustomStandardTexture2D::Fix(uint8 settingsTag)
 
 	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::COMPRESSIONSETTINGS)) 
 	{
+		TSharedPtr<TextureCompressionSettings> CMPS = this->GetStandardCompressionSettings(forceMode);
 		
+		if (CMPS && this->SetCompressionSettings(*CMPS, forceSave))
+		{
+			result |= TextureSettingsTag::COMPRESSIONSETTINGS;
+		}
 	};
 
 	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::SRGB)) 
 	{
-		
+		TSharedPtr<bool> SRGBS = this->GetStandardsRGBSettings();
+
+		if(SRGBS && this->SetSRGBSettings(*SRGBS, forceSave))
+		{
+			result |= TextureSettingsTag::SRGB;
+		}
 	};
+
+	double maxsize = bStrictCheckMode ? this->GetStandardMaxSizeStrict() : this->GetStandardMaxSize();
 
 	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::SOURCESIZE)) 
 	{
+		this->ResizeSource(maxsize, forceSave);
+		result |= TextureSettingsTag::SOURCESIZE;
 		
 	};
 
 	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::MAXINGAMESIZE)) 
 	{
-		
+		this->CustomMaxInGameSize(maxsize, false, forceSave);
+		result |= TextureSettingsTag::MAXINGAMESIZE;
 	};
 
 	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::LODGROUP)) 
 	{
+		TSharedPtr<TextureGroup> txtg = this->GetStandardLODGroup(forceMode);
 		
+		if(txtg && this->SetLODGroup(*txtg, forceSave))
+		{
+			result |= TextureSettingsTag::LODGROUP;
+		}
+		
+	};
+
+	if ((PreDeal & settingsTag) && !(PreDeal & TextureSettingsTag::SUFFIX))
+	{
+		// result |= TextureSettingsTag::SUFFIX;
 	};
 
 	return result;

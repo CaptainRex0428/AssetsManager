@@ -1548,7 +1548,7 @@ FReply SManagerSlateTab::OnSingleTextureAsset2KButtonClicked(
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!StandardT2DObject.FixMaxInGameSize(maxSize, true, true))
+		if (!StandardT2DObject.CustomMaxInGameSize(maxSize, true, true))
 		{
 
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1602,7 +1602,7 @@ FReply SManagerSlateTab::OnSingleTextureAsset1KButtonClicked(
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!StandardT2DObject.FixMaxInGameSize(maxSize, true, true))
+		if (!StandardT2DObject.CustomMaxInGameSize(maxSize, true, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() 
@@ -1654,7 +1654,7 @@ FReply SManagerSlateTab::OnSingleTextureAsset512ButtonClicked(
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!StandardT2DObject.FixMaxInGameSize(maxSize, true, true))
+		if (!StandardT2DObject.CustomMaxInGameSize(maxSize, true, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1707,7 +1707,7 @@ FReply SManagerSlateTab::OnSingleTextureAssetResetButtonClicked(
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!StandardT2DObject.FixMaxInGameSize(maxSize, true, true))
+		if (!StandardT2DObject.CustomMaxInGameSize(maxSize, true, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
