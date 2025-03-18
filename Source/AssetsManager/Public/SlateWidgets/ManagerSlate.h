@@ -284,6 +284,11 @@ private:
 	FReply OnSingleAssetReimportButtonClicked(
 		TSharedPtr<FAssetData> ClickedAssetData);
 
+	TSharedRef<SButton> ConstructSingleAssetResizeTextureSourceButtonBox(
+		const TSharedPtr<FAssetData>& AssetDataToDisplay);
+	FReply OnSingleAssetResizeTextureSourceButtonClicked(
+		TSharedPtr<FAssetData> ClickedAssetData);
+
 	/*
 	Construct texture 2K restricting button
 	*/

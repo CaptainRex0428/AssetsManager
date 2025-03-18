@@ -10,6 +10,8 @@
 #include "ObjectTools.h"
 #include "AssetToolsModule.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "EditorUtilityLibrary.h"
+#include "EditorAssetLibrary.h"
 #include "UObject/SavePackage.h"
 
 
@@ -357,19 +359,8 @@ bool UCustomStandardObject::ForceSave()
 		return false;
 	}
 
-	// 获取资产的所在 Package
-	UPackage* AssetPackage = this->Get()->GetPackage();
-	FString PackageName = AssetPackage->GetName();
+	FName AssetName = this->Get()->GetFName();
+	FString PackageName = this->Get()->GetPackage()->GetName();
 
-	// 设置保存配置
-	FSavePackageArgs SaveArgs;
-	SaveArgs.TopLevelFlags = RF_Standalone; // 设置独立的标志
-	SaveArgs.SaveFlags = SAVE_NoError;      // 忽略错误处理（按需调整）
-
-	// 强制标记 Package 为已修改（Dirty）
-	AssetPackage->MarkPackageDirty();
-
-	// 保存到原始路径
-	FString FileName = FPackageName::LongPackageNameToFilename(PackageName);
-	return UPackage::SavePackage(AssetPackage, this->Get().Get(), *FileName, SaveArgs);
+	return UEditorAssetLibrary::SaveAsset(PackageName + "." + AssetName.ToString(), false);
 }

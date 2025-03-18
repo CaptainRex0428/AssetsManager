@@ -374,148 +374,6 @@ void UAssetsChecker::AddPrefixes(
 #endif
 }
 
-bool UAssetsChecker::FixTextureMaxSizeInGame(
-	FAssetData& ClickedAssetData, 
-	double maxSize, 
-	bool forced)
-{
-	if (!ClickedAssetData.GetAsset()->IsA<UTexture2D>())
-	{
-		return false;
-	}
-
-	FVector2D MaxInGameSize = GetTextureAssetMaxInGameSize(ClickedAssetData);
-	double GameSize = MaxInGameSize.X > MaxInGameSize.Y ? MaxInGameSize.X : MaxInGameSize.Y;
-
-	// NtfyMsg("MaxSize:" + FString::FromInt(MaxSize));
-
-	if(forced && GameSize != maxSize)
-	{
-		return SetTextureSize(ClickedAssetData, maxSize);
-	}
-		
-	if( GameSize > maxSize &&
-		bIsPowerOfTwo(MaxInGameSize.X) && 
-		bIsPowerOfTwo(MaxInGameSize.Y))
-	{
-		return SetTextureSize(ClickedAssetData, maxSize);
-	}
-
-	return false;
-}
-
-bool UAssetsChecker::SetTextureSize(
-	FAssetData& ClickedAssetData,
-	double maxSize)
-{
-	UObject* AssetObj = ClickedAssetData.GetAsset();
-
-	if (AssetObj->IsA<UTexture2D>())
-	{
-		UTexture2D * texture = Cast<UTexture2D>(AssetObj);
-		if (texture)
-		{
-			texture->MaxTextureSize = maxSize;
-			return UEditorAssetLibrary::SaveAsset(ClickedAssetData.GetObjectPathString(), false);
-		}
-	}
-
-	return false;
-}
-
-bool UAssetsChecker::SetTextureStandardSettings(FAssetData& ClickedAssetData)
-{
-	FCustomStandardTexture2DData SAsset(ClickedAssetData);
-
-	TSharedPtr<FString> subfix = SAsset.Get().GetAssetSuffix();
-
-	if (!SAsset.Get().GetAssetSuffix().IsValid())
-	{
-#ifdef ZH_CN
-		NtfyMsgLog(TEXT("资产后缀错误\n") + ClickedAssetData.AssetName.ToString());
-#else
-		NtfyMsgLog(TEXT("Asset's subfix error\n") + ClickedAssetData->AssetName.ToString());
-#endif
-		return false;
-	}
-
-	if (!SAsset.GetStandardCompressionSettings(true).IsValid() || 
-		!SAsset.GetStandardsRGBSettings(true).IsValid())
-	{
-#ifdef ZH_CN
-		NtfyMsgLog(TEXT("找不到资产对应的正确配置\n") + ClickedAssetData.AssetName.ToString());
-#else
-		NtfyMsgLog(TEXT("Cannot find suitable fixing config\n") + ClickedAssetData->AssetName.ToString());
-#endif
-		return false;
-	}
-
-	bool StandardResult_Compression = SetTextureAssetCompressionSettings(
-		ClickedAssetData, *SAsset.GetStandardCompressionSettings(true));
-
-	bool StandardResult_sRGB = SetTextureSRGBSettings(
-		ClickedAssetData, 
-		*SAsset.GetStandardsRGBSettings(true));
-
-	return  StandardResult_Compression && StandardResult_sRGB;
-}
-
-TSharedPtr<TextureGroup> UAssetsChecker::GetTextureLODGroup(const FAssetData& AssetData)
-{
-	UObject* AssetOBJ = AssetData.GetAsset();
-
-	if (!AssetOBJ)
-	{
-		return nullptr;
-	}
-
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return nullptr;
-	}
-
-	UTexture2D* STexture = Cast<UTexture2D>(AssetOBJ);
-
-	if (STexture)
-	{
-		return MakeShared<TextureGroup>(STexture->LODGroup);
-	}
-
-	return nullptr;
-}
-
-bool UAssetsChecker::SetTextureLODGroup(
-	FAssetData& AssetData, 
-	TextureGroup InTextureGroup)
-{
-	UObject* AssetOBJ = AssetData.GetAsset();
-
-	if (!AssetOBJ)
-	{
-		return false;
-	}
-
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return false;
-	}
-
-	UTexture2D* STexture = Cast<UTexture2D>(AssetOBJ);
-
-	if (STexture)
-	{
-		if (STexture->LODGroup == InTextureGroup)
-		{
-			return false;
-		}
-
-		STexture->LODGroup = InTextureGroup;
-		return UEditorAssetLibrary::SaveAsset(AssetData.GetObjectPathString(), false);
-	}
-
-	return false;
-}
-
 TArray<FString> UAssetsChecker::GetAssetReferencesPath(
 	const FString& AssetPath,
 	bool bLoadToCheck)
@@ -533,130 +391,6 @@ TArray<FString> UAssetsChecker::GetAssetReferencesPath(
 	const TSharedPtr<FAssetData>& AssetData)
 {
 	return GetAssetReferencesPath(AssetData->GetObjectPathString());
-}
-
-FVector2D UAssetsChecker::GetTextureAssetSourceSize(
-	const FAssetData& AssetData)
-{
-	FCustomStandardTexture2DData AsTextureData(AssetData);
-
-	if (AsTextureData.IsTexture2D())
-	{
-		return AsTextureData.GetSourceSize();
-	}
-
-	return FVector2D(0, 0);
-}
-
-FVector2D UAssetsChecker::GetTextureAssetMaxInGameSize(
-	const FAssetData& AssetData)
-{
-	FCustomStandardTexture2DData AsTextureData(AssetData);
-
-	if(AsTextureData.IsTexture2D())
-	{
-		return AsTextureData.GetMaxInGameSize();
-	}
-
-	return FVector2D(0, 0);
-}
-
-TSharedPtr<TextureGroup> UAssetsChecker::GetTextureAssetTextureGroup(const FAssetData& AssetData)
-{
-	UObject* AssetOBJ = AssetData.GetAsset();
-
-	if (!AssetOBJ)
-	{
-		return nullptr;
-	}
-
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return nullptr;
-	}
-
-	UTexture2D* AssetT = Cast<UTexture2D>(AssetOBJ);
-
-	if (AssetT)
-	{
-		return MakeShared<TextureGroup>(AssetT->LODGroup);
-	}
-
-	return nullptr;
-}
-
-bool UAssetsChecker::SetTextureAssetCompressionSettings(
-	const FAssetData& AssetData,
-	const TEnumAsByte<TextureCompressionSettings>& CompressionSetting)
-{
-	UCustomStandardTexture2D STexture(AssetData.GetAsset());
-	return STexture.SetCompressionSettings(CompressionSetting,true);
-}
-
-TSharedPtr<bool> UAssetsChecker::GetTextureAssetSRGBSettings(const FAssetData& AssetData)
-{
-	UObject* AssetOBJ = AssetData.GetAsset();
-
-	if (!AssetOBJ)
-	{
-		return nullptr;
-	}
-
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return nullptr;
-	}
-
-	UTexture2D* AssetT = Cast<UTexture2D>(AssetOBJ);
-
-	if (AssetT)
-	{
-		return MakeShared<bool>(AssetT->SRGB == 0? false : true);
-	}
-
-	return nullptr;
-}
-
-bool UAssetsChecker::SetTextureSRGBSettings(
-	const FAssetData& AssetData, 
-	const bool& sRGB)
-{
-	UObject* AssetOBJ = AssetData.GetAsset();
-
-	if (!AssetOBJ)
-	{
-		return false;
-	}
-
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return false;
-	}
-
-	UTexture2D* AssetT = Cast<UTexture2D>(AssetOBJ);
-
-	if (AssetT && (*GetTextureAssetSRGBSettings(AssetData) != sRGB))
-	{
-
-		AssetT->SRGB = sRGB;
-		AssetT->UpdateResource();
-
-		FString result = sRGB ? TEXT("true") : TEXT("false");
-
-#ifdef ZH_CN
-		NtfyMsgLog(TEXT("成功设置贴图sRGB为\n")
-			+  result + "\n"
-			+ AssetData.AssetName.ToString());
-#else
-		NtfyMsgLog(TEXT("Successfully set the sRGB settings as\n")
-			+ result + "\n"
-			+ AssetData.AssetName.ToString());
-#endif
-
-		return UEditorAssetLibrary::SaveAsset(AssetData.GetObjectPathString(), false);
-	}
-
-	return true;
 }
 
 void UAssetsChecker::FilterUnusedAssetsForAssetList(
@@ -883,7 +617,9 @@ void UAssetsChecker::FilterMaxInGameSizeErrorAssetsForAssetList(
 
 		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr, bStrictMode);
 
-		if (CustomStandardAsset.IsTextureMaxInGameOverSize())
+		uint8 checkResult = CustomStandardAsset.Get().IsStandarized(MAXINGAMESIZE);
+
+		if (!(checkResult & MAXINGAMESIZE))
 		{
 			OutList.Add(AssetDPtr);
 		}
@@ -918,8 +654,10 @@ void UAssetsChecker::FilterSourceSizeErrorAssetsForAssetList(
 		}
 
 		FCustomStandardTexture2DData CustomStandardAsset(*AssetDPtr,bStrictMode);
+		
+		uint8 checkResult = CustomStandardAsset.Get().IsStandarized(SOURCESIZE);
 
-		if (CustomStandardAsset.IsTextureSourceOverSize())
+		if (!(checkResult & SOURCESIZE))
 		{
 			OutList.Add(AssetDPtr);
 		}
@@ -953,7 +691,9 @@ void UAssetsChecker::FilterTextureSubfixErrorAssetsForAssetList(
 
 		FCustomStandardTexture2DData Asset(*AssetDPtr);
 
-		if (!Asset.IsSuffixStandarized())
+		uint8 checkResult = Asset.Get().IsStandarized(SUFFIX);
+
+		if (!(checkResult & SUFFIX))
 		{
 			if (isAdditiveMode)
 			{
@@ -992,7 +732,9 @@ void UAssetsChecker::FilterTextureSettingsErrorAssetsForAssetList(
 
 		FCustomStandardTexture2DData TextureAsset(*AssetDPtr);
 
-		if (!TextureAsset.IsTextureSettingsStandarized())
+		uint8 standarized = TextureAsset.Get().IsStandarized(COMPRESSIONSETTINGS | SRGB);
+
+		if (!((standarized & COMPRESSIONSETTINGS) && (standarized & SRGB)))
 		{
 			if (isAdditiveMode)
 			{
@@ -1031,7 +773,9 @@ void UAssetsChecker::FilterTextureLODGroupErrorAssetsForAssetList(
 
 		FCustomStandardTexture2DData SAsset(*AssetDPtr);
 
-		if (!SAsset.IsTextureLODGroupStandarized())
+		uint8 checkResult = SAsset.Get().IsStandarized(LODGROUP);
+
+		if (!(checkResult & LODGROUP))
 		{
 			if (isAdditiveMode)
 			{

@@ -712,6 +712,12 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(
 				[
 					ConstructSingleAssetReimportButtonBox(ClickedAssetData)
 				];
+
+			DealPanel->AddSlot()
+				.HAlign(HAlign_Fill)
+				[
+					ConstructSingleAssetResizeTextureSourceButtonBox(ClickedAssetData)
+				];
 		}
 
 		if (m_UsageCheckState == MaxInGameSizeError)
@@ -750,6 +756,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(
 				];
 		}
 	}
+
 	DealPanel->AddSlot()
 		.HAlign(HAlign_Fill)
 		[
@@ -1057,13 +1064,15 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureSizeRowBox(
 {
 	FVector2D TextureAssetSize;
 
+	UCustomStandardTexture2D StandardTexture(AssetDataToDisplay->GetAsset());
+
 	if (m_ClassCheckState == Texture && m_UsageCheckState == SourceSizeError)
 	{
-		TextureAssetSize = UAssetsChecker::GetTextureAssetSourceSize(*AssetDataToDisplay);
+		TextureAssetSize = StandardTexture.GetSourceSize();
 	}
 	else
 	{
-		TextureAssetSize = UAssetsChecker::GetTextureAssetMaxInGameSize(*AssetDataToDisplay);
+		TextureAssetSize = StandardTexture.GetMaxInGameSize();
 	}
 	
 	const FString ShowString = FString::FromInt(TextureAssetSize.X) + "x" + FString::FromInt(TextureAssetSize.Y);
@@ -1103,8 +1112,10 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureSRGBRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
+	UCustomStandardTexture2D StandardTexture(AssetDataToDisplay->GetAsset());
+
 	TSharedPtr<bool> SRGBSettings
-		= UAssetsChecker::GetTextureAssetSRGBSettings(*AssetDataToDisplay);
+		= StandardTexture.GetsRGBSettings();
 
 	if (SRGBSettings.IsValid())
 	{
@@ -1122,8 +1133,11 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureLODGroupRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
+
+	UCustomStandardTexture2D StandardTexture(AssetDataToDisplay->GetAsset());
+	
 	TSharedPtr<TextureGroup> TextureGroupResult
-		= UAssetsChecker::GetTextureAssetTextureGroup(*AssetDataToDisplay);
+		= StandardTexture.GetLODGroup();
 
 	if (TextureGroupResult.IsValid())
 	{
@@ -1167,7 +1181,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructAssetMemorySizeRowBox(
 	if (AssetDataToDisplay->GetAsset()->IsA<UTexture2D>())
 	{
 		FCustomStandardTexture2DData StandardAsset(*AssetDataToDisplay);
-		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.GetMemorySize(DisplayLevel), AssetSizeDisplayUnit::MB);
+		AssetSize = UAssetsChecker::ByteConversion(StandardAsset.Get().GetMemorySize(DisplayLevel), AssetSizeDisplayUnit::MB);
 	}
 	else
 	{
@@ -1492,16 +1506,22 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetReimportButtonBox(
 {
 	TSharedRef<SButton> SingleAssetFixButtonBox =
 		SNew(SButton)
-#ifdef ZH_CN
-		.Text(FText::FromString(TEXT("导入")))
-#else
-		.Text(FText::FromString(TEXT("Reimport")))
-#endif
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
-		.OnClicked(this, 
-			&SManagerSlateTab::OnSingleAssetReimportButtonClicked, 
-			AssetDataToDisplay);
+		.OnClicked(this, &SManagerSlateTab::OnSingleAssetReimportButtonClicked, AssetDataToDisplay)
+		.ContentPadding(FMargin(2.f))
+		.ToolTipText(FText::FromString(L"Reimport"));
+
+
+	const FSlateBrush* ButtonImg = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.Import");
+	TSharedRef<SImage> ButtonImgComponent = SNew(SImage).Image(ButtonImg);
+
+	TSharedRef<SScaleBox> ButtonImgScaler =
+		SNew(SScaleBox)
+		.Stretch(EStretch::ScaleToFitY)
+		[
+			ButtonImgComponent
+		];
+
+	SingleAssetFixButtonBox->SetContent(ButtonImgScaler);
 
 	return SingleAssetFixButtonBox;
 }
@@ -1519,6 +1539,46 @@ FReply SManagerSlateTab::OnSingleAssetReimportButtonClicked(
 		UEditorAssetLibrary::SaveAsset(ClickedAssetData->GetObjectPathString());
 	}
 	
+	RefreshAssetsListView();
+
+	return FReply::Handled();
+}
+
+TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetResizeTextureSourceButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay)
+{
+	TSharedRef<SButton> SingleAssetResizeTextureSourceButton =
+		SNew(SButton)
+		.OnClicked(this,&SManagerSlateTab::OnSingleAssetResizeTextureSourceButtonClicked,AssetDataToDisplay)
+		.ContentPadding(FMargin(2.f))
+		.ToolTipText(FText::FromString(L"Limit Source Size"));
+
+	const FSlateBrush* ButtonImg = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.LimitSize");
+	TSharedRef<SImage> ButtonImgComponent = SNew(SImage).Image(ButtonImg);
+
+	TSharedRef<SScaleBox> ButtonImgScaler =
+		SNew(SScaleBox)
+		.Stretch(EStretch::ScaleToFitY)
+		[
+			ButtonImgComponent
+		];
+
+	SingleAssetResizeTextureSourceButton->SetContent(ButtonImgScaler);
+
+	return SingleAssetResizeTextureSourceButton;
+}
+
+FReply SManagerSlateTab::OnSingleAssetResizeTextureSourceButtonClicked(TSharedPtr<FAssetData> ClickedAssetData)
+{
+	UCustomStandardTexture2D StandardTexture(ClickedAssetData->GetAsset());
+
+	if(!StandardTexture.IsTexture2D())
+	{
+		NtfyMsgLog(FString::Printf(L"Asset is not in texture type.[%s]",*StandardTexture.Get()->GetFName().ToString()));
+		return FReply::Handled();
+	}
+
+	StandardTexture.Fix(SOURCESIZE,true,true);
+
 	RefreshAssetsListView();
 
 	return FReply::Handled();
@@ -1544,9 +1604,11 @@ FReply SManagerSlateTab::OnSingleTextureAsset2KButtonClicked(
 {
 	double maxSize = 2048;
 
+	UCustomStandardTexture2D StandardT2DObject(ClickedAssetData->GetAsset());
+
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!StandardT2DObject.CustomMaxInGameSize(maxSize, true, true))
 		{
 
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1596,9 +1658,11 @@ FReply SManagerSlateTab::OnSingleTextureAsset1KButtonClicked(
 {
 	double maxSize = 1024;
 
+	UCustomStandardTexture2D StandardT2DObject(ClickedAssetData->GetAsset());
+
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!StandardT2DObject.CustomMaxInGameSize(maxSize, true, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() 
@@ -1607,7 +1671,6 @@ FReply SManagerSlateTab::OnSingleTextureAsset1KButtonClicked(
 			NtfyMsg(ClickedAssetData->AssetName.ToString() 
 				+ TEXT("\nFaild or no need to fix this texture."));
 #endif
-			;
 		}
 		else
 		{
@@ -1647,10 +1710,11 @@ FReply SManagerSlateTab::OnSingleTextureAsset512ButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
 	double maxSize = 512;
+	UCustomStandardTexture2D StandardT2DObject(ClickedAssetData->GetAsset());
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!StandardT2DObject.CustomMaxInGameSize(maxSize, true, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1699,10 +1763,11 @@ FReply SManagerSlateTab::OnSingleTextureAssetResetButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
 	double maxSize = 0;
+	UCustomStandardTexture2D StandardT2DObject(ClickedAssetData->GetAsset());
 
 	if (m_ClassCheckState == Texture)
 	{
-		if (!UAssetsChecker::FixTextureMaxSizeInGame(*ClickedAssetData, maxSize, true))
+		if (!StandardT2DObject.CustomMaxInGameSize(maxSize, true, true))
 		{
 #ifdef ZH_CN
 			NtfyMsg(ClickedAssetData->AssetName.ToString() + 
@@ -1762,7 +1827,9 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleTextureAssetSettingsFixButt
 FReply SManagerSlateTab::OnSingleTextureAssetSettingsFixButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	UAssetsChecker::SetTextureStandardSettings(*ClickedAssetData);
+	UCustomStandardTexture2D standardTexture(ClickedAssetData->GetAsset(),true);
+	standardTexture.Fix(SRGB | COMPRESSIONSETTINGS);
+
 	RefreshAssetsListView();
 	return FReply::Handled();
 }
@@ -1801,11 +1868,11 @@ FReply SManagerSlateTab::OnSingleTextureLODGroupStandardFixButtonClicked(
 	FCustomStandardTexture2DData TAsset(*ClickedAssetData);
 
 	TSharedPtr<TextureGroup> STLODGroup =
-		TAsset.GetStandardLODGroup();
+		TAsset.Get().GetStandardLODGroup();
 
 	if (STLODGroup)
 	{
-		UAssetsChecker::SetTextureLODGroup(*ClickedAssetData, *STLODGroup);
+		TAsset.Get().SetLODGroup( *STLODGroup, true);
 
 		RefreshAssetsListView(false);
 	}
@@ -2100,7 +2167,10 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 	{
 		for (TSharedPtr<FAssetData> AssetData : AssetsList)
 		{
-			if(UAssetsChecker::SetTextureStandardSettings(*AssetData))
+			UCustomStandardTexture2D standardTexture(AssetData->GetAsset(), true);
+			uint8 fixResult = standardTexture.Fix(SRGB | COMPRESSIONSETTINGS);
+
+			if((fixResult & SRGB) || (fixResult & COMPRESSIONSETTINGS))
 			{
 				if (SListViewUsageFilterAssetData.Contains(AssetData))
 				{
@@ -2120,11 +2190,11 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 			FCustomStandardTexture2DData TAsset(*AssetData);
 
 			TSharedPtr<TextureGroup> STLODGroup =
-				TAsset.GetStandardLODGroup();
+				TAsset.Get().GetStandardLODGroup();
 
 			if (STLODGroup)
 			{
-				UAssetsChecker::SetTextureLODGroup(*AssetData, *STLODGroup);
+				TAsset.Get().SetLODGroup( *STLODGroup, true);
 			}
 		}
 
@@ -2274,8 +2344,8 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 			{
 				FCustomStandardTexture2DData T1(*ip1);
 				FCustomStandardTexture2DData T2(*ip2);
-				FVector2D c1 = T1.GetMaxInGameSize();
-				FVector2D c2 = T2.GetMaxInGameSize();
+				FVector2D c1 = T1.Get().GetMaxInGameSize();
+				FVector2D c2 = T2.Get().GetMaxInGameSize();
 				return UAssetsChecker::JudgeSort(c1,c2,true);
 			});
 	}
@@ -2310,8 +2380,8 @@ FReply SManagerSlateTab::OnOutputViewListInfoButtonClicked()
 			FString ResourceSize;
 			UAssetsChecker::ByteConversion(StandardTexture.Get().GetMemorySize(), ResourceSize, false);
 
-			FVector2D MaxInGameTextureSize = StandardTexture.GetMaxInGameSize();
-			FVector2D SourceTextureSize = StandardTexture.GetSourceSize();
+			FVector2D MaxInGameTextureSize = StandardTexture.Get().GetMaxInGameSize();
+			FVector2D SourceTextureSize = StandardTexture.Get().GetSourceSize();
 
 			FString MaxInGameTextureSizeString = FString::Printf(L"(%dx%d)", (int32)MaxInGameTextureSize.X, (int32)MaxInGameTextureSize.Y);
 			FString SourceTextureSizeString = FString::Printf(L"(%dx%d)", (int32)SourceTextureSize.X, (int32)SourceTextureSize.Y);

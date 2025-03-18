@@ -128,5 +128,13 @@ TSharedRef<FSlateStyleSet> FAssetsMangerStyle::Create()
 		"LevelEditor.CharacterLookDev",
 		new FSlateImageBrush(IconDirectory / "Icon_CharacterLookDev32.png", ListIcon));
 
+	CustomStyleSet->Set(
+		"ContentBrowser.Import",
+		new FSlateImageBrush(IconDirectory / "Icon_Import_32.png", ListIcon));
+
+	CustomStyleSet->Set(
+		"ContentBrowser.LimitSize",
+		new FSlateImageBrush(IconDirectory / "Icon_ResizeSource_32.png", ListIcon));
+
 	return CustomStyleSet;
 }
