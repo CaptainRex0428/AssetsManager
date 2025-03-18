@@ -374,40 +374,6 @@ void UAssetsChecker::AddPrefixes(
 #endif
 }
 
-bool UAssetsChecker::SetTextureStandardSettings(FAssetData& ClickedAssetData)
-{
-	FCustomStandardTexture2DData SAsset(ClickedAssetData);
-
-	TSharedPtr<FString> subfix = SAsset.Get().GetAssetSuffix();
-
-	if (!SAsset.Get().GetAssetSuffix().IsValid())
-	{
-#ifdef ZH_CN
-		NtfyMsgLog(TEXT("资产后缀错误\n") + ClickedAssetData.AssetName.ToString());
-#else
-		NtfyMsgLog(TEXT("Asset's subfix error\n") + ClickedAssetData->AssetName.ToString());
-#endif
-		return false;
-	}
-
-	if (!SAsset.Get().GetStandardCompressionSettings(true).IsValid() || 
-		!SAsset.Get().GetStandardsRGBSettings(true).IsValid())
-	{
-#ifdef ZH_CN
-		NtfyMsgLog(TEXT("找不到资产对应的正确配置\n") + ClickedAssetData.AssetName.ToString());
-#else
-		NtfyMsgLog(TEXT("Cannot find suitable fixing config\n") + ClickedAssetData->AssetName.ToString());
-#endif
-		return false;
-	}
-
-	bool StandardResult_Compression = SAsset.Get().SetCompressionSettings(*SAsset.Get().GetStandardCompressionSettings(true),true);
-
-	bool StandardResult_sRGB = SAsset.Get().SetSRGBSettings(*SAsset.Get().GetStandardsRGBSettings(true), true);
-
-	return  StandardResult_Compression && StandardResult_sRGB;
-}
-
 TArray<FString> UAssetsChecker::GetAssetReferencesPath(
 	const FString& AssetPath,
 	bool bLoadToCheck)
@@ -425,80 +391,6 @@ TArray<FString> UAssetsChecker::GetAssetReferencesPath(
 	const TSharedPtr<FAssetData>& AssetData)
 {
 	return GetAssetReferencesPath(AssetData->GetObjectPathString());
-}
-
-FVector2D UAssetsChecker::GetTextureAssetSourceSize(
-	const FAssetData& AssetData)
-{
-	FCustomStandardTexture2DData AsTextureData(AssetData);
-
-	if (AsTextureData.Get().IsTexture2D())
-	{
-		return AsTextureData.Get().GetSourceSize();
-	}
-
-	return FVector2D(0, 0);
-}
-
-FVector2D UAssetsChecker::GetTextureAssetMaxInGameSize(
-	const FAssetData& AssetData)
-{
-	FCustomStandardTexture2DData AsTextureData(AssetData);
-
-	if(AsTextureData.Get().IsTexture2D())
-	{
-		return AsTextureData.Get().GetMaxInGameSize();
-	}
-
-	return FVector2D(0, 0);
-}
-
-TSharedPtr<TextureGroup> UAssetsChecker::GetTextureAssetTextureGroup(const FAssetData& AssetData)
-{
-	UObject* AssetOBJ = AssetData.GetAsset();
-
-	if (!AssetOBJ)
-	{
-		return nullptr;
-	}
-
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return nullptr;
-	}
-
-	UTexture2D* AssetT = Cast<UTexture2D>(AssetOBJ);
-
-	if (AssetT)
-	{
-		return MakeShared<TextureGroup>(AssetT->LODGroup);
-	}
-
-	return nullptr;
-}
-
-TSharedPtr<bool> UAssetsChecker::GetTextureAssetSRGBSettings(const FAssetData& AssetData)
-{
-	UObject* AssetOBJ = AssetData.GetAsset();
-
-	if (!AssetOBJ)
-	{
-		return nullptr;
-	}
-
-	if (!AssetOBJ->IsA<UTexture2D>())
-	{
-		return nullptr;
-	}
-
-	UTexture2D* AssetT = Cast<UTexture2D>(AssetOBJ);
-
-	if (AssetT)
-	{
-		return MakeShared<bool>(AssetT->SRGB == 0? false : true);
-	}
-
-	return nullptr;
 }
 
 void UAssetsChecker::FilterUnusedAssetsForAssetList(

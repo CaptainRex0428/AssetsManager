@@ -142,25 +142,6 @@ public:
 
 #pragma endregion
 
-#pragma region HandleTexture
-
-	static FVector2D GetTextureAssetSourceSize(
-		const FAssetData& AssetData);
-
-	static FVector2D GetTextureAssetMaxInGameSize(
-		const FAssetData& AssetData);
-
-	static TSharedPtr<TextureGroup> GetTextureAssetTextureGroup(
-		const FAssetData& AssetData);
-
-	static TSharedPtr<bool> GetTextureAssetSRGBSettings(
-		const FAssetData& AssetData);
-
-	static bool SetTextureStandardSettings(
-		FAssetData& ClickedAssetData);
-
-#pragma endregion
-
 #pragma region DeleteAssets
 
 	static uint32 DeleteAssets(

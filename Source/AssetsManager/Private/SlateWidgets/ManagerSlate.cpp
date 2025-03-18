@@ -1057,13 +1057,15 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureSizeRowBox(
 {
 	FVector2D TextureAssetSize;
 
+	UCustomStandardTexture2D StandardTexture(AssetDataToDisplay->GetAsset());
+
 	if (m_ClassCheckState == Texture && m_UsageCheckState == SourceSizeError)
 	{
-		TextureAssetSize = UAssetsChecker::GetTextureAssetSourceSize(*AssetDataToDisplay);
+		TextureAssetSize = StandardTexture.GetSourceSize();
 	}
 	else
 	{
-		TextureAssetSize = UAssetsChecker::GetTextureAssetMaxInGameSize(*AssetDataToDisplay);
+		TextureAssetSize = StandardTexture.GetMaxInGameSize();
 	}
 	
 	const FString ShowString = FString::FromInt(TextureAssetSize.X) + "x" + FString::FromInt(TextureAssetSize.Y);
@@ -1103,8 +1105,10 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureSRGBRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
+	UCustomStandardTexture2D StandardTexture(AssetDataToDisplay->GetAsset());
+
 	TSharedPtr<bool> SRGBSettings
-		= UAssetsChecker::GetTextureAssetSRGBSettings(*AssetDataToDisplay);
+		= StandardTexture.GetsRGBSettings();
 
 	if (SRGBSettings.IsValid())
 	{
@@ -1122,8 +1126,11 @@ TSharedRef<STextBlock> SManagerSlateTab::ConstructAssetTextureLODGroupRowBox(
 	const TSharedPtr<FAssetData>& AssetDataToDisplay, 
 	const FSlateFontInfo& FontInfo)
 {
+
+	UCustomStandardTexture2D StandardTexture(AssetDataToDisplay->GetAsset());
+	
 	TSharedPtr<TextureGroup> TextureGroupResult
-		= UAssetsChecker::GetTextureAssetTextureGroup(*AssetDataToDisplay);
+		= StandardTexture.GetLODGroup();
 
 	if (TextureGroupResult.IsValid())
 	{
@@ -1767,7 +1774,9 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleTextureAssetSettingsFixButt
 FReply SManagerSlateTab::OnSingleTextureAssetSettingsFixButtonClicked(
 	TSharedPtr<FAssetData> ClickedAssetData)
 {
-	UAssetsChecker::SetTextureStandardSettings(*ClickedAssetData);
+	UCustomStandardTexture2D standardTexture(ClickedAssetData->GetAsset(),true);
+	standardTexture.Fix(SRGB | COMPRESSIONSETTINGS);
+
 	RefreshAssetsListView();
 	return FReply::Handled();
 }
@@ -2105,7 +2114,10 @@ FReply SManagerSlateTab::OnSelectFixSelectedClicked()
 	{
 		for (TSharedPtr<FAssetData> AssetData : AssetsList)
 		{
-			if(UAssetsChecker::SetTextureStandardSettings(*AssetData))
+			UCustomStandardTexture2D standardTexture(AssetData->GetAsset(), true);
+			uint8 fixResult = standardTexture.Fix(SRGB | COMPRESSIONSETTINGS);
+
+			if((fixResult & SRGB) || (fixResult & COMPRESSIONSETTINGS))
 			{
 				if (SListViewUsageFilterAssetData.Contains(AssetData))
 				{
