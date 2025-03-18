@@ -401,7 +401,7 @@ uint8 UCustomStandardTexture2D::Fix(uint8 settingsTag, bool forceMode, bool forc
 
 	uint8 result = 0;
 
-	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::COMPRESSIONSETTINGS)) 
+	if ((TextureSettingsTag::COMPRESSIONSETTINGS & settingsTag) && ! (PreDeal & TextureSettingsTag::COMPRESSIONSETTINGS))
 	{
 		TSharedPtr<TextureCompressionSettings> CMPS = this->GetStandardCompressionSettings(forceMode);
 		
@@ -411,7 +411,7 @@ uint8 UCustomStandardTexture2D::Fix(uint8 settingsTag, bool forceMode, bool forc
 		}
 	};
 
-	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::SRGB)) 
+	if ((TextureSettingsTag::SRGB & settingsTag) && ! (PreDeal & TextureSettingsTag::SRGB))
 	{
 		TSharedPtr<bool> SRGBS = this->GetStandardsRGBSettings();
 
@@ -423,20 +423,20 @@ uint8 UCustomStandardTexture2D::Fix(uint8 settingsTag, bool forceMode, bool forc
 
 	double maxsize = bStrictCheckMode ? this->GetStandardMaxSizeStrict() : this->GetStandardMaxSize();
 
-	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::SOURCESIZE)) 
+	if ((TextureSettingsTag::SOURCESIZE & settingsTag) && ! (PreDeal & TextureSettingsTag::SOURCESIZE))
 	{
 		this->ResizeSource(maxsize, forceSave);
 		result |= TextureSettingsTag::SOURCESIZE;
 		
 	};
 
-	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::MAXINGAMESIZE)) 
+	if ((TextureSettingsTag::MAXINGAMESIZE & settingsTag) && ! (PreDeal & TextureSettingsTag::MAXINGAMESIZE))
 	{
 		this->CustomMaxInGameSize(maxsize, false, forceSave);
 		result |= TextureSettingsTag::MAXINGAMESIZE;
 	};
 
-	if ((PreDeal & settingsTag) && ! (PreDeal & TextureSettingsTag::LODGROUP)) 
+	if ((TextureSettingsTag::LODGROUP & settingsTag) && ! (PreDeal & TextureSettingsTag::LODGROUP))
 	{
 		TSharedPtr<TextureGroup> txtg = this->GetStandardLODGroup(forceMode);
 		
@@ -447,7 +447,7 @@ uint8 UCustomStandardTexture2D::Fix(uint8 settingsTag, bool forceMode, bool forc
 		
 	};
 
-	if ((PreDeal & settingsTag) && !(PreDeal & TextureSettingsTag::SUFFIX))
+	if ((TextureSettingsTag::SUFFIX & settingsTag) && !(PreDeal & TextureSettingsTag::SUFFIX))
 	{
 		// result |= TextureSettingsTag::SUFFIX;
 	};

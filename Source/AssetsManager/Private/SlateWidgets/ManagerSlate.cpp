@@ -712,6 +712,12 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(
 				[
 					ConstructSingleAssetReimportButtonBox(ClickedAssetData)
 				];
+
+			DealPanel->AddSlot()
+				.HAlign(HAlign_Fill)
+				[
+					ConstructSingleAssetResizeTextureSourceButtonBox(ClickedAssetData)
+				];
 		}
 
 		if (m_UsageCheckState == MaxInGameSizeError)
@@ -750,6 +756,7 @@ TSharedRef<SHorizontalBox> SManagerSlateTab::ConstructSingleDealPanel(
 				];
 		}
 	}
+
 	DealPanel->AddSlot()
 		.HAlign(HAlign_Fill)
 		[
@@ -1499,16 +1506,22 @@ TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetReimportButtonBox(
 {
 	TSharedRef<SButton> SingleAssetFixButtonBox =
 		SNew(SButton)
-#ifdef ZH_CN
-		.Text(FText::FromString(TEXT("导入")))
-#else
-		.Text(FText::FromString(TEXT("Reimport")))
-#endif
-		.HAlign(HAlign_Center)
-		.VAlign(VAlign_Center)
-		.OnClicked(this, 
-			&SManagerSlateTab::OnSingleAssetReimportButtonClicked, 
-			AssetDataToDisplay);
+		.OnClicked(this, &SManagerSlateTab::OnSingleAssetReimportButtonClicked, AssetDataToDisplay)
+		.ContentPadding(FMargin(2.f))
+		.ToolTipText(FText::FromString(L"Reimport"));
+
+
+	const FSlateBrush* ButtonImg = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.Import");
+	TSharedRef<SImage> ButtonImgComponent = SNew(SImage).Image(ButtonImg);
+
+	TSharedRef<SScaleBox> ButtonImgScaler =
+		SNew(SScaleBox)
+		.Stretch(EStretch::ScaleToFitY)
+		[
+			ButtonImgComponent
+		];
+
+	SingleAssetFixButtonBox->SetContent(ButtonImgScaler);
 
 	return SingleAssetFixButtonBox;
 }
@@ -1526,6 +1539,46 @@ FReply SManagerSlateTab::OnSingleAssetReimportButtonClicked(
 		UEditorAssetLibrary::SaveAsset(ClickedAssetData->GetObjectPathString());
 	}
 	
+	RefreshAssetsListView();
+
+	return FReply::Handled();
+}
+
+TSharedRef<SButton> SManagerSlateTab::ConstructSingleAssetResizeTextureSourceButtonBox(const TSharedPtr<FAssetData>& AssetDataToDisplay)
+{
+	TSharedRef<SButton> SingleAssetResizeTextureSourceButton =
+		SNew(SButton)
+		.OnClicked(this,&SManagerSlateTab::OnSingleAssetResizeTextureSourceButtonClicked,AssetDataToDisplay)
+		.ContentPadding(FMargin(2.f))
+		.ToolTipText(FText::FromString(L"Limit Source Size"));
+
+	const FSlateBrush* ButtonImg = FAssetsMangerStyle::GetStyleSet()->GetBrush("ContentBrowser.LimitSize");
+	TSharedRef<SImage> ButtonImgComponent = SNew(SImage).Image(ButtonImg);
+
+	TSharedRef<SScaleBox> ButtonImgScaler =
+		SNew(SScaleBox)
+		.Stretch(EStretch::ScaleToFitY)
+		[
+			ButtonImgComponent
+		];
+
+	SingleAssetResizeTextureSourceButton->SetContent(ButtonImgScaler);
+
+	return SingleAssetResizeTextureSourceButton;
+}
+
+FReply SManagerSlateTab::OnSingleAssetResizeTextureSourceButtonClicked(TSharedPtr<FAssetData> ClickedAssetData)
+{
+	UCustomStandardTexture2D StandardTexture(ClickedAssetData->GetAsset());
+
+	if(!StandardTexture.IsTexture2D())
+	{
+		NtfyMsgLog(FString::Printf(L"Asset is not in texture type.[%s]",*StandardTexture.Get()->GetFName().ToString()));
+		return FReply::Handled();
+	}
+
+	StandardTexture.Fix(SOURCESIZE,true,true);
+
 	RefreshAssetsListView();
 
 	return FReply::Handled();
