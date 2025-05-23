@@ -79,6 +79,13 @@ public:
 		TextureSettingsTag::MAXINGAMESIZE |
 		TextureSettingsTag::LODGROUP);
 
+	uint8 NotStandarized(uint8 settingsTag =
+		TextureSettingsTag::COMPRESSIONSETTINGS |
+		TextureSettingsTag::SRGB |
+		TextureSettingsTag::SOURCESIZE |
+		TextureSettingsTag::MAXINGAMESIZE |
+		TextureSettingsTag::LODGROUP);
+
 	uint8 Fix(uint8 settingsTag, bool forceMode = false ,bool forceSave = false);
 
 	static ETextureSourceFormat GetReducedTextureSourceFormat(const TextureCompressionSettings TC, const ETextureSourceFormat InTSF, const bool NormalMapsKeep16bits);
