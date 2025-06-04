@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FCustomStandardAsset.h"
+#include "CustomStandardAsset.h"
 
 struct CompressionSettingsInfo
 {
@@ -75,6 +75,13 @@ public:
 	uint8 IsStandarized(uint8 settingsTag = 
 		TextureSettingsTag::COMPRESSIONSETTINGS | 
 		TextureSettingsTag::SRGB | 
+		TextureSettingsTag::SOURCESIZE |
+		TextureSettingsTag::MAXINGAMESIZE |
+		TextureSettingsTag::LODGROUP);
+
+	uint8 NotStandarized(uint8 settingsTag =
+		TextureSettingsTag::COMPRESSIONSETTINGS |
+		TextureSettingsTag::SRGB |
 		TextureSettingsTag::SOURCESIZE |
 		TextureSettingsTag::MAXINGAMESIZE |
 		TextureSettingsTag::LODGROUP);

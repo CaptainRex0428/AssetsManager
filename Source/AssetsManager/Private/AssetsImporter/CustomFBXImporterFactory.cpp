@@ -1,7 +1,7 @@
 ﻿
 #include "AssetsImporter/CustomFBXImporterFactory.h"
 
-#include "StandardAsset/FCustomStandardAsset.h"
+#include "StandardAsset/CustomStandardAsset.h"
 #include "ManagerLogger.h"
 #include "InterchangeManager.h"
 #include "InterchangeSourceData.h"

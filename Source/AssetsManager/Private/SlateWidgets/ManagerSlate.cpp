@@ -11,9 +11,9 @@
 
 #include "AssetsChecker/AssetsChecker.h"
 
-#include "StandardAsset/FCustomStandardSkeletalMesh.h"
-#include "StandardAsset/FCustomStandardTexture2D.h"
-#include "StandardAsset/FCustomStandardAsset.h"
+#include "StandardAsset/CustomStandardSkeletalMesh.h"
+#include "StandardAsset/CustomStandardTexture2D.h"
+#include "StandardAsset/CustomStandardAsset.h"
 
 
 #include "ConfigManager.h"

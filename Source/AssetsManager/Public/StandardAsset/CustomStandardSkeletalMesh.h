@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#include "StandardAsset/FCustomStandardAsset.h"
+#include "StandardAsset/CustomStandardAsset.h"
 
 #include "Engine/RendererSettings.h"
 #include "Engine/SkinnedAssetCommon.h"

@@ -8,6 +8,7 @@
 #include "AssetsChecker/AssetsChecker.h"
 #include "AssetsChecker/AssetsTypeActions.h"
 #include "AssetsCreator/AssetsCreator.h"
+#include "StandardAsset/CustomStandardTexture2D.h"
 #include "SlateWidgets/ManagerSlate.h"
 #include "SlateWidgets/BatchRenameSlate.h"
 #include "SlateWidgets/Material/MaterialCreatorSlate.h"
@@ -353,28 +354,96 @@ void FAssetsManagerModule::OnEditorDelegatePostImport(UFactory* Factory, UObject
 {
 	if (CreatedObject)
 	{
-		if(CreatedObject->IsA<UTexture2D>())
+
+		const UManagerSettings* Settings = GetDefault<UManagerSettings>();
+
+		if (!Settings)
 		{
-			bool shouldDelete = false;
-			UCustomStandardObject StandardObj(CreatedObject);
-
-			if (StandardObj.IsPrefixNonstandarized())
-			{
-				NtfyMsgLog(FString::Printf(L"[Prefix Error]%s", *StandardObj.GetClassValidObjectName()),true);
-
-				shouldDelete = true;
-			}
-
-			if (shouldDelete)
-			{
-				UAssetsChecker::DeleteObject(CreatedObject);
-			}
-
 			return;
 		}
-		
- if(CreatedObject->IsAsset())
-		{	
+
+		if (Settings->ImportCheck)
+		{
+			if (CreatedObject->IsA<UTexture2D>())
+			{
+				UCustomStandardTexture2D StandardObj(CreatedObject, Settings->StrictMode);
+				FString AssetName = StandardObj.GetClassValidObjectName();
+
+				if (StandardObj.IsPrefixNonstandarized())
+				{
+					NtfyMsgLog(FString::Printf(L"[Prefix Error]%s", *AssetName), true);
+
+					UAssetsChecker::DeleteObject(CreatedObject);
+					return;
+				}
+
+				// 角色类
+				if (Settings->CharacterImportLimit && (StandardObj.GetCommonAssetCategory() == AssetCategory::Character || StandardObj.GetCommonAssetCategory() == AssetCategory::Hair))
+				{
+					uint8 result = StandardObj.NotStandarized();
+
+					if (result != 0)
+					{
+						if (Settings->SuffixCheck && (result & SUFFIX))
+						{
+							NtfyMsgLog(FString::Printf(L"[Suffix Error]%s", *AssetName), true);
+
+							UAssetsChecker::DeleteObject(CreatedObject);
+							return;
+						};
+
+						FString unstandardTag = "";
+
+						if (result & SOURCESIZE) { unstandardTag += TEXT("->SourceSize Oversize\n"); };
+						if (result & MAXINGAMESIZE) { unstandardTag += TEXT("->MaxInGameSize Oversize\n"); };
+						if (result & COMPRESSIONSETTINGS) { unstandardTag += TEXT("->CompressionSettings Error\n"); };
+						if (result & SRGB) { unstandardTag += TEXT("->SRGB Error\n"); };
+						if (result & LODGROUP) { unstandardTag += TEXT("->LODGroup Error\n"); };
+
+						FString tips = FString::Printf(L"[Asset Config Error]\n%s\n\n%s\nAuto Fix?", *AssetName, *unstandardTag);
+
+						if (result & SOURCESIZE | result & MAXINGAMESIZE)
+						{
+							EAppReturnType::Type returntype = DlgMsgLog(EAppMsgType::YesNoCancel, tips);
+
+							if (returntype == EAppReturnType::Yes)
+							{
+								StandardObj.Fix(SOURCESIZE | MAXINGAMESIZE);
+							}
+
+							if (returntype == EAppReturnType::Cancel || (returntype == EAppReturnType::No && Settings->ImportForcedLimit))
+							{
+								UAssetsChecker::DeleteObject(CreatedObject);
+								return;
+							}
+						}
+
+						StandardObj.Fix(COMPRESSIONSETTINGS | SRGB | LODGROUP);
+
+					}
+				}
+
+				if (Settings->UIImportLimit && StandardObj.GetCommonAssetCategory() == AssetCategory::UI)
+				{
+
+				}
+
+				if (Settings->SceneImportLimit && StandardObj.GetCommonAssetCategory() == AssetCategory::Scene)
+				{
+
+				}
+
+				if (Settings->VFXImportLimit && StandardObj.GetCommonAssetCategory() == AssetCategory::Effect)
+				{
+
+				}
+			}
+		}
+
+
+
+		if (CreatedObject->IsAsset())
+		{
 			MsgLog(FString::Printf(L"Verification completed: %s", *CreatedObject->GetName()));
 		}
 	}

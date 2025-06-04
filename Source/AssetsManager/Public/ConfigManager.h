@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Misc/ConfigCacheIni.h"
-#include "StandardAsset/FStructLikeString.h"
+#include "StandardAsset/StructLikeString.h"
 
 #include "ObjectTools.h"
 #include "AssetToolsModule.h"
@@ -127,5 +127,29 @@ public:
 
 	UPROPERTY(EditAnywhere, config, Category = "LookDev")
 	TSoftObjectPtr<UWorld> LevelAsset;
+
+	UPROPERTY(EditAnywhere, config, Category = "Import")
+	bool ImportCheck = true;
+
+	UPROPERTY(EditAnywhere, config, Category = "Import")
+	bool SuffixCheck = true;
+
+	UPROPERTY(EditAnywhere, config, Category = "Import")
+	bool ImportForcedLimit = false;
+
+	UPROPERTY(EditAnywhere, config, Category = "Import")
+	bool StrictMode = true;
+
+	UPROPERTY(EditAnywhere, config, Category = "ImportLimitCategory", DisplayName = "Character")
+	bool CharacterImportLimit = true;
+
+	UPROPERTY(EditAnywhere, config, Category = "ImportLimitCategory", DisplayName = "UI")
+	bool UIImportLimit = false;
+
+	UPROPERTY(EditAnywhere, config, Category = "ImportLimitCategory", DisplayName = "Scene")
+	bool SceneImportLimit = false;
+
+	UPROPERTY(EditAnywhere, config, Category = "ImportLimitCategory", DisplayName = "Effect")
+	bool VFXImportLimit = false;
 
 };

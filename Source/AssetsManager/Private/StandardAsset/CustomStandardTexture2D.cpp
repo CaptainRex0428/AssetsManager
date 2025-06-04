@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "StandardAsset/FCustomStandardTexture2D.h"
+#include "StandardAsset/CustomStandardTexture2D.h"
 #include "ConfigManager.h"
 #include "ManagerLogger.h"
 #include "AssetsChecker/AssetsChecker.h"
@@ -388,6 +388,48 @@ uint8 UCustomStandardTexture2D::IsStandarized(uint8 settingsTag)
 
 	return result;
 
+}
+
+uint8 UCustomStandardTexture2D::NotStandarized(uint8 settingsTag)
+{
+	if (!this->IsTexture2D())
+	{
+		return -1;
+	}
+
+	uint8 result = 0;
+
+	if ((settingsTag & TextureSettingsTag::COMPRESSIONSETTINGS) && !this->IsCompressoionSettingsStandarized())
+	{
+		result |= TextureSettingsTag::COMPRESSIONSETTINGS;
+	};
+
+	if ((settingsTag & TextureSettingsTag::SRGB) && !this->IsSRGBStandarized())
+	{
+		result |= TextureSettingsTag::SRGB;
+	};
+
+	if ((settingsTag & TextureSettingsTag::SOURCESIZE) && this->IsTextureSourceOverSize())
+	{
+		result |= TextureSettingsTag::SOURCESIZE;
+	};
+
+	if ((settingsTag & TextureSettingsTag::MAXINGAMESIZE) && this->IsTextureMaxInGameOverSize())
+	{
+		result |= TextureSettingsTag::MAXINGAMESIZE;
+	};
+
+	if ((settingsTag & TextureSettingsTag::LODGROUP) && !this->IsTextureLODGroupStandarized())
+	{
+		result |= TextureSettingsTag::LODGROUP;
+	};
+
+	if ((settingsTag & TextureSettingsTag::SUFFIX) && !this->IsSuffixStandarized())
+	{
+		result |= TextureSettingsTag::SUFFIX;
+	};
+
+	return result;
 }
 
 uint8 UCustomStandardTexture2D::Fix(uint8 settingsTag, bool forceMode, bool forceSave)

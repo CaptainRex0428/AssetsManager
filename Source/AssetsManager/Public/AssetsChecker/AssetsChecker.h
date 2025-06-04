@@ -6,7 +6,7 @@
 #include "AssetActionUtility.h"
 
 #include "ConfigManager.h"
-#include "StandardAsset/FCustomStandardAsset.h"
+#include "StandardAsset/CustomStandardAsset.h"
 
 #include "AssetManagerEditorModule.h"
 
