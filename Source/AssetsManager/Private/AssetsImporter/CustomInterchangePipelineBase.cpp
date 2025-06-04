@@ -3,8 +3,8 @@
 
 #include "AssetsImporter/CustomInterchangePipelineBase.h"
 #include "AssetsChecker/AssetsChecker.h"
-#include "StandardAsset/FCustomStandardAsset.h"
-#include "StandardAsset/FCustomStandardSkeletalMesh.h"
+#include "StandardAsset/CustomStandardAsset.h"
+#include "StandardAsset/CustomStandardSkeletalMesh.h"
 #include "ManagerLogger.h"
 
 void UCustomInterchangePipeline_Base::ExecutePostImportPipeline(

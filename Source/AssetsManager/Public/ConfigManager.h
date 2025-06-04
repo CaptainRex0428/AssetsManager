@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Misc/ConfigCacheIni.h"
-#include "StandardAsset/FStructLikeString.h"
+#include "StandardAsset/StructLikeString.h"
 
 #include "ObjectTools.h"
 #include "AssetToolsModule.h"

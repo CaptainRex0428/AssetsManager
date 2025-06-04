@@ -8,7 +8,7 @@
 #include "AssetsChecker/AssetsChecker.h"
 #include "AssetsChecker/AssetsTypeActions.h"
 #include "AssetsCreator/AssetsCreator.h"
-#include "StandardAsset/FCustomStandardTexture2D.h"
+#include "StandardAsset/CustomStandardTexture2D.h"
 #include "SlateWidgets/ManagerSlate.h"
 #include "SlateWidgets/BatchRenameSlate.h"
 #include "SlateWidgets/Material/MaterialCreatorSlate.h"

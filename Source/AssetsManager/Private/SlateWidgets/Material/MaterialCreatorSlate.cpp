@@ -12,7 +12,7 @@
 
 #include "AssetRegistry/AssetRegistryModule.h"
 
-#include "StandardAsset/FCustomStandardAsset.h"
+#include "StandardAsset/CustomStandardAsset.h"
 
 void SMaterialCreatorSlate::Construct(const FArguments& InArgs) 
 {

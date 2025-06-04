@@ -2,7 +2,7 @@
 
 
 #include "AssetsChecker/AssetsTypeActions.h"
-#include "StandardAsset/FCustomStandardAsset.h"
+#include "StandardAsset/CustomStandardAsset.h"
 #include "TextureEditor.h"
 #include "Interfaces/ITextureEditorModule.h"
 #include "Engine/Texture2D.h"

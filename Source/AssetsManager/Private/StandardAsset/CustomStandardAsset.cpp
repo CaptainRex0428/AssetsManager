@@ -2,7 +2,7 @@
 
 #pragma warning(disable: 5038)
 
-#include "StandardAsset/FCustomStandardAsset.h"
+#include "StandardAsset/CustomStandardAsset.h"
 #include "AssetsChecker/AssetsChecker.h"
 
 #include "ManagerLogger.h"

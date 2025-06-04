@@ -1,9 +1,9 @@
 ﻿ #include "AssetsHandler/AssetsHandler.h"
 
 #include "ManagerLogger.h"
-#include "StandardAsset/FCustomStandardAsset.h"
-#include "StandardAsset/FCustomStandardTexture2D.h"
-#include "StandardAsset/FCustomStandardSkeletalMesh.h"
+#include "StandardAsset/CustomStandardAsset.h"
+#include "StandardAsset/CustomStandardTexture2D.h"
+#include "StandardAsset/CustomStandardSkeletalMesh.h"
 
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FCustomStandardAsset.h"
+#include "CustomStandardAsset.h"
 
 struct CompressionSettingsInfo
 {
