@@ -73,6 +73,6 @@ public:
 
 #pragma endregion
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Category = "AssetsManager", VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UBillboardComponent> DisplayRoot;
 };
